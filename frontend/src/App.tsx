@@ -85,8 +85,12 @@ export function App() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
 
-  // In-page Toast Notifications
+  // In-page Toast Notifications (Strict Clamping to Max 3 + Deduplication)
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
   const showToast = useCallback(
     (
@@ -95,10 +99,17 @@ export function App() {
       action?: { label: string; icon?: "undo"; onClick: () => void }
     ) => {
       const id = `${Date.now()}-${Math.random()}`;
-      setToasts((prev) => [...prev, { id, message, type, action }]);
+      setToasts((prev) => {
+        // 1. Deduplication: replace any existing toast with the exact same message
+        const withoutDuplicate = prev.filter((t) => t.message !== message);
+        // 2. Strict Clamping: keep at most 2 previous toasts, so adding 1 gives at most 3 visible
+        const clamped = withoutDuplicate.slice(-2);
+        return [...clamped, { id, message, type, action }];
+      });
+
       setTimeout(() => {
         setToasts((prev) => prev.filter((t) => t.id !== id));
-      }, action ? 7500 : 3800);
+      }, action ? 7500 : 3200);
     },
     []
   );
@@ -606,7 +617,7 @@ export function App() {
                 <line x1="9" y1="9" x2="15" y2="15"></line>
               </svg>
             )}
-            <span>{toast.message}</span>
+            <span style={{ flex: 1 }}>{toast.message}</span>
             {toast.action && (
               <button
                 type="button"
@@ -614,7 +625,7 @@ export function App() {
                 onClick={(e) => {
                   e.stopPropagation();
                   toast.action?.onClick();
-                  setToasts((prev) => prev.filter((t) => t.id !== toast.id));
+                  dismissToast(toast.id);
                 }}
               >
                 {toast.action.icon === "undo" && (
@@ -626,6 +637,18 @@ export function App() {
                 <span>{toast.action.label}</span>
               </button>
             )}
+            <button
+              type="button"
+              className="toast-close-btn"
+              onClick={() => dismissToast(toast.id)}
+              aria-label="Dismiss notification"
+              title="Dismiss"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
           </div>
         ))}
       </div>

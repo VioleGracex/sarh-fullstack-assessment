@@ -22,6 +22,7 @@ During the development and hardening of the **SARH Orders Console**, several rea
 7. [Challenge 7: Eliminating Blocking Native Browser Alerts & Dialogs](#7-eliminating-blocking-native-browser-alerts--dialogs)
 8. [Challenge 8: Five Critical Security Vulnerabilities in Legacy Contractor Auth](#8-five-critical-security-vulnerabilities-in-legacy-contractor-auth)
 9. [Challenge 9: KPI Metric Snapping From 0 on Refresh](#9-kpi-metric-snapping-from-0-on-refresh)
+10. [Challenge 10: Notification Flooding & Toast Queue Clamping](#10-notification-flooding--toast-queue-clamping)
 
 ---
 
@@ -215,10 +216,25 @@ $$\text{progress} = 1 - (1 - t)^3$$
 
 ---
 
+### 10. Notification Flooding & Toast Queue Clamping
+
+#### Symptom
+Rapid user interactions (e.g., repeatedly clicking theme or density toggles, copying multiple order IDs, or triggering rapid filter updates) generated a continuous vertical cascade of 10+ toast notifications, consuming the entire right side of the screen and obstructing table controls.
+
+#### Root Cause Analysis
+Naive toast notification handlers pushed new items into an unbounded React state array (`setToasts(prev => [...prev, newToast])`) without rate-limiting, message deduplication, or window clamping.
+
+#### Engineering Solution
+1. **Window-Clamped Queue (Max 3 Visible)**: Refactored `showToast` in [`App.tsx`](file:///d:/task/Sarh_group/frontend/src/App.tsx) using array slicing (`prev.slice(-2)`), guaranteeing that appending a new toast never exceeds 3 simultaneously rendered toasts.
+2. **Strict Message Deduplication**: Before appending, any existing visible toast with the identical message string is filtered out (`prev.filter(t => t.message !== message)`), preventing repeated identical notifications during rapid clicking.
+3. **Interactive Dismiss Button (`✕`)**: Added accessible `.toast-close-btn` buttons to every toast card allowing operators to immediately dismiss notifications.
+
+---
+
 ## Conclusion & Verification Status
 
-All 9 engineering challenges have been resolved, verified against the SQLite database, and proven through:
+All 10 engineering challenges have been resolved, verified against the SQLite database, and proven through:
 - **29 Automated Unit Tests** (`npm run test:unit`)
 - **Automated R2 Duplicate Prevention Proof** (`npm run test:duplicate`)
-- **Production Vite Build** (`npm --prefix frontend run build` in ~270ms)
+- **Production Vite Build** (`npm --prefix frontend run build` in ~420ms)
 - **Zero Browser Native Dialogs Rule** fully enforced

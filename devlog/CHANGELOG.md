@@ -32,6 +32,24 @@
 | **16:58:30** | `5089abe` | Re-enabled Optional O1: Slow Stats API with AbortController, countdown timer, and Deep Analytics Modal | Optional / O1 |
 | **17:01:30** | `b25bfa4` | Fixed Dark Mode refresh flashbang via blocking head script & critical background styling | Bug Fix / UX |
 | **17:02:30** | `b25bfa4` | Created `PROBLEMS_AND_SOLUTIONS.md`: Comprehensive 9-challenge technical diagnostic document | Documentation |
+| **17:05:30** | `Pending` | Clamped toast notification stack to max 3 visible with deduplication and dismiss button | Bug Fix / UX |
+
+---
+
+# [1.0.10] — Toast Queue Clamping (Max 3 Visible), Deduplication & Dismiss Button
+Date: 2026-10-18 | Session Timer: 1h 35m
+
+## Fixed
+- **Notification Flooding**: Prevented vertical toast stacks from filling the entire right screen during rapid interactions.
+- Window Clamping: `showToast` in `App.tsx` now enforces a strict upper limit of at most 3 simultaneously visible notifications using `slice(-2)` before appending.
+- Message Deduplication: Identical consecutive notifications are filtered out rather than creating duplicate stacked cards.
+- Interactive Dismissal: Added an accessible `.toast-close-btn` (`✕`) on every toast card to allow immediate dismissal on click.
+
+## Files Affected
+- `frontend/src/App.tsx`
+- `frontend/src/index.css`
+- `PROBLEMS_AND_SOLUTIONS.md`
+- `devlog/CHANGELOG.md`
 
 ---
 
