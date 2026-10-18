@@ -106,3 +106,5 @@ Below are the vulnerabilities and flaws identified in the legacy contractor snip
    Skipped because the brief explicitly emphasizes that Docker is not needed (*"What it does not need: Docker, deployment. Everything runs locally from the README in under five minutes"*). SQLite was chosen so the project runs with zero friction on any reviewer's machine.
 3. **Heavy Component Libraries (MUI/AntD):**  
    Tailwind CSS was used instead to keep the bundle lightweight, transparent, and completely free of third-party CSS bloat.
+4. **Dedicated Full-Page Order Route (`/orders/new`):**  
+   Implemented as an in-context slide-over drawer to optimize build time and provide fast phone order entry without losing table context or search/filter state. As noted in `DECISIONS.md`, for complex enterprise B2B company workflows with 20+ line items and documents, a dedicated `/orders/new` page would be preferred, but was scoped down to the drawer given the lightweight phone intake brief.

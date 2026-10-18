@@ -1,10 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import type { Order, PaginationMeta, OrdersResponse } from "../types/order";
+import type { Order, PaginationMeta, OrdersResponse, SystemStats } from "../types/order";
 
 interface UseOrdersParams {
   initialStatus?: string;
   initialPageSize?: number;
 }
+
+const DEFAULT_SYSTEM_STATS: SystemStats = {
+  totalSystemRecords: 0,
+  statusCounts: {
+    ALL: 0,
+    PENDING: 0,
+    PROCESSING: 0,
+    COMPLETED: 0,
+    CANCELLED: 0
+  },
+  totalRevenue: 0
+};
 
 export function useOrders({ initialStatus = "ALL", initialPageSize = 25 }: UseOrdersParams = {}) {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -12,10 +24,12 @@ export function useOrders({ initialStatus = "ALL", initialPageSize = 25 }: UseOr
     page: 1,
     pageSize: initialPageSize,
     totalRecords: 0,
+    totalSystemRecords: 0,
     totalPages: 0,
     hasNext: false,
     hasPrev: false
   });
+  const [systemStats, setSystemStats] = useState<SystemStats>(DEFAULT_SYSTEM_STATS);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,19 +41,14 @@ export function useOrders({ initialStatus = "ALL", initialPageSize = 25 }: UseOr
   const [sortBy, setSortByState] = useState<"createdAt" | "totalAmount" | "orderNumber">("createdAt");
   const [sortOrder, setSortOrderState] = useState<"asc" | "desc">("desc");
 
-  // R1 Race condition counters
-  const [abortedCount, setAbortedCount] = useState<number>(0);
-  const [latestCompletedRequestId, setLatestCompletedRequestId] = useState<number>(0);
-
-  // References for cancellation and sequence tracking
+  // References for cancellation and sequence tracking (R1 AbortController under the hood)
   const abortControllerRef = useRef<AbortController | null>(null);
   const requestIdCounterRef = useRef<number>(0);
 
   const fetchOrders = useCallback(async () => {
-    // 1. Abort any previous in-flight HTTP request
+    // 1. Silently abort any previous in-flight HTTP request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
-      setAbortedCount((prev) => prev + 1);
     }
 
     // 2. Create fresh AbortController and increment monotonic sequence ID
@@ -77,18 +86,18 @@ export function useOrders({ initialStatus = "ALL", initialPageSize = 25 }: UseOr
 
       // 3. Strict Race Condition Guard: Ignore response if a newer request has started
       if (currentRequestId !== requestIdCounterRef.current) {
-        console.warn(`[R1 Guard] Discarded stale response for request #${currentRequestId} (latest is #${requestIdCounterRef.current})`);
         return;
       }
 
       setOrders(json.data);
       setPagination(json.pagination);
-      setLatestCompletedRequestId(currentRequestId);
+      if (json.systemStats) {
+        setSystemStats(json.systemStats);
+      }
       setLoading(false);
     } catch (err: any) {
       if (err.name === "AbortError") {
-        // Normal cancellation of an earlier slower request when user clicks fast
-        console.info(`[R1 Guard] Successfully aborted in-flight request #${currentRequestId}`);
+        // Normal cancellation of an earlier slower request when user navigates/filters fast
         return;
       }
 
@@ -139,9 +148,16 @@ export function useOrders({ initialStatus = "ALL", initialPageSize = 25 }: UseOr
     setPageState(1);
   };
 
+  const applySort = (column: "createdAt" | "totalAmount" | "orderNumber", order: "asc" | "desc") => {
+    setSortByState(column);
+    setSortOrderState(order);
+    setPageState(1);
+  };
+
   return {
     orders,
     pagination,
+    systemStats,
     loading,
     error,
     status,
@@ -150,13 +166,12 @@ export function useOrders({ initialStatus = "ALL", initialPageSize = 25 }: UseOr
     pageSize,
     sortBy,
     sortOrder,
-    abortedCount,
-    latestCompletedRequestId,
     setStatus,
     setSearch,
     setPage,
     setPageSize,
     toggleSort,
+    applySort,
     refresh: fetchOrders
   };
 }

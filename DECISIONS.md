@@ -35,6 +35,18 @@ This document outlines the three primary engineering trade-offs evaluated during
 * **Why We Rejected It:**  
   Debouncing merely delays the trigger of a request; it does not solve network inversion (where an earlier slow query over a large dataset takes 1,200ms and returns *after* a fast 150ms query). If an agent switches filters in quick succession, an earlier slow response can still overwrite the screen with stale data. Combining `AbortController` with monotonic sequence checks guarantees that stale responses are cancelled at the browser network layer and never update the DOM.
 
+
+---
+
+## Additional UI/UX Architecture Decision: Order Creation View — Slide-Over Drawer vs. Dedicated Page (`/orders/new`)
+
+* **The Decision:**  
+  We implemented the order creation workflow as an in-context slide-over drawer over the main orders console rather than navigating away to a dedicated full-page form (`/orders/new`).
+* **Alternative Considered:**  
+  A separate full-screen page route (`/orders/new`) with multi-step stepper navigation.
+* **Why We Decided & Scoped It:**  
+  The exact business domain, operational scope, and line-item complexity are not explicitly defined in the brief beyond taking phone orders with 1–5 items. In this operational context, a slide-over drawer keeps the underlying orders table visible in the background, preserves active filter/search/pagination state without re-mounting, and saves substantial developer build time. However, we acknowledge that depending on company type—particularly enterprise B2B workflows requiring 20+ line items, custom shipping consignments, purchase order PDF uploads, or split invoicing—a side drawer can feel cramped and annoying for operators. For complex enterprise scopes, a dedicated `/orders/new` page would be the superior architecture; we retained the drawer here specifically to prioritize high-speed phone intake and focus on the core backend concurrency guarantees within the take-home time budget.
+
 ---
 
 ## AI Tools Disclosure

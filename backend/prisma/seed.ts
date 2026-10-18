@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
@@ -48,20 +51,29 @@ function randomDate(daysBack = 120): Date {
 }
 
 async function main() {
-  console.log("🚀 Starting database seeding...");
+  console.log("Starting database seeding...");
   const startTime = Date.now();
 
   // 1. Clean existing records for clean idempotent runs
-  console.log("🧹 Clearing old data...");
+  console.log("Clearing old data...");
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
   await prisma.idempotencyRecord.deleteMany();
   await prisma.user.deleteMany();
 
   // 2. Seed Users (Mandatory Section 3: Seed at least one admin and one agent user)
-  console.log("👤 Creating seed users (Admin & Agent)...");
-  const adminPasswordHash = await bcrypt.hash("admin123", 10);
-  const agentPasswordHash = await bcrypt.hash("agent123", 10);
+  console.log("Creating seed users (Admin & Agent)...");
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const agentPassword = process.env.AGENT_PASSWORD;
+
+  if (!adminPassword || !agentPassword) {
+    throw new Error(
+      "ADMIN_PASSWORD and AGENT_PASSWORD environment variables are required. Please set them in your .env file."
+    );
+  }
+
+  const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
+  const agentPasswordHash = await bcrypt.hash(agentPassword, 10);
 
   await prisma.user.createMany({
     data: [
@@ -85,7 +97,7 @@ async function main() {
   const BATCH_SIZE = 1000;
   const batches = TOTAL_ORDERS / BATCH_SIZE;
 
-  console.log(`📦 Generating ${TOTAL_ORDERS.toLocaleString()} orders in batches of ${BATCH_SIZE}...`);
+  console.log(`Generating ${TOTAL_ORDERS.toLocaleString()} orders in batches of ${BATCH_SIZE}...`);
 
   for (let b = 0; b < batches; b++) {
     const ordersData: Array<{
@@ -159,17 +171,17 @@ async function main() {
 
     if ((b + 1) % 10 === 0 || b + 1 === batches) {
       const progress = ((b + 1) * BATCH_SIZE).toLocaleString();
-      console.log(`   ⏳ Seeded ${progress} / ${TOTAL_ORDERS.toLocaleString()} orders...`);
+      console.log(`   Seeded ${progress} / ${TOTAL_ORDERS.toLocaleString()} orders...`);
     }
   }
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-  console.log(`✅ Finished seeding ${TOTAL_ORDERS.toLocaleString()} orders + items in ${duration}s!`);
+  console.log(`Finished seeding ${TOTAL_ORDERS.toLocaleString()} orders + items in ${duration}s!`);
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Seeding failed:", e);
+    console.error("Seeding failed:", e);
     process.exit(1);
   })
   .finally(async () => {

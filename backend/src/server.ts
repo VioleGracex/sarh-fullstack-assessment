@@ -35,7 +35,7 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 SARH Orders Console API running at http://localhost:${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`📦 Orders endpoint: http://localhost:${PORT}/api/orders`);
+  console.log(`SARH Orders Console API running at http://localhost:${PORT}`);
+  console.log(`Health check: http://localhost:${PORT}/health`);
+  console.log(`Orders endpoint: http://localhost:${PORT}/api/orders`);
 });

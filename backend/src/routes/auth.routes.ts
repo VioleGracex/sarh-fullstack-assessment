@@ -4,8 +4,14 @@ import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET environment variable is missing");
+  }
+  return secret;
+}
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || "sarh-production-secret-2026-super-secure";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "8h";
 
 const loginSchema = z.object({
@@ -54,7 +60,7 @@ router.post("/login", async (req: Request, res: Response) => {
         email: user.email,
         role: user.role
       },
-      JWT_SECRET,
+      getJwtSecret(),
       { expiresIn: JWT_EXPIRES_IN as any }
     );
 

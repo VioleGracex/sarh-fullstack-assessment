@@ -1,6 +1,5 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
-import crypto from "crypto";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { requireIdempotency } from "../middleware/idempotency.js";
@@ -26,6 +25,10 @@ const createOrderSchema = z.object({
  * GET /api/orders
  * R1: High performance order list over 50,000+ rows
  * Supports: Search (name/email), Filter (status), Sort (date, amount), Server pagination
+ * Returns:
+ * - data: Order[]
+ * - pagination: current page, pageSize, totalFilteredRecords, totalPages
+ * - systemStats: totalSystemRecords (constant DB count), statusCounts (never fluctuates on filter)
  */
 router.get("/orders", async (req: Request, res: Response) => {
   try {
@@ -63,8 +66,8 @@ router.get("/orders", async (req: Request, res: Response) => {
 
     const skip = (page - 1) * pageSize;
 
-    // Parallel count and fetch using indexes
-    const [orders, totalRecords] = await Promise.all([
+    // Parallel count, fetch, and system-wide telemetry using indexes
+    const [orders, totalFilteredRecords, totalSystemRecords, statusGroupCounts, revenueAggregate] = await Promise.all([
       prisma.order.findMany({
         where,
         orderBy,
@@ -74,20 +77,47 @@ router.get("/orders", async (req: Request, res: Response) => {
           items: true
         }
       }),
-      prisma.order.count({ where })
+      prisma.order.count({ where }),
+      prisma.order.count(), // System-wide total, NEVER fluctuates when filtering!
+      prisma.order.groupBy({
+        by: ["status"],
+        _count: { _all: true }
+      }),
+      prisma.order.aggregate({
+        _sum: { totalAmount: true }
+      })
     ]);
 
-    const totalPages = Math.ceil(totalRecords / pageSize);
+    const totalPages = Math.ceil(totalFilteredRecords / pageSize);
+
+    // Map status breakdown
+    const statusCounts: Record<string, number> = {
+      ALL: totalSystemRecords,
+      PENDING: 0,
+      PROCESSING: 0,
+      COMPLETED: 0,
+      CANCELLED: 0
+    };
+
+    statusGroupCounts.forEach((group) => {
+      statusCounts[group.status] = group._count._all;
+    });
 
     return res.json({
       data: orders,
       pagination: {
         page,
         pageSize,
-        totalRecords,
+        totalRecords: totalFilteredRecords,
+        totalSystemRecords,
         totalPages,
         hasNext: page < totalPages,
         hasPrev: page > 1
+      },
+      systemStats: {
+        totalSystemRecords,
+        statusCounts,
+        totalRevenue: revenueAggregate._sum.totalAmount || 0
       }
     });
   } catch (error) {
@@ -106,7 +136,6 @@ router.post("/orders", requireIdempotency, async (req: Request, res: Response) =
   try {
     const parseResult = createOrderSchema.safeParse(req.body);
     if (!parseResult.success) {
-      // If validation fails, remove or fail the idempotency key so client can retry with valid input
       if (idempotencyKey) {
         await prisma.idempotencyRecord.deleteMany({ where: { key: idempotencyKey } });
       }
@@ -117,13 +146,9 @@ router.post("/orders", requireIdempotency, async (req: Request, res: Response) =
     }
 
     const { customerName, customerEmail, status, items } = parseResult.data;
-
-    // Calculate total amount from items to guarantee financial integrity
     const calculatedTotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
 
-    // Create Order and items inside an atomic transaction
     const createdOrder = await prisma.$transaction(async (tx) => {
-      // Generate clean human-readable order number
       const count = await tx.order.count();
       const orderNumber = `ORD-${String(count + 1).padStart(6, "0")}`;
 
@@ -149,7 +174,6 @@ router.post("/orders", requireIdempotency, async (req: Request, res: Response) =
         }
       });
 
-      // Update idempotency record to RESOLVED with cached response payload
       if (idempotencyKey) {
         await tx.idempotencyRecord.update({
           where: { key: idempotencyKey },
@@ -167,7 +191,6 @@ router.post("/orders", requireIdempotency, async (req: Request, res: Response) =
     return res.status(201).json(createdOrder);
   } catch (error: any) {
     console.error("Error creating order:", error);
-    // Mark idempotency as failed in case of unhandled error
     if (idempotencyKey) {
       await prisma.idempotencyRecord.updateMany({
         where: { key: idempotencyKey },
@@ -206,11 +229,9 @@ router.delete("/orders/:id", requireAuth, requireRole("ADMIN"), async (req: Requ
 /**
  * GET /api/orders/stats
  * Optional O1: Deliberately slow stats endpoint (3.5 seconds)
- * Returns status aggregates and revenue metrics
  */
 router.get("/orders/stats", async (_req: Request, res: Response) => {
   try {
-    // Deliberate 3.5s delay to satisfy Optional O1
     await new Promise((resolve) => setTimeout(resolve, 3500));
 
     const [statusCounts, revenueResult] = await Promise.all([

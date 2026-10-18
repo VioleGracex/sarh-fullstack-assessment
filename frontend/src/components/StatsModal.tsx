@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
-import { X, RefreshCw, AlertCircle, Ban } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
 interface StatsModalProps {
   isOpen: boolean;
@@ -14,8 +13,6 @@ interface StatsData {
 }
 
 export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +22,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
   const abortControllerRef = useRef<AbortController | null>(null);
   const timerRef = useRef<any>(null);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     // Cancel any previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -38,7 +35,6 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
     setError(null);
     setSecondsElapsed(0);
 
-    // Elapsed timer
     clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setSecondsElapsed((prev) => prev + 1);
@@ -55,26 +51,26 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
       clearInterval(timerRef.current);
     } catch (err: any) {
       if (err.name === "AbortError") {
-        console.log("Stats request was aborted by user or navigation.");
         return;
       }
       setError(err.message || "Failed to load operations metrics");
       setLoading(false);
       clearInterval(timerRef.current);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     fetchStats();
 
     return () => {
-      // Abort when user navigates away or modal unmounts
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
       clearInterval(timerRef.current);
     };
-  }, [retryCount]);
+  }, [isOpen, retryCount, fetchStats]);
 
   const handleCancel = () => {
     if (abortControllerRef.current) {
@@ -89,105 +85,221 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
     setRetryCount((prev) => prev + 1);
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 100,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "rgba(0, 0, 0, 0.45)",
+        backdropFilter: "blur(2px)",
+        padding: "16px"
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: "var(--bg-surface)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "var(--radius-lg)",
+          boxShadow: "var(--shadow-lg)",
+          maxWidth: "520px",
+          width: "100%",
+          overflow: "hidden"
+        }}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+        <div
+          style={{
+            padding: "16px 20px",
+            borderBottom: "1px solid var(--border-subtle)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            backgroundColor: "var(--bg-subtle)"
+          }}
+        >
           <div>
-            <h2 className="text-base font-bold text-slate-900">Slow Stats API (Optional O1)</h2>
-            <p className="text-xs text-slate-500">Deliberately slow 3.5s response with non-blocking UI and cancellation</p>
+            <h2 style={{ fontSize: "16px", fontWeight: 700, color: "var(--text-primary)" }}>
+              Slow Stats Analytics (O1)
+            </h2>
+            <p style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "2px" }}>
+              Live server aggregation across 50,000+ orders
+            </p>
           </div>
           <button
             type="button"
+            className="btn-close-drawer"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 transition"
+            aria-label="Close modal"
           >
-            <X className="w-5 h-5" />
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div style={{ padding: "20px" }}>
           {loading && (
-            <div className="text-center py-8">
-              <div className="w-10 h-10 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-              <p className="text-sm font-semibold text-slate-800">Calculating aggregates across 50,000+ orders...</p>
-              <p className="text-xs text-slate-500 mt-1">Elapsed: {secondsElapsed}s (Simulated server delay: 3.5s)</p>
+            <div style={{ textAlign: "center", padding: "28px 16px" }}>
+              <div
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  border: "3px solid var(--accent-primary)",
+                  borderTopColor: "transparent",
+                  borderRadius: "50%",
+                  margin: "0 auto 12px auto",
+                  animation: "spin 0.8s linear infinite"
+                }}
+              />
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
+                Computing analytics across system records...
+              </p>
+              <p style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "4px" }}>
+                Elapsed: {secondsElapsed}s (Simulated server delay: 3.5s)
+              </p>
 
               <button
                 type="button"
+                className="btn-secondary"
                 onClick={handleCancel}
-                className="mt-4 px-3 py-1.5 rounded-lg border border-rose-300 text-rose-700 hover:bg-rose-50 text-xs font-semibold inline-flex items-center gap-1.5 transition"
+                style={{ marginTop: "16px", fontSize: "11px", color: "#ef4444", borderColor: "#fca5a5" }}
               >
-                <Ban className="w-3.5 h-3.5" />
-                <span>Cancel Request (AbortController)</span>
+                Cancel Request (AbortController)
               </button>
             </div>
           )}
 
           {error && !loading && (
-            <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-center">
-              <AlertCircle className="w-8 h-8 text-rose-500 mx-auto mb-2" />
-              <p className="text-xs font-semibold text-rose-800">{error}</p>
+            <div
+              style={{
+                padding: "16px",
+                backgroundColor: "var(--bg-subtle)",
+                border: "1px solid var(--border-subtle)",
+                borderRadius: "var(--radius-md)",
+                textAlign: "center"
+              }}
+            >
+              <p style={{ fontSize: "12px", fontWeight: 600, color: "#ef4444" }}>{error}</p>
               <button
                 type="button"
+                className="btn-primary"
                 onClick={handleRetry}
-                className="mt-3 px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition"
+                style={{ marginTop: "12px", fontSize: "12px" }}
               >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Retry (One Retry Allowed)</span>
+                Retry
               </button>
             </div>
           )}
 
           {data && !loading && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                  <span className="text-[11px] font-medium text-slate-500 uppercase">Total Revenue</span>
-                  <div className="text-lg font-bold font-mono text-emerald-600">
-                    ${data.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div
+                  style={{
+                    padding: "12px",
+                    backgroundColor: "var(--bg-subtle)",
+                    border: "1px solid var(--border-subtle)",
+                    borderRadius: "var(--radius-md)"
+                  }}
+                >
+                  <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-tertiary)", textTransform: "uppercase" }}>
+                    Total Revenue
+                  </span>
+                  <div
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: 700,
+                      fontFamily: "ui-monospace, monospace",
+                      color: "var(--text-primary)",
+                      marginTop: "4px"
+                    }}
+                  >
+                    {data.totalRevenue.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}{" "}
+                    SAR
                   </div>
                 </div>
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                  <span className="text-[11px] font-medium text-slate-500 uppercase">Average Order</span>
-                  <div className="text-lg font-bold font-mono text-indigo-600">
-                    ${data.averageOrderValue.toFixed(2)}
+
+                <div
+                  style={{
+                    padding: "12px",
+                    backgroundColor: "var(--bg-subtle)",
+                    border: "1px solid var(--border-subtle)",
+                    borderRadius: "var(--radius-md)"
+                  }}
+                >
+                  <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-tertiary)", textTransform: "uppercase" }}>
+                    Average Order
+                  </span>
+                  <div
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: 700,
+                      fontFamily: "ui-monospace, monospace",
+                      color: "var(--accent-text)",
+                      marginTop: "4px"
+                    }}
+                  >
+                    {data.averageOrderValue.toFixed(2)} SAR
                   </div>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Orders by Status</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
-                  <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
-                    <span className="text-amber-800 font-semibold block">Pending</span>
-                    <span className="font-mono font-bold text-slate-800">{data.totalsByStatus.PENDING?.toLocaleString() || 0}</span>
+                <h4 style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "8px" }}>
+                  Orders by Status
+                </h4>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px", textAlign: "center", fontSize: "11px" }}>
+                  <div className="status-badge pending" style={{ flexDirection: "column", padding: "6px 4px", borderRadius: "var(--radius-sm)" }}>
+                    <span style={{ fontSize: "10px" }}>Pending</span>
+                    <strong style={{ fontSize: "13px" }}>{data.totalsByStatus.PENDING?.toLocaleString() || 0}</strong>
                   </div>
-                  <div className="p-2.5 bg-sky-50 border border-sky-200 rounded-lg">
-                    <span className="text-sky-800 font-semibold block">Processing</span>
-                    <span className="font-mono font-bold text-slate-800">{data.totalsByStatus.PROCESSING?.toLocaleString() || 0}</span>
+                  <div className="status-badge processing" style={{ flexDirection: "column", padding: "6px 4px", borderRadius: "var(--radius-sm)" }}>
+                    <span style={{ fontSize: "10px" }}>Processing</span>
+                    <strong style={{ fontSize: "13px" }}>{data.totalsByStatus.PROCESSING?.toLocaleString() || 0}</strong>
                   </div>
-                  <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg">
-                    <span className="text-emerald-800 font-semibold block">Completed</span>
-                    <span className="font-mono font-bold text-slate-800">{data.totalsByStatus.COMPLETED?.toLocaleString() || 0}</span>
+                  <div className="status-badge completed" style={{ flexDirection: "column", padding: "6px 4px", borderRadius: "var(--radius-sm)" }}>
+                    <span style={{ fontSize: "10px" }}>Completed</span>
+                    <strong style={{ fontSize: "13px" }}>{data.totalsByStatus.COMPLETED?.toLocaleString() || 0}</strong>
                   </div>
-                  <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-lg">
-                    <span className="text-rose-800 font-semibold block">Cancelled</span>
-                    <span className="font-mono font-bold text-slate-800">{data.totalsByStatus.CANCELLED?.toLocaleString() || 0}</span>
+                  <div className="status-badge cancelled" style={{ flexDirection: "column", padding: "6px 4px", borderRadius: "var(--radius-sm)" }}>
+                    <span style={{ fontSize: "10px" }}>Cancelled</span>
+                    <strong style={{ fontSize: "13px" }}>{data.totalsByStatus.CANCELLED?.toLocaleString() || 0}</strong>
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end pt-2">
+              <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: "8px" }}>
                 <button
                   type="button"
+                  className="btn-secondary"
                   onClick={handleRetry}
-                  className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 transition inline-flex items-center gap-1.5"
+                  style={{ fontSize: "11px" }}
                 >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Refresh Stats</span>
+                  Refresh Analytics
                 </button>
               </div>
             </div>

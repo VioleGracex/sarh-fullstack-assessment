@@ -7,7 +7,7 @@ import { prisma } from "../src/lib/prisma.js";
 
 async function runDuplicateProof() {
   console.log("==================================================================");
-  console.log("🧪 R2 CONCURRENCY PROOF: PARALLEL DUPLICATE ORDER PREVENTION TEST");
+  console.log("R2 CONCURRENCY PROOF: PARALLEL DUPLICATE ORDER PREVENTION TEST");
   console.log("==================================================================");
 
   // 1. Setup local test server on an ephemeral port
@@ -22,10 +22,10 @@ async function runDuplicateProof() {
   const testPort = address.port;
   const baseUrl = `http://localhost:${testPort}/api/orders`;
 
-  console.log(`📡 Ephemeral test server active on port ${testPort}`);
+  console.log(`Ephemeral test server active on port ${testPort}`);
 
   const idempotencyKey = crypto.randomUUID();
-  console.log(`🔑 Generated Idempotency-Key: ${idempotencyKey}`);
+  console.log(`Generated Idempotency-Key: ${idempotencyKey}`);
 
   const orderPayload = {
     customerName: "Double-Click Customer",
@@ -37,7 +37,7 @@ async function runDuplicateProof() {
     ]
   };
 
-  console.log("\n⚡ STEP 1: Firing 2 IDENTICAL order requests simultaneously in parallel (Promise.all)...");
+  console.log("\nSTEP 1: Firing 2 IDENTICAL order requests simultaneously in parallel (Promise.all)...");
 
   const sendRequest = async (requestId: number) => {
     const start = Date.now();
@@ -65,14 +65,14 @@ async function runDuplicateProof() {
   console.log("   • Request #1:", `HTTP ${res1.status} (${res1.elapsed}ms) - Replayed: ${res1.replayed}`);
   console.log("   • Request #2:", `HTTP ${res2.status} (${res2.elapsed}ms) - Replayed: ${res2.replayed}`);
 
-  console.log("\n⚡ STEP 2: Firing a 3rd request (simulating mobile network retry after order is resolved)...");
+  console.log("\nSTEP 2: Firing a 3rd request (simulating mobile network retry after order is resolved)...");
   // Small pause to ensure first transaction committed
   await new Promise((r) => setTimeout(r, 100));
   const res3 = await sendRequest(3);
   console.log("   • Request #3 (Retry):", `HTTP ${res3.status} (${res3.elapsed}ms) - Replayed: ${res3.replayed}`);
 
   // 2. Query Database directly to verify database state
-  console.log("\n🔍 STEP 3: Verifying Database state directly via Prisma...");
+  console.log("\nSTEP 3: Verifying Database state directly via Prisma...");
   const ordersInDb = await prisma.order.findMany({
     where: { idempotencyKey },
     include: { items: true }
@@ -82,7 +82,7 @@ async function runDuplicateProof() {
 
   // 3. Strict Assertions
   if (ordersInDb.length !== 1) {
-    console.error(`\n❌ FAILED: Expected exactly 1 order in database, but found ${ordersInDb.length}!`);
+    console.error(`\nFAILED: Expected exactly 1 order in database, but found ${ordersInDb.length}!`);
     await prisma.$disconnect();
     await new Promise((r) => server.close(r));
     process.exitCode = 1;
@@ -90,11 +90,11 @@ async function runDuplicateProof() {
   }
 
   const savedOrder = ordersInDb[0];
-  console.log(`\n✅ Verified Order Number: ${savedOrder.orderNumber}`);
-  console.log(`✅ Customer: ${savedOrder.customerName} (${savedOrder.customerEmail})`);
-  console.log(`✅ Order Total: $${savedOrder.totalAmount} (${savedOrder.items.length} line items)`);
+  console.log(`\nVerified Order Number: ${savedOrder.orderNumber}`);
+  console.log(`Verified Customer: ${savedOrder.customerName} (${savedOrder.customerEmail})`);
+  console.log(`Verified Order Total: $${savedOrder.totalAmount} (${savedOrder.items.length} line items)`);
   console.log("==================================================================");
-  console.log("🎉 SUCCESS: EXACTLY ONE ORDER EXISTS IN DATABASE!");
+  console.log("SUCCESS: EXACTLY ONE ORDER EXISTS IN DATABASE!");
   console.log("   • Parallel collision: Deduplicated without creating a second order.");
   console.log("   • Network retry: Safely replayed the original order.");
   console.log("==================================================================\n");

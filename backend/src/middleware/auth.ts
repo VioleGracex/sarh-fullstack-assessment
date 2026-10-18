@@ -18,7 +18,13 @@ declare global {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "sarh-production-secret-2026-super-secure";
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET environment variable is missing");
+  }
+  return secret;
+}
 
 /**
  * Authentication Middleware:
@@ -38,7 +44,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as AuthPayload;
+    const decoded = jwt.verify(token, getJwtSecret()) as AuthPayload;
     req.user = decoded;
     next();
   } catch (error: any) {

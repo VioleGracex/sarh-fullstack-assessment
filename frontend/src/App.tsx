@@ -1,15 +1,60 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Header } from "./components/Header";
-import { RapidFilterTester } from "./components/RapidFilterTester";
+import { StatCards } from "./components/StatCards";
+import { ControlsBar } from "./components/ControlsBar";
 import { OrdersTable } from "./components/OrdersTable";
-import { CreateOrderModal } from "./components/CreateOrderModal";
+import { OrderDrawer } from "./components/OrderDrawer";
+import { OrderDetailDrawer } from "./components/OrderDetailDrawer";
 import { StatsModal } from "./components/StatsModal";
 import { useOrders } from "./hooks/useOrders";
-import type { User } from "./types/order";
-import { CheckCircle2, AlertTriangle } from "lucide-react";
+import type { User, Theme, Density, Order } from "./types/order";
+
+interface ToastItem {
+  id: string;
+  message: string;
+  type: "info" | "success" | "warning" | "error";
+}
 
 export function App() {
-  // Current user & JWT token state (Section 3 Code Review)
+  // 1. THEME & DENSITY PERSISTENCE (Requirement 1)
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem("sarh_theme");
+    return saved === "midnight-obsidian" ? "midnight-obsidian" : "corporate-steel";
+  });
+
+  const [density, setDensity] = useState<Density>(() => {
+    const saved = localStorage.getItem("sarh_density");
+    return saved === "compact" ? "compact" : "comfortable";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("sarh_theme", theme);
+  }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-density", density);
+    localStorage.setItem("sarh_density", density);
+  }, [density]);
+
+  const handleToggleTheme = () => {
+    const nextTheme: Theme = theme === "corporate-steel" ? "midnight-obsidian" : "corporate-steel";
+    setTheme(nextTheme);
+    showToast(
+      nextTheme === "midnight-obsidian"
+        ? "Switched to Dark Mode (Midnight Obsidian)"
+        : "Switched to Light Mode (Corporate Steel)",
+      "info"
+    );
+  };
+
+  const handleToggleDensity = () => {
+    const nextDensity: Density = density === "comfortable" ? "compact" : "comfortable";
+    setDensity(nextDensity);
+    showToast(`Layout density set to ${nextDensity}`, "info");
+  };
+
+  // 2. USER & RBAC STATE (Admin / Agent)
   const [currentUser, setCurrentUser] = useState<User>({
     id: "admin-seed-id",
     email: "admin@sarh.ai",
@@ -17,34 +62,6 @@ export function App() {
   });
   const [authToken, setAuthToken] = useState<string>("");
 
-  // Modals
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isStatsOpen, setIsStatsOpen] = useState(false);
-
-  // Notification Toast
-  const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
-
-  // Core Orders Hook (Handles R1 pagination, search, status filter, sort, and AbortController)
-  const {
-    orders,
-    pagination,
-    loading,
-    error,
-    status,
-    search,
-    sortBy,
-    sortOrder,
-    abortedCount,
-    latestCompletedRequestId,
-    setStatus,
-    setSearch,
-    setPage,
-    setPageSize,
-    toggleSort,
-    refresh
-  } = useOrders({ initialPageSize: 25 });
-
-  // Automatically fetch real JWT token on mount or user switch
   useEffect(() => {
     async function login() {
       try {
@@ -57,7 +74,7 @@ export function App() {
         if (res.ok) {
           const json = await res.json();
           setAuthToken(json.token);
-          setCurrentUser(json.user);
+          if (json.user) setCurrentUser(json.user);
         }
       } catch (err) {
         console.warn("Could not authenticate initial user:", err);
@@ -66,22 +83,60 @@ export function App() {
     login();
   }, [currentUser.email, currentUser.role]);
 
-  const showToast = (message: string, type: "success" | "error" = "success") => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 4000);
-  };
-
   const handleSwitchUser = (newRole: "ADMIN" | "AGENT") => {
     if (newRole === "ADMIN") {
       setCurrentUser({ id: "admin-id", email: "admin@sarh.ai", role: "ADMIN" });
-      showToast("Switched to Admin role (Full permissions, can delete orders)", "success");
+      showToast("Switched to Admin role (Delete permissions active)", "success");
     } else {
       setCurrentUser({ id: "agent-id", email: "agent@sarh.ai", role: "AGENT" });
-      showToast("Switched to Agent role (Delete operations restricted by server RBAC)", "success");
+      showToast("Switched to Agent role (Standard operations)", "info");
     }
   };
 
-  // Section 3: Delete order with server-enforced RBAC
+  // 3. TOAST NOTIFICATIONS
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  const showToast = useCallback((message: string, type: "info" | "success" | "warning" | "error" = "info") => {
+    const id = `${Date.now()}-${Math.random()}`;
+    setToasts((prev) => [...prev, { id, message, type }]);
+
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3800);
+  }, []);
+
+  const handleCopyText = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast(`Copied ${text} to clipboard`, "info");
+    });
+  };
+
+  // 4. ORDERS HOOK (Silent AbortController R1 + Stable SystemStats R3)
+  const {
+    orders,
+    pagination,
+    systemStats,
+    loading,
+    error,
+    status,
+    search,
+    sortBy,
+    sortOrder,
+    setStatus,
+    setSearch,
+    setPage,
+    setPageSize,
+    toggleSort,
+    applySort,
+    refresh
+  } = useOrders({ initialPageSize: 25 });
+
+  // 5. DRAWERS & MODALS STATE
+  const [isOrderDrawerOpen, setIsOrderDrawerOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+
+  // 6. DELETE ORDER (Server RBAC)
   const handleDeleteOrder = async (orderId: string, orderNumber: string) => {
     if (!confirm(`Are you sure you want to delete order ${orderNumber}? This action is protected by server-side RBAC.`)) {
       return;
@@ -100,110 +155,153 @@ export function App() {
         throw new Error(json.message || json.error || "Failed to delete order");
       }
 
-      showToast(`Order ${orderNumber} deleted successfully by ${currentUser.role}.`, "success");
+      showToast(`Order ${orderNumber} deleted successfully.`, "success");
       refresh();
     } catch (err: any) {
       showToast(err.message, "error");
     }
   };
 
+  const handleResetFilters = () => {
+    setStatus("ALL");
+    setSearch("");
+    applySort("createdAt", "desc");
+    showToast("Filters reset to default view", "info");
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
-      {/* Top Header */}
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      {/* Top Appearance Toolbar & Main Branding Header */}
       <Header
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
         currentUser={currentUser}
         onSwitchUser={handleSwitchUser}
-        onOpenCreateModal={() => setIsCreateOpen(true)}
-        onOpenStatsModal={() => setIsStatsOpen(true)}
-        totalOrders={pagination.totalRecords}
+        onOpenStatsModal={() => setIsStatsModalOpen(true)}
+        totalOrders={systemStats.totalSystemRecords}
       />
 
-      {/* Main Workspace Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Floating Toast Notification */}
-        {notification && (
-          <div
-            className={`mb-4 p-3.5 rounded-xl border flex items-center gap-2.5 text-xs font-semibold shadow-sm animate-in fade-in slide-in-from-top-2 duration-200 ${
-              notification.type === "success"
-                ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                : "bg-rose-50 border-rose-200 text-rose-800"
-            }`}
-          >
-            {notification.type === "success" ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            ) : (
-              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-            )}
-            <span>{notification.message}</span>
-          </div>
-        )}
-
-        {/* Global Error Notice */}
+      {/* Main Workspace Layout */}
+      <main className="app-main">
+        {/* Global Error Banner if any */}
         {error && (
-          <div className="mb-4 p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-              <span>{error}</span>
-            </div>
+          <div
+            style={{
+              padding: "12px 18px",
+              backgroundColor: "var(--badge-cancelled-bg)",
+              border: "1px solid var(--badge-cancelled-border)",
+              borderRadius: "var(--radius-md)",
+              color: "var(--badge-cancelled-text)",
+              fontSize: "13px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between"
+            }}
+          >
+            <span>{error}</span>
             <button
+              type="button"
+              className="btn-secondary"
               onClick={refresh}
-              className="px-3 py-1 bg-rose-600 text-white rounded-md font-bold hover:bg-rose-700 transition"
+              style={{ padding: "4px 10px", fontSize: "11px" }}
             >
               Retry
             </button>
           </div>
         )}
 
-        {/* R1 Rapid Filter Tester & Live Telemetry Monitor */}
-        <RapidFilterTester
-          currentStatus={status}
+        {/* 1. 4 KPI Summary Cards (Requirement 4 & 3 - Never fluctuate on filter) */}
+        <StatCards systemStats={systemStats} />
+
+        {/* 2. Controls Bar (Status Tabs, Search, Sort, Density, Register Button) */}
+        <ControlsBar
+          status={status}
           onSelectStatus={setStatus}
-          abortedCount={abortedCount}
-          latestRequestId={latestCompletedRequestId}
-          loading={loading}
+          systemStats={systemStats}
+          search={search}
+          onSearchChange={setSearch}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={applySort}
+          density={density}
+          onToggleDensity={handleToggleDensity}
+          onResetFilters={handleResetFilters}
+          onOpenCreateDrawer={() => setIsOrderDrawerOpen(true)}
         />
 
-        {/* Orders Table */}
+        {/* 3. Orders Table with Copy, Customer details, Badges, and Registered total in footer */}
         <OrdersTable
           orders={orders}
           pagination={pagination}
+          systemTotal={systemStats.totalSystemRecords}
           loading={loading}
-          search={search}
           sortBy={sortBy}
           sortOrder={sortOrder}
           currentUser={currentUser}
-          onSearchChange={setSearch}
           onSortToggle={toggleSort}
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
+          onViewOrder={(order) => setSelectedOrder(order)}
           onDeleteOrder={handleDeleteOrder}
+          onCopyText={handleCopyText}
         />
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-4 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
-          <span>SARH Business Solutions • Orders Console Technical Assessment V2</span>
-          <span className="font-mono text-[11px] text-slate-400">
-            Node.js + Express + Prisma + SQLite (50,000+ Indexed Rows) • React 18+ Vite
-          </span>
-        </div>
-      </footer>
-
-      {/* Modals */}
-      <CreateOrderModal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        onOrderCreated={() => {
-          showToast("Order created successfully!", "success");
+      {/* Slide-over Drawers & Modals */}
+      <OrderDrawer
+        isOpen={isOrderDrawerOpen}
+        onClose={() => setIsOrderDrawerOpen(false)}
+        onOrderCreated={(orderNum) => {
+          showToast(`Order ${orderNum} created with verified Idempotency Key!`, "success");
           refresh();
         }}
       />
 
-      <StatsModal
-        isOpen={isStatsOpen}
-        onClose={() => setIsStatsOpen(false)}
+      <OrderDetailDrawer
+        order={selectedOrder}
+        onClose={() => setSelectedOrder(null)}
       />
+
+      <StatsModal
+        isOpen={isStatsModalOpen}
+        onClose={() => setIsStatsModalOpen(false)}
+      />
+
+      {/* Toast Notification Container */}
+      <div className="toast-container" id="toastContainer">
+        {toasts.map((toast) => (
+          <div key={toast.id} className={`toast toast-${toast.type} show`}>
+            {toast.type === "success" && (
+              <svg className="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            )}
+            {toast.type === "warning" && (
+              <svg className="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            )}
+            {toast.type === "error" && (
+              <svg className="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+              </svg>
+            )}
+            {toast.type === "info" && (
+              <svg className="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            )}
+            <span>{toast.message}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
