@@ -10,6 +10,21 @@
 
 ---
 
+# [1.0.7] — Profile Dropdown Menu & Consolidated Logout Action
+Date: 2026-10-18 | Session Timer: 1h 26m
+
+## Added
+- Interactive Profile Dropdown Menu in `Header.tsx`: Clicking the user profile avatar/name opens an anchored dropdown displaying active user email, current role badge, "Switch User / Re-login" action, and "Log Out" action.
+- Outside-click & ESC key dismiss listeners to automatically close the menu when clicking elsewhere.
+- Removed the naked standalone "Log Out" button from the main header toolbar for a cleaner, enterprise-standard top bar.
+
+## Files Affected
+- `frontend/src/components/Header.tsx`
+- `frontend/src/index.css`
+- `devlog/CHANGELOG.md`
+
+---
+
 # [1.0.6] — Header Telemetry Cleanup (Removed Redundant Order Count)
 Date: 2026-10-18 | Session Timer: 1h 21m
 
