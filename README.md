@@ -86,10 +86,8 @@ Below are the 5 vulnerabilities and flaws identified in the legacy contractor sn
    - *Problem:* The endpoint comment stated `// admin check is done in the React AdminOnly component`. Relying on client-side UI checks means any authenticated agent or external attacker with `curl`/Postman can invoke `DELETE /api/orders/:id` directly and delete records (OWASP A01: Broken Access Control).
    - *Fix:* Implemented server-side `requireRole("ADMIN")` middleware directly on the Express route, returning `HTTP 403 Forbidden` if a non-admin attempts deletion.
 
-### Token Storage Reasoning
-*In our client implementation, tokens are held in React memory (`useState`) and transmitted via `Authorization: Bearer <token>` headers (with httpOnly cookie support as the production target).*  
-**Protection:** Storing tokens in memory protects completely against **Cross-Site Request Forgery (CSRF)** because browsers never attach memory tokens automatically to cross-origin requests.  
-**Limitation:** It does not protect against arbitrary **Cross-Site Scripting (XSS)** if malicious third-party scripts execute in the page; in a production multi-tenant app, `httpOnly`, `Secure`, `SameSite=Strict` cookies paired with CSRF tokens provide the best defense-in-depth against XSS token exfiltration.
+### Token Storage Reasoning (Section 3 Requirement)
+Tokens are stored strictly in client-side React memory (`useState`) and transmitted via standard `Authorization: Bearer <token>` headers. This choice protects against Cross-Site Request Forgery (CSRF) because browsers never automatically attach in-memory tokens to cross-origin requests. However, it does not protect against Cross-Site Scripting (XSS)—if malicious JavaScript executes in the page context, in-memory tokens can still be intercepted.
 
 ---
 
