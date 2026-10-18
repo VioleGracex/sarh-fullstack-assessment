@@ -2,8 +2,8 @@
 
 A high-performance, concurrency-resilient full-stack web application designed for e-commerce customer operations teams to manage 50,000+ orders without lag or duplicate entries.
 
-> 🛡️ **Technical Provenance & Architectural Dossier:**  
-> To inspect how each core requirement (Idempotency Key locking, SQLite B-Tree indexing, `AbortController` cancellation, and Zod validation) is directly grounded in systems I previously architected and shipped prior to this assessment, please open the interactive [Candidate Technical Precedents Dossier (`ARCHEOLOGY.html`)](./ARCHEOLOGY.html) in your browser.
+> **Technical Provenance & Architectural Dossier:**  
+> To inspect how each core requirement (Idempotency Key locking, SQLite B-Tree indexing, `AbortController` cancellation, and Zod validation) is directly grounded in systems I previously architected and shipped prior to this assessment, please open the interactive [Candidate Technical Precedents Dossier (`TECHNICAL_PRECEDENTS.html`)](./TECHNICAL_PRECEDENTS.html) in your browser.
 
 ---
 
@@ -118,3 +118,24 @@ Tokens are stored strictly in client-side React memory (`useState`) and transmit
    Tailwind CSS was used instead to keep the bundle lightweight, transparent, and completely free of third-party CSS bloat.
 4. **Dedicated Full-Page Order Route (`/orders/new`):**  
    Implemented as an in-context slide-over drawer to optimize build time and provide fast phone order entry without losing table context or search/filter state. As noted in `DECISIONS.md`, for complex enterprise B2B company workflows with 20+ line items and documents, a dedicated `/orders/new` page would be preferred, but was scoped down to the drawer given the lightweight phone intake brief.
+
+---
+
+## 6. Real-World Production Roadmap (What I Would Add Next)
+
+If this console were being deployed into a live enterprise operations environment, here is what I would build next:
+
+1. **Dedicated Desktop Client (Electron) for Operations Desks:**  
+   - Package the React console into an **Electron** desktop app for call center and back-office agents.  
+   - Provides global system keyboard shortcuts (e.g. `Ctrl+Shift+N` for instant phone intake from any screen), direct integration with USB/Bluetooth thermal receipt & shipping label printers, and in-app telemetry to gather agent usability feedback on daily workflows.
+
+2. **Native Mobile App (Capacitor) for Warehouse & Floor Operations:**  
+   - Wrap the existing responsive React codebase with **Capacitor** to ship native iOS and Android apps for warehouse floor supervisors and roaming intake staff.  
+   - Unlocks native hardware camera barcode/QR scanning (or integration with Zebra handheld scanners), tactile haptic feedback on successful order creation, biometric authentication (FaceID/TouchID), and instant push notifications for urgent order cancellations.
+
+3. **Real-Time Event Streaming (WebSockets / SSE):**  
+   - Implement Server-Sent Events (SSE) or WebSockets so when one agent logs a new phone order, all other connected consoles reflect the new entry immediately without manual page refreshes.
+
+4. **Immutable Audit Logging & Regulatory Compliance:**  
+   - Implement an append-only audit log tracking every agent mutation (status changes, soft-deletes, restorations) with user IDs and timestamps to comply with accounting standards and e-invoicing audit regulations (e.g. ZATCA).
+
