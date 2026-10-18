@@ -6,7 +6,6 @@ interface HeaderProps {
   onToggleTheme: () => void;
   currentUser: User;
   onSwitchUser: (role: "ADMIN" | "AGENT") => void;
-  onOpenStatsModal: () => void;
   totalOrders: number;
 }
 
@@ -15,7 +14,6 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleTheme,
   currentUser,
   onSwitchUser,
-  onOpenStatsModal,
   totalOrders
 }) => {
   const isDark = theme === "midnight-obsidian";
@@ -25,30 +23,6 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Top Appearance Toolbar */}
       <header className="theme-toolbar">
         <div className="toolbar-left">
-          <div className="toolbar-label">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-            <span>Appearance Mode:</span>
-          </div>
-
           <button
             type="button"
             className="mode-toggle-btn"
@@ -94,32 +68,15 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </span>
             <span id="modeTextLabel">
-              {isDark ? "Dark Mode (Midnight Obsidian)" : "Light Mode (Corporate Steel)"}
+              {isDark ? "Dark Mode" : "Light Mode"}
             </span>
           </button>
         </div>
 
         <div className="toolbar-right">
-          <button
-            type="button"
-            className="btn-toolbar"
-            onClick={onOpenStatsModal}
-            title="Inspect background analytics"
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-            </svg>
-            <span>Slow Stats API (O1)</span>
-          </button>
+          <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
+            Operations Console v2.0
+          </span>
         </div>
       </header>
 
@@ -169,41 +126,49 @@ export const Header: React.FC<HeaderProps> = ({
               padding: "2px"
             }}
           >
+            <span
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "var(--text-tertiary)",
+                padding: "0 8px"
+              }}
+            >
+              Active Role:
+            </span>
             <button
               type="button"
               onClick={() => onSwitchUser("ADMIN")}
               style={{
-                background: currentUser.role === "ADMIN" ? "var(--bg-surface)" : "none",
-                color: currentUser.role === "ADMIN" ? "var(--accent-text)" : "var(--text-secondary)",
+                background: currentUser.role === "ADMIN" ? "var(--accent-primary)" : "none",
+                color: currentUser.role === "ADMIN" ? "#ffffff" : "var(--text-secondary)",
                 border: "none",
                 borderRadius: "var(--radius-sm)",
                 padding: "4px 10px",
                 fontSize: "11px",
                 fontWeight: 700,
                 cursor: "pointer",
-                boxShadow: currentUser.role === "ADMIN" ? "var(--shadow-sm)" : "none",
                 transition: "all var(--transition-fast)"
               }}
             >
-              Admin Role
+              Admin
             </button>
             <button
               type="button"
               onClick={() => onSwitchUser("AGENT")}
               style={{
-                background: currentUser.role === "AGENT" ? "var(--bg-surface)" : "none",
-                color: currentUser.role === "AGENT" ? "var(--accent-text)" : "var(--text-secondary)",
+                background: currentUser.role === "AGENT" ? "var(--accent-primary)" : "none",
+                color: currentUser.role === "AGENT" ? "#ffffff" : "var(--text-secondary)",
                 border: "none",
                 borderRadius: "var(--radius-sm)",
                 padding: "4px 10px",
                 fontSize: "11px",
                 fontWeight: 700,
                 cursor: "pointer",
-                boxShadow: currentUser.role === "AGENT" ? "var(--shadow-sm)" : "none",
                 transition: "all var(--transition-fast)"
               }}
             >
-              Agent Role
+              Agent
             </button>
           </div>
 
@@ -224,10 +189,8 @@ export const Header: React.FC<HeaderProps> = ({
               </svg>
             </div>
             <div className="user-meta">
-              <div className="name">
-                {currentUser.role === "ADMIN" ? "Tariq Al-Harbi (Admin)" : "Operations Agent"}
-              </div>
-              <div className="dept">Operations Team · Shift 1</div>
+              <div className="name">{currentUser.email}</div>
+              <div className="dept">{currentUser.role === "ADMIN" ? "Operations Manager" : "Order Intake Agent"}</div>
             </div>
           </div>
         </div>

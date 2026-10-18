@@ -5,7 +5,6 @@ import { ControlsBar } from "./components/ControlsBar";
 import { OrdersTable } from "./components/OrdersTable";
 import { OrderDrawer } from "./components/OrderDrawer";
 import { OrderDetailDrawer } from "./components/OrderDetailDrawer";
-import { StatsModal } from "./components/StatsModal";
 import { useOrders } from "./hooks/useOrders";
 import type { User, Theme, Density, Order } from "./types/order";
 
@@ -16,7 +15,7 @@ interface ToastItem {
 }
 
 export function App() {
-  // 1. THEME & DENSITY PERSISTENCE (Requirement 1)
+  // 1. THEME & DENSITY PERSISTENCE
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem("sarh_theme");
     return saved === "midnight-obsidian" ? "midnight-obsidian" : "corporate-steel";
@@ -42,8 +41,8 @@ export function App() {
     setTheme(nextTheme);
     showToast(
       nextTheme === "midnight-obsidian"
-        ? "Switched to Dark Mode (Midnight Obsidian)"
-        : "Switched to Light Mode (Corporate Steel)",
+        ? "Switched to Dark Mode"
+        : "Switched to Light Mode",
       "info"
     );
   };
@@ -62,56 +61,22 @@ export function App() {
   });
   const [authToken, setAuthToken] = useState<string>("");
 
-  useEffect(() => {
-    async function login() {
-      try {
-        const password = currentUser.role === "ADMIN" ? "admin123" : "agent123";
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: currentUser.email, password })
-        });
-        if (res.ok) {
-          const json = await res.json();
-          setAuthToken(json.token);
-          if (json.user) setCurrentUser(json.user);
-        }
-      } catch (err) {
-        console.warn("Could not authenticate initial user:", err);
-      }
-    }
-    login();
-  }, [currentUser.email, currentUser.role]);
+  // Slide-over Drawers state
+  const [isOrderDrawerOpen, setIsOrderDrawerOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  const handleSwitchUser = (newRole: "ADMIN" | "AGENT") => {
-    if (newRole === "ADMIN") {
-      setCurrentUser({ id: "admin-id", email: "admin@sarh.ai", role: "ADMIN" });
-      showToast("Switched to Admin role (Delete permissions active)", "success");
-    } else {
-      setCurrentUser({ id: "agent-id", email: "agent@sarh.ai", role: "AGENT" });
-      showToast("Switched to Agent role (Standard operations)", "info");
-    }
-  };
-
-  // 3. TOAST NOTIFICATIONS
+  // In-page Toast Notifications
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const showToast = useCallback((message: string, type: "info" | "success" | "warning" | "error" = "info") => {
     const id = `${Date.now()}-${Math.random()}`;
     setToasts((prev) => [...prev, { id, message, type }]);
-
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3800);
   }, []);
 
-  const handleCopyText = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      showToast(`Copied ${text} to clipboard`, "info");
-    });
-  };
-
-  // 4. ORDERS HOOK (Silent AbortController R1 + Stable SystemStats R3)
+  // 3. CORE ORDERS HOOK (Silent AbortController Race Condition Defense + System Stats)
   const {
     orders,
     pagination,
@@ -131,12 +96,42 @@ export function App() {
     refresh
   } = useOrders({ initialPageSize: 25 });
 
-  // 5. DRAWERS & MODALS STATE
-  const [isOrderDrawerOpen, setIsOrderDrawerOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+  // Sync authentication token with role
+  useEffect(() => {
+    async function login() {
+      try {
+        const password =
+          currentUser.role === "ADMIN"
+            ? (import.meta.env.VITE_ADMIN_PASSWORD || "")
+            : (import.meta.env.VITE_AGENT_PASSWORD || "");
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: currentUser.email, password })
+        });
+        if (res.ok) {
+          const json = await res.json();
+          setAuthToken(json.token);
+          setCurrentUser(json.user);
+        }
+      } catch (err) {
+        console.warn("Could not authenticate initial user:", err);
+      }
+    }
+    login();
+  }, [currentUser.email, currentUser.role]);
 
-  // 6. DELETE ORDER (Server RBAC)
+  const handleSwitchUser = (newRole: "ADMIN" | "AGENT") => {
+    if (newRole === "ADMIN") {
+      setCurrentUser({ id: "admin-id", email: "admin@sarh.ai", role: "ADMIN" });
+      showToast("Switched to Admin role (Delete operations allowed)", "info");
+    } else {
+      setCurrentUser({ id: "agent-id", email: "agent@sarh.ai", role: "AGENT" });
+      showToast("Switched to Agent role (Delete operations blocked by server RBAC)", "warning");
+    }
+  };
+
+  // Section 3: Delete order protected by server-side RBAC
   const handleDeleteOrder = async (orderId: string, orderNumber: string) => {
     if (!confirm(`Are you sure you want to delete order ${orderNumber}? This action is protected by server-side RBAC.`)) {
       return;
@@ -155,11 +150,16 @@ export function App() {
         throw new Error(json.message || json.error || "Failed to delete order");
       }
 
-      showToast(`Order ${orderNumber} deleted successfully.`, "success");
+      showToast(`Order ${orderNumber} deleted successfully by ${currentUser.role}.`, "success");
       refresh();
     } catch (err: any) {
       showToast(err.message, "error");
     }
+  };
+
+  const handleCopyText = (text: string, label = "order number") => {
+    navigator.clipboard.writeText(text);
+    showToast(`Copied ${label} to clipboard`, "info");
   };
 
   const handleResetFilters = () => {
@@ -177,7 +177,6 @@ export function App() {
         onToggleTheme={handleToggleTheme}
         currentUser={currentUser}
         onSwitchUser={handleSwitchUser}
-        onOpenStatsModal={() => setIsStatsModalOpen(true)}
         totalOrders={systemStats.totalSystemRecords}
       />
 
@@ -210,7 +209,7 @@ export function App() {
           </div>
         )}
 
-        {/* 1. 4 KPI Summary Cards (Requirement 4 & 3 - Never fluctuate on filter) */}
+        {/* 1. 4 KPI Summary Cards (Never fluctuate on filter) */}
         <StatCards systemStats={systemStats} />
 
         {/* 2. Controls Bar (Status Tabs, Search, Sort, Density, Register Button) */}
@@ -247,7 +246,7 @@ export function App() {
         />
       </main>
 
-      {/* Slide-over Drawers & Modals */}
+      {/* Slide-over Drawers */}
       <OrderDrawer
         isOpen={isOrderDrawerOpen}
         onClose={() => setIsOrderDrawerOpen(false)}
@@ -262,11 +261,6 @@ export function App() {
         onClose={() => setSelectedOrder(null)}
       />
 
-      <StatsModal
-        isOpen={isStatsModalOpen}
-        onClose={() => setIsStatsModalOpen(false)}
-      />
-
       {/* Toast Notification Container */}
       <div className="toast-container" id="toastContainer">
         {toasts.map((toast) => (
@@ -275,6 +269,13 @@ export function App() {
               <svg className="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            )}
+            {toast.type === "info" && (
+              <svg className="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
               </svg>
             )}
             {toast.type === "warning" && (
@@ -289,13 +290,6 @@ export function App() {
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="15" y1="9" x2="9" y2="15"></line>
                 <line x1="9" y1="9" x2="15" y2="15"></line>
-              </svg>
-            )}
-            {toast.type === "info" && (
-              <svg className="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
               </svg>
             )}
             <span>{toast.message}</span>
