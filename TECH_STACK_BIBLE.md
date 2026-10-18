@@ -11,14 +11,14 @@
 
 | Area | APPROVED & REQUIRED | STRICTLY FORBIDDEN / WHAT NOT TO DO |
 |---|---|---|
-| **Role Scope** | **Junior requirements only** (R1, R2, Code Review, DECISIONS.md, README.md) | ❌ **DO NOT write `SCALE.md`** (Design memo is for Senior applicants only). |
-| **Database** | **SQLite (file-backed real database via Prisma ORM)**. Real tables, foreign keys, B-tree indexes, transactions. | ❌ **NO in-memory arrays or mock databases** (Explicitly rejected: *"In-memory is not acceptable"*).<br>❌ **NO complex cloud-hosted databases** requiring external credentials. |
-| **Backend** | **Node.js (Express + TypeScript)**. Clean REST API. | ❌ **NO non-Node backends** (No Python/Django, Go, Java).<br>❌ **NO bloated, over-engineered architectures** you cannot modify live during the interview. |
-| **Frontend** | **React 18+ with TypeScript (Vite)** + Tailwind CSS for clean layout. | ❌ **NO Vue, Angular, Svelte, or vanilla JS**.<br>❌ **NO massive UI component libraries** (e.g. AntD, MUI) that bloat bundle or hide logic. |
-| **Services / Hosting** | **100% Local execution**. Must boot cleanly from README commands in under 5 minutes. | ❌ **NO paid services or external third-party dependencies** (No paid SaaS APIs, no AWS/GCP setups). |
-| **Secrets & Config** | Commit `.env.example`. Seeded passwords plain in README. | ❌ **NEVER commit a real `.env` file** to git. |
-| **AI Usage** | **Allowed & expected**. Must be fully disclosed in `DECISIONS.md`. | ❌ **DO NOT hide AI use**. Evaluators read `DECISIONS.md` first and test code understanding live. |
-| **Visual Design** | Clean, readable, functional dashboard UI. | ❌ **NO spending hours on pixel-perfect CSS**. The rubric says: *"What it does not need: pixel-perfect design, Docker, full test coverage."* |
+| **Role Scope** | **Junior requirements only** (R1, R2, Code Review, DECISIONS.md, README.md) | **DO NOT write `SCALE.md`** (Design memo is for Senior applicants only). |
+| **Database** | **SQLite (file-backed real database via Prisma ORM)**. Real tables, foreign keys, B-tree indexes, transactions. | **NO in-memory arrays or mock databases** (Explicitly rejected: *"In-memory is not acceptable"*).<br>**NO complex cloud-hosted databases** requiring external credentials. |
+| **Backend** | **Node.js (Express + TypeScript)**. Clean REST API. | **NO non-Node backends** (No Python/Django, Go, Java).<br>**NO bloated, over-engineered architectures** you cannot modify live during the interview. |
+| **Frontend** | **React 18+ with TypeScript (Vite)** + Tailwind CSS for clean layout. | **NO Vue, Angular, Svelte, or vanilla JS**.<br>**NO massive UI component libraries** (e.g. AntD, MUI) that bloat bundle or hide logic. |
+| **Services / Hosting** | **100% Local execution**. Must boot cleanly from README commands in under 5 minutes. | **NO paid services or external third-party dependencies** (No paid SaaS APIs, no AWS/GCP setups). |
+| **Secrets & Config** | Commit `.env.example`. Seeded passwords plain in README. | **NEVER commit a real `.env` file** to git. |
+| **AI Usage** | **Allowed & expected**. Must be fully disclosed in `DECISIONS.md`. | **DO NOT hide AI use**. Evaluators read `DECISIONS.md` first and test code understanding live. |
+| **Visual Design** | Clean, readable, functional dashboard UI. | **NO spending hours on pixel-perfect CSS**. The rubric says: *"What it does not need: pixel-perfect design, Docker, full test coverage."* |
 
 ---
 

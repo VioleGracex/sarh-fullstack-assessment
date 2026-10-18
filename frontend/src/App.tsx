@@ -157,9 +157,9 @@ export function App() {
     }
   };
 
-  const handleCopyText = (text: string, label = "order number") => {
+  const handleCopyText = (text: string, label?: string) => {
     navigator.clipboard.writeText(text);
-    showToast(`Copied ${label} to clipboard`, "info");
+    showToast(`Copied ${label || "order number"} to clipboard`, "info");
   };
 
   const handleResetFilters = () => {
