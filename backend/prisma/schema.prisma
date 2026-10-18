@@ -1,0 +1,58 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String   @default("AGENT") // "ADMIN" | "AGENT"
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id             String      @id @default(uuid())
+  orderNumber    String      @unique
+  customerName   String
+  customerEmail  String
+  status         String      @default("PENDING") // "PENDING" | "PROCESSING" | "COMPLETED" | "CANCELLED"
+  totalAmount    Float
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  items          OrderItem[]
+  idempotencyKey String?     @unique
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([totalAmount])
+  @@index([customerEmail])
+  @@index([customerName])
+}
+
+model OrderItem {
+  id          String @id @default(uuid())
+  orderId     String
+  order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productName String
+  quantity    Int
+  unitPrice   Float
+  subtotal    Float
+
+  @@index([orderId])
+}
+
+model IdempotencyRecord {
+  key          String   @id
+  status       String   // "PROCESSING" | "RESOLVED" | "FAILED"
+  statusCode   Int?
+  responseBody String?  // Cached JSON response string
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+
+  @@index([expiresAt])
+}
