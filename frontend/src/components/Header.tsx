@@ -9,6 +9,7 @@ interface HeaderProps {
   onOpenLoginModal: () => void;
   onLogout: () => void;
   totalOrders?: number;
+  onOpenStatsModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,7 +18,8 @@ export const Header: React.FC<HeaderProps> = ({
   currentUser,
   onSwitchUser,
   onOpenLoginModal,
-  onLogout
+  onLogout,
+  onOpenStatsModal
 }) => {
   const isDark = theme === "midnight-obsidian";
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -97,7 +99,30 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        <div className="toolbar-right">
+        <div className="toolbar-right" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {onOpenStatsModal && (
+            <button
+              type="button"
+              className="btn-toolbar"
+              onClick={onOpenStatsModal}
+              title="Open Deep Analytics (O1 Slow Stats API)"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "3px 10px",
+                fontSize: "11px",
+                borderRadius: "var(--radius-sm)"
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <span>Slow Stats API (O1)</span>
+            </button>
+          )}
           <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
             Operations Console v2.0
           </span>
@@ -295,6 +320,33 @@ export const Header: React.FC<HeaderProps> = ({
                       </svg>
                       <span>Switch User / Re-login</span>
                     </button>
+
+                    {onOpenStatsModal && (
+                      <button
+                        type="button"
+                        className="dropdown-item-btn"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          onOpenStatsModal();
+                        }}
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <line x1="18" y1="20" x2="18" y2="10"></line>
+                          <line x1="12" y1="20" x2="12" y2="4"></line>
+                          <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                        <span>Slow Stats API (O1)</span>
+                      </button>
+                    )}
 
                     <div className="dropdown-divider"></div>
 

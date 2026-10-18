@@ -1,12 +1,51 @@
 # Development Changelog — SARH Orders Console
 **صرح لحلول الأعمال | SARH Business Solutions**
 
-> **Session Time Tracker (Strict Stopwatch / User Timer Sync):**
-> - **Session Start:** 15:30 (+03:00)
-> - **Actual Timer Elapsed:** 1 hour 21 minutes (`01:21:00`)
-> - **Hard Assessment Budget Limit:** 5 hours max (`05:00:00`)
-> - **Strict Time Remaining:** 3 hours 39 minutes (`03:39:00`)
-> - **Budget Integrity:** Active & Under Budget — strictly tracked against user stopwatch, zero inflated estimates.
+> **Assessment Time Budget Status:**
+> - **Session Start Time:** 15:30 (+03:00)
+> - **Current PC Clock:** 16:59 (+03:00)
+> - **Total Session Elapsed:** ~1 hour 29 minutes (`01:29:00`)
+> - **Take-Home Hard Time Limit:** 5 hours max (`05:00:00`)
+> - **Remaining Budget:** ~3 hours 31 minutes (`03:31:00`)
+> - **Assessment Pacing:** Comfortable & Ahead of Schedule (~70% budget remaining with 100% core + optional O1 complete)
+
+---
+
+## ⏱️ Master Feature Time-Tracking Ledger
+
+| Timestamp (PC Local) | Commit | Feature / Functionality Added | Scope |
+| :--- | :--- | :--- | :--- |
+| **15:49:47** | `f63b40c` | Prisma SQLite schema, 5 B-tree indexes, 50,000 orders seed script | Core / DB |
+| **15:49:53** | `ed7ee19` | Express REST API, R2 IdempotencyKey locking, Section 3 RBAC auth | Core / Backend |
+| **15:49:58** | `5ebd7df` | Automated R2 duplicate prevention parallel proof test (`duplicate.test.ts`) | Core / Tests |
+| **15:50:05** | `81c7fd0` | React 18 frontend console, R1 AbortController race condition guard | Core / Frontend |
+| **15:50:17** | `31cbca8` | Comprehensive `README.md`, `DECISIONS.md`, and AI tools disclosure | Core / Docs |
+| **16:11:13** | `3572c4b` | Enterprise design system, light/dark themes, slide-over drawer, telemetry | UI / UX |
+| **16:15:57** | `e40272f` | Simplified theme labels to clean Dark/Light Mode, removed debug widgets | UI / Polish |
+| **16:18:20** | `21cb744` | Security audit: zero plain-text passwords, env credentials loading | Security |
+| **16:29:00** | `2602067` | In-app Login/Switch User modal, user logout, high-contrast spacious pagination | Auth / UI |
+| **16:33:47** | `43da744` | In-app `ConfirmModal` for deletion, enforced global zero-alert rule | UX / Guardrails |
+| **16:44:38** | `3c52545` | In-toast Undo action, select-all on page, floating bulk actions bar, `db:reset` script, 29 unit tests | Features / QA |
+| **16:49:07** | `361a7e6` | Smooth animated count-up for KPI cards and header badge on load/refresh | UX / Polish |
+| **16:53:18** | `94e58c7` | Header telemetry cleanup: removed redundant order count from Operations Live pill | UX / Polish |
+| **16:55:19** | `1f4731c` | Interactive Profile Dropdown Menu with click-outside dismiss & consolidated logout | UX / Enterprise |
+| **16:58:30** | `Pending` | Re-enabled Optional O1: Slow Stats API with AbortController, countdown timer, and Deep Analytics Modal | Optional / O1 |
+
+---
+
+# [1.0.8] — Re-enabled Optional O1: Slow Stats API & Deep Analytics Modal
+Date: 2026-10-18 | Session Timer: 1h 29m
+
+## Added
+- Re-enabled **Optional Requirement O1 (The Slow Stats API)**:
+  - Backend: `GET /api/orders/stats` with deliberate 3.5s delay computing live `groupBy` status totals, total revenue sum, and average order value across 50,000+ orders.
+  - Frontend: `StatsModal.tsx` accessible from the top toolbar ("Slow Stats API (O1)") and within the Profile Dropdown menu.
+  - Features real-time request elapsed timer, animated spinner, interactive AbortController cancellation button, and Retry on demand.
+
+## Files Affected
+- `frontend/src/components/Header.tsx`
+- `frontend/src/App.tsx`
+- `devlog/CHANGELOG.md`
 
 ---
 

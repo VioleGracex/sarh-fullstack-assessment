@@ -7,6 +7,7 @@ import { OrderDrawer } from "./components/OrderDrawer";
 import { OrderDetailDrawer } from "./components/OrderDetailDrawer";
 import { LoginModal } from "./components/LoginModal";
 import { ConfirmModal } from "./components/ConfirmModal";
+import { StatsModal } from "./components/StatsModal";
 import { useOrders } from "./hooks/useOrders";
 import type { User, Theme, Density, Order, OrderStatus } from "./types/order";
 
@@ -78,6 +79,7 @@ export function App() {
   // Slide-over Drawers state
   const [isOrderDrawerOpen, setIsOrderDrawerOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
 
   // In-page Toast Notifications
   const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -435,6 +437,7 @@ export function App() {
         onOpenLoginModal={() => setIsLoginModalOpen(true)}
         onLogout={handleLogout}
         totalOrders={systemStats.totalSystemRecords}
+        onOpenStatsModal={() => setIsStatsModalOpen(true)}
       />
 
       {/* Main Workspace Layout */}
@@ -531,6 +534,11 @@ export function App() {
         onClose={() => setIsLoginModalOpen(false)}
         currentUser={currentUser}
         onLoginSuccess={handleLoginSuccess}
+      />
+
+      <StatsModal
+        isOpen={isStatsModalOpen}
+        onClose={() => setIsStatsModalOpen(false)}
       />
 
       <ConfirmModal
