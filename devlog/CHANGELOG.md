@@ -30,8 +30,8 @@
 | **16:53:18** | `94e58c7` | Header telemetry cleanup: removed redundant order count from Operations Live pill | UX / Polish |
 | **16:55:19** | `1f4731c` | Interactive Profile Dropdown Menu with click-outside dismiss & consolidated logout | UX / Enterprise |
 | **16:58:30** | `5089abe` | Re-enabled Optional O1: Slow Stats API with AbortController, countdown timer, and Deep Analytics Modal | Optional / O1 |
-| **17:01:30** | `Pending` | Fixed Dark Mode refresh flashbang via blocking head script & critical background styling | Bug Fix / UX |
-| **17:02:30** | `Pending` | Created `PROBLEMS_AND_SOLUTIONS.md`: Comprehensive 9-challenge technical diagnostic document | Documentation |
+| **17:01:30** | `b25bfa4` | Fixed Dark Mode refresh flashbang via blocking head script & critical background styling | Bug Fix / UX |
+| **17:02:30** | `b25bfa4` | Created `PROBLEMS_AND_SOLUTIONS.md`: Comprehensive 9-challenge technical diagnostic document | Documentation |
 
 ---
 
