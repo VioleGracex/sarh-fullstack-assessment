@@ -2727,14 +2727,125 @@
     let currentOrders = [...INITIAL_ORDERS];
     let isCompact = false;
     let isDarkMode = false; // default: false (Corporate Steel)
+    let selectedOrderIds = [];
+    let currentUser = {
+      role: 'ADMIN',
+      email: 'admin@sarh.ai',
+      dept: 'Operations Manager'
+    };
+    let pendingConfirmedAction = null;
+    let deletedOrderBackup = null;
 
     document.addEventListener('DOMContentLoaded', () => {
       renderTable(currentOrders);
       calculateOrderTotal();
       regenerateIdempotencyKey();
+      startSimClock();
+      runKpiCountUps();
     });
 
-    // Color Mode Toggle: Corporate Steel (Light) <-> Midnight Obsidian (Dark)
+    // KPI Animated Count-Up (Matching Live React useCountUp Hook)
+    function animateCountUp(elementId, targetValue, duration = 1000, isCurrency = false) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const start = 0;
+      const startTime = performance.now();
+
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOutQuad = progress * (2 - progress);
+        const current = Math.floor(start + (targetValue - start) * easeOutQuad);
+
+        if (isCurrency) {
+          el.innerHTML = `${current.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span style="font-size: 14px; font-weight: 500; color: var(--text-tertiary);">SAR</span>`;
+        } else {
+          el.textContent = current.toLocaleString('en-US');
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        } else {
+          if (isCurrency) {
+            el.innerHTML = `${targetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span style="font-size: 14px; font-weight: 500; color: var(--text-tertiary);">SAR</span>`;
+          } else {
+            el.textContent = targetValue.toLocaleString('en-US');
+          }
+        }
+      }
+      requestAnimationFrame(update);
+    }
+
+    function runKpiCountUps() {
+      // Find stat values
+      const statCards = document.querySelectorAll('.stats-grid .stat-value');
+      if (statCards.length >= 4) {
+        animateCountUp(statCards[0].id || 'statTotalOrders', 54230, 900);
+        animateCountUp(statCards[1].id || 'statRevenue', 142850, 1100, true);
+        animateCountUp(statCards[2].id || 'statPending', 412, 800);
+        animateCountUp('statCompleted', 50424, 950);
+      }
+    }
+
+    // Role Switcher (Matching Live React Header.tsx)
+    function switchRole(role) {
+      currentUser.role = role;
+      const adminBtn = document.getElementById('roleBtnAdmin');
+      const agentBtn = document.getElementById('roleBtnAgent');
+      const emailLabel = document.getElementById('userEmailLabel');
+      const roleDesc = document.getElementById('userRoleDesc');
+
+      if (role === 'ADMIN') {
+        currentUser.email = 'admin@sarh.ai';
+        currentUser.dept = 'Operations Manager';
+        adminBtn.style.background = 'var(--accent-primary)';
+        adminBtn.style.color = '#ffffff';
+        agentBtn.style.background = 'none';
+        agentBtn.style.color = 'var(--text-secondary)';
+        showToast('Switched to Admin role (Delete operations allowed)', 'info');
+      } else {
+        currentUser.email = 'agent@sarh.ai';
+        currentUser.dept = 'Order Intake Agent';
+        agentBtn.style.background = 'var(--accent-primary)';
+        agentBtn.style.color = '#ffffff';
+        adminBtn.style.background = 'none';
+        adminBtn.style.color = 'var(--text-secondary)';
+        showToast('Switched to Agent role (Delete operations blocked by server RBAC)', 'info');
+      }
+
+      emailLabel.textContent = currentUser.email;
+      roleDesc.textContent = currentUser.dept;
+      renderTable(currentOrders);
+    }
+
+    // In-App Login Modal controls
+    function openLoginModal() {
+      document.getElementById('loginModal').classList.add('open');
+    }
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.remove('open');
+    }
+    function fillLoginCredentials(role) {
+      if (role === 'ADMIN') {
+        document.getElementById('loginEmailInput').value = 'admin@sarh.ai';
+      } else {
+        document.getElementById('loginEmailInput').value = 'agent@sarh.ai';
+      }
+    }
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmailInput').value.trim();
+      const role = email.toLowerCase().includes('agent') ? 'AGENT' : 'ADMIN';
+      switchRole(role);
+      closeLoginModal();
+      showToast(`Signed in as ${email} (${role})`, 'success');
+    }
+    function handleLogout() {
+      showToast('Signed out from operations console', 'info');
+      switchRole('AGENT');
+    }
+
+    // Color Mode Toggle: Light Mode <-> Dark Mode
     function toggleColorMode() {
       isDarkMode = !isDarkMode;
       const targetTheme = isDarkMode ? 'midnight-obsidian' : 'corporate-steel';
@@ -2744,7 +2855,7 @@
       const iconBox = document.getElementById('modeIconBox');
 
       if (isDarkMode) {
-        textLabel.textContent = 'Dark Mode (Midnight Obsidian)';
+        textLabel.textContent = 'Dark Mode';
         iconBox.innerHTML = `
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
@@ -2752,7 +2863,7 @@
         `;
         showToast('Switched to Dark Mode (Midnight Obsidian)', 'info');
       } else {
-        textLabel.textContent = 'Light Mode (Corporate Steel)';
+        textLabel.textContent = 'Light Mode';
         iconBox.innerHTML = `
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="4"></circle>
@@ -2768,6 +2879,9 @@
         `;
         showToast('Switched to Light Mode (Corporate Steel)', 'info');
       }
+
+      // Sync simulator theme if open
+      syncSimIframeTheme();
     }
 
     // Density toggle logic
@@ -2777,6 +2891,178 @@
       document.documentElement.setAttribute('data-density', density);
       document.getElementById('densityLabel').textContent = isCompact ? 'Compact' : 'Comfortable';
       showToast(`Layout density: ${isCompact ? 'Compact' : 'Comfortable'}`, 'info');
+    }
+
+    // Multi-Selection and Bulk Actions (Matching OrdersTable.tsx)
+    function toggleSelectOrder(orderId, checked) {
+      if (checked) {
+        if (!selectedOrderIds.includes(orderId)) selectedOrderIds.push(orderId);
+      } else {
+        selectedOrderIds = selectedOrderIds.filter(id => id !== orderId);
+      }
+      updateBulkBar();
+      renderTable(currentOrders);
+    }
+
+    function toggleSelectAll(checked) {
+      if (checked) {
+        selectedOrderIds = currentOrders.map(o => o.id);
+      } else {
+        selectedOrderIds = [];
+      }
+      updateBulkBar();
+      renderTable(currentOrders);
+    }
+
+    function clearSelection() {
+      selectedOrderIds = [];
+      updateBulkBar();
+      renderTable(currentOrders);
+    }
+
+    function updateBulkBar() {
+      const bar = document.getElementById('bulkActionsBar');
+      const badge = document.getElementById('bulkCountBadge');
+      const label = document.getElementById('bulkCountLabel');
+      const selectAllBox = document.getElementById('selectAllCheckbox');
+
+      if (selectedOrderIds.length > 0) {
+        bar.classList.add('active');
+        badge.textContent = selectedOrderIds.length;
+        label.textContent = selectedOrderIds.length === 1 ? '1 order selected' : `${selectedOrderIds.length} orders selected`;
+      } else {
+        bar.classList.remove('active');
+      }
+
+      if (selectAllBox) {
+        selectAllBox.checked = currentOrders.length > 0 && selectedOrderIds.length === currentOrders.length;
+        selectAllBox.indeterminate = selectedOrderIds.length > 0 && selectedOrderIds.length < currentOrders.length;
+      }
+    }
+
+    function applyBulkStatus(newStatus) {
+      if (selectedOrderIds.length === 0) return;
+      currentOrders.forEach(o => {
+        if (selectedOrderIds.includes(o.id)) {
+          o.status = newStatus;
+        }
+      });
+      showToast(`Updated ${selectedOrderIds.length} order(s) to ${newStatus}`, 'success');
+      clearSelection();
+    }
+
+    function exportSelectedCsv() {
+      if (selectedOrderIds.length === 0) return;
+      const selected = currentOrders.filter(o => selectedOrderIds.includes(o.id));
+      const csv = "ID,Customer,Email,Status,Amount\n" + selected.map(o => `${o.id},"${o.customerName}","${o.customerEmail}",${o.status},${o.totalAmount}`).join("\n");
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `orders-export-${Date.now()}.csv`;
+      a.click();
+      showToast(`Exported ${selected.length} orders to CSV`, 'info');
+    }
+
+    function copySelectedIds() {
+      if (selectedOrderIds.length === 0) return;
+      navigator.clipboard.writeText(selectedOrderIds.join(", ")).then(() => {
+        showToast(`Copied ${selectedOrderIds.length} Order IDs to clipboard`, 'info');
+      });
+    }
+
+    // In-App Confirmation Modal & RBAC Deletion (Matching Live React ConfirmModal.tsx)
+    function openConfirmModal(title, target, message, actionFn) {
+      document.getElementById('confirmModalTitle').textContent = title;
+      document.getElementById('confirmModalTarget').textContent = target;
+      document.getElementById('confirmModalMessage').textContent = message;
+      pendingConfirmedAction = actionFn;
+      document.getElementById('confirmModal').classList.add('open');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirmModal').classList.remove('open');
+      pendingConfirmedAction = null;
+    }
+
+    function executeConfirmedAction() {
+      if (pendingConfirmedAction) {
+        pendingConfirmedAction();
+      }
+      closeConfirmModal();
+    }
+
+    function requestDeleteOrder(orderId, orderNum) {
+      if (currentUser.role !== 'ADMIN') {
+        showToast('Access Denied: Agent role cannot delete orders (Server-side RBAC enforced)', 'error');
+        return;
+      }
+
+      openConfirmModal(
+        'Delete Order Confirmation',
+        orderNum,
+        'Are you sure you want to delete this order? This action is irreversible and will permanently remove all associated line items from active records.',
+        () => {
+          const index = currentOrders.findIndex(o => o.id === orderId);
+          if (index !== -1) {
+            const deleted = currentOrders.splice(index, 1)[0];
+            deletedOrderBackup = { order: deleted, index };
+            selectedOrderIds = selectedOrderIds.filter(id => id !== orderId);
+            updateBulkBar();
+            renderTable(currentOrders);
+
+            showToast(
+              `Order ${orderNum} deleted successfully by ${currentUser.role}.`,
+              'success',
+              {
+                label: 'Undo',
+                onClick: () => {
+                  if (deletedOrderBackup) {
+                    currentOrders.splice(deletedOrderBackup.index, 0, deletedOrderBackup.order);
+                    renderTable(currentOrders);
+                    showToast(`Order ${deletedOrderBackup.order.id} restored successfully!`, 'info');
+                    deletedOrderBackup = null;
+                  }
+                }
+              }
+            );
+          }
+        }
+      );
+    }
+
+    function requestBulkDelete() {
+      if (currentUser.role !== 'ADMIN') {
+        showToast('Access Denied: Agent role cannot delete orders (Server-side RBAC enforced)', 'error');
+        return;
+      }
+      if (selectedOrderIds.length === 0) return;
+
+      const count = selectedOrderIds.length;
+      openConfirmModal(
+        'Bulk Delete Orders Confirmation',
+        `${count} Orders Selected`,
+        `Are you sure you want to delete all ${count} selected orders? This action will permanently remove them from active records and is protected by server-side RBAC.`,
+        () => {
+          const deletedList = currentOrders.filter(o => selectedOrderIds.includes(o.id));
+          currentOrders = currentOrders.filter(o => !selectedOrderIds.includes(o.id));
+          const savedIds = [...selectedOrderIds];
+          clearSelection();
+
+          showToast(
+            `Deleted ${count} orders successfully by ADMIN.`,
+            'success',
+            {
+              label: 'Undo',
+              onClick: () => {
+                currentOrders.unshift(...deletedList);
+                renderTable(currentOrders);
+                showToast(`Restored ${count} orders successfully!`, 'info');
+              }
+            }
+          );
+        }
+      );
     }
 
     // Table rendering function
@@ -2801,10 +3087,13 @@
       }
 
       orders.forEach(order => {
+        const isSelected = selectedOrderIds.includes(order.id);
         const tr = document.createElement('tr');
+        if (isSelected) tr.classList.add('selected-row');
+
         tr.innerHTML = `
           <td>
-            <input type="checkbox" class="custom-checkbox" aria-label="Select order">
+            <input type="checkbox" class="custom-checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelectOrder('${order.id}', this.checked)" aria-label="Select order">
           </td>
           <td>
             <div class="order-number-cell">
@@ -2840,13 +3129,20 @@
             <span class="amount-currency">SAR</span>
           </td>
           <td style="text-align: right;">
-            <div class="row-actions">
+            <div class="row-actions" style="display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
               <button class="btn-row-action" onclick="openOrderDetailDrawer('${order.id}')" title="Inspect Order Details">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
                   <circle cx="12" cy="12" r="3"></circle>
                 </svg>
                 <span>View</span>
+              </button>
+              <button class="btn-row-action" onclick="requestDeleteOrder('${order.id}', '${order.id}')" title="Delete Order (Admin RBAC required)" style="color: var(--badge-cancelled-text);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                </svg>
               </button>
             </div>
           </td>
@@ -3124,7 +3420,8 @@
       window.print();
     }
 
-    function showToast(message, type = 'info') {
+    // Toast notifications with optional In-App Action (e.g. Undo)
+    function showToast(message, type = 'info', action = null) {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
       toast.className = `toast toast-${type}`;
@@ -3134,19 +3431,139 @@
         iconSvg = `<svg class="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
       } else if (type === 'warning') {
         iconSvg = `<svg class="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+      } else if (type === 'error') {
+        iconSvg = `<svg class="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
       } else {
         iconSvg = `<svg class="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
       }
 
-      toast.innerHTML = `${iconSvg}<span>${message}</span>`;
+      let actionHtml = '';
+      if (action) {
+        actionHtml = `
+          <button type="button" class="toast-action-btn" id="toastActionBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7v6h6"></path>
+              <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+            </svg>
+            <span>${action.label}</span>
+          </button>
+        `;
+      }
+
+      toast.innerHTML = `${iconSvg}<span>${message}</span>${actionHtml}`;
       container.appendChild(toast);
 
+      if (action) {
+        const btn = toast.querySelector('#toastActionBtn');
+        if (btn) {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            action.onClick();
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 250);
+          });
+        }
+      }
+
       setTimeout(() => toast.classList.add('show'), 20);
+      const timeoutMs = action ? 7500 : 3500;
       setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 250);
-      }, 3500);
+        if (toast.parentNode) {
+          toast.classList.remove('show');
+          setTimeout(() => toast.remove(), 250);
+        }
+      }, timeoutMs);
     }
+
+    // ========================================================================
+    // INTERACTIVE MOBILE DEVICE SIMULATOR LOGIC (SMARTPHONE SHAPE / NO F12 NEEDED)
+    // ========================================================================
+    function openMobileSimulator() {
+      const modal = document.getElementById('mobileSimulatorModal');
+      modal.classList.add('open');
+      syncSimIframeTheme();
+      showToast('Mobile simulator active — rendering in realistic smartphone chassis', 'info');
+    }
+
+    function closeMobileSimulator() {
+      document.getElementById('mobileSimulatorModal').classList.remove('open');
+    }
+
+    function handleSimulatorBackdropClick(e) {
+      if (e.target.id === 'mobileSimulatorModal') {
+        closeMobileSimulator();
+      }
+    }
+
+    function setSimDevice(device) {
+      const chassis = document.getElementById('smartphoneChassis');
+      document.querySelectorAll('.sim-pill-btn[id^="preset"]').forEach(b => b.classList.remove('active'));
+
+      if (device === 'iphone15') {
+        chassis.style.width = '393px';
+        chassis.style.height = '840px';
+        chassis.style.borderRadius = '54px';
+        document.getElementById('presetIPhone15').classList.add('active');
+      } else if (device === 'iphonese') {
+        chassis.style.width = '375px';
+        chassis.style.height = '667px';
+        chassis.style.borderRadius = '40px';
+        document.getElementById('presetIPhoneSE').classList.add('active');
+      } else if (device === 'pixel8') {
+        chassis.style.width = '412px';
+        chassis.style.height = '890px';
+        chassis.style.borderRadius = '48px';
+        document.getElementById('presetPixel8').classList.add('active');
+      }
+    }
+
+    function setSimScale(scale) {
+      const chassis = document.getElementById('smartphoneChassis');
+      chassis.style.transform = `scale(${scale})`;
+
+      document.getElementById('scale100Btn').classList.toggle('active', scale === 1.0);
+      document.getElementById('scale88Btn').classList.toggle('active', scale === 0.88);
+      document.getElementById('scale75Btn').classList.toggle('active', scale === 0.75);
+    }
+
+    function syncSimIframeTheme() {
+      const iframe = document.getElementById('simIframe');
+      if (iframe && iframe.contentDocument) {
+        try {
+          const currentTheme = document.documentElement.getAttribute('data-theme') || 'corporate-steel';
+          iframe.contentDocument.documentElement.setAttribute('data-theme', currentTheme);
+        } catch (e) {
+          // ignore cross-origin if any
+        }
+      }
+    }
+
+    function toggleSimTheme() {
+      toggleColorMode();
+    }
+
+    function startSimClock() {
+      function updateClock() {
+        const now = new Date();
+        const hrs = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        const clockEl = document.getElementById('simLiveClock');
+        if (clockEl) clockEl.textContent = `${hrs}:${mins}`;
+      }
+      updateClock();
+      setInterval(updateClock, 30000);
+    }
+
+    // Keyboard navigation (Esc key closes modals)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeMobileSimulator();
+        closeConfirmModal();
+        closeLoginModal();
+        closeCreateOrderDrawer();
+        closeOrderDetailDrawer();
+      }
+    });
   </script>
 </body>
 </html>
