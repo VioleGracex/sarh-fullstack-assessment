@@ -891,14 +891,262 @@
       transform: translateY(0);
       opacity: 1;
     }
+
+    /* ==========================================================================
+       DESKTOP STANDALONE SMARTPHONE MOCKUP FRAME (NO F12 NEEDED)
+       ========================================================================== */
+    .in-iframe, body.in-iframe {
+      background: var(--bg-canvas) !important;
+      padding: 0 !important;
+      display: block !important;
+      min-height: 100vh !important;
+    }
+
+    .in-iframe .desktop-mockup-companion-bar,
+    .in-iframe .phone-notch-island,
+    .in-iframe .phone-standalone-status-bar,
+    .in-iframe .phone-home-indicator-bar {
+      display: none !important;
+    }
+
+    .in-iframe .mobile-device-chassis {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: none !important;
+      border: none !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+    .in-iframe .mobile-device-scroll-area {
+      overflow: visible !important;
+      height: auto !important;
+      border-radius: 0 !important;
+      padding-bottom: calc(88px + var(--safe-bottom)) !important;
+    }
+
+    @media (max-width: 599px) {
+      .desktop-mockup-companion-bar,
+      .phone-notch-island,
+      .phone-standalone-status-bar,
+      .phone-home-indicator-bar {
+        display: none !important;
+      }
+      .mobile-device-chassis {
+        width: 100% !important;
+        height: auto !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+      .mobile-device-scroll-area {
+        overflow: visible !important;
+        height: auto !important;
+        border-radius: 0 !important;
+        padding-bottom: calc(88px + var(--safe-bottom)) !important;
+      }
+    }
+
+    @media (min-width: 600px) {
+      body:not(.in-iframe):not(.raw-mode) {
+        background-color: #0b0f19;
+        background-image: 
+          radial-gradient(ellipse at 50% 0%, rgba(30, 64, 175, 0.25), transparent 70%),
+          radial-gradient(circle at 10% 80%, rgba(14, 165, 233, 0.08), transparent 40%),
+          radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.06), transparent 40%);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 20px 16px 60px;
+      }
+
+      body:not(.in-iframe):not(.raw-mode) .desktop-mockup-companion-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background: rgba(30, 41, 59, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 999px;
+        padding: 6px 16px;
+        color: #f1f5f9;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        font-size: 12px;
+        backdrop-filter: blur(8px);
+        margin-bottom: 20px;
+        max-width: 90vw;
+        flex-wrap: wrap;
+      }
+
+      body:not(.in-iframe):not(.raw-mode) .mobile-device-chassis {
+        width: 393px;
+        height: 840px;
+        background: #000000;
+        border-radius: 54px;
+        border: 12px solid #242933;
+        box-shadow:
+          0 0 0 2px #475569,
+          0 0 0 4px #0f172a,
+          0 25px 70px -10px rgba(0, 0, 0, 0.9),
+          0 0 40px rgba(56, 189, 248, 0.15);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transform: translateZ(0); /* Clamps modals and FAB to phone chassis */
+        transform-origin: top center;
+        transition: transform 200ms ease, width 250ms ease, height 250ms ease;
+      }
+
+      body:not(.in-iframe):not(.raw-mode) .mobile-device-scroll-area {
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        background-color: var(--bg-canvas);
+        border-radius: 42px;
+        padding-bottom: calc(88px + var(--safe-bottom));
+      }
+    }
+
+    .sim-pill-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+    .sim-pill-btn.active, .sim-pill-btn:hover {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    .phone-notch-island {
+      position: absolute;
+      top: 11px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 115px;
+      height: 30px;
+      background: #000000;
+      border-radius: 20px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      pointer-events: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .island-lens {
+      width: 10px;
+      height: 10px;
+      background: radial-gradient(circle at 35% 35%, #1e3a8a, #030712 70%);
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .island-sensor {
+      width: 6px;
+      height: 6px;
+      background: #064e3b;
+      border-radius: 50%;
+      opacity: 0.7;
+    }
+    .phone-standalone-status-bar {
+      position: absolute;
+      top: 14px;
+      left: 28px;
+      right: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      z-index: 45;
+      pointer-events: none;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    }
+    .phone-home-indicator-bar {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 134px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 3px;
+      z-index: 50;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
 
-  <!-- ========================================================================
-       MOBILE APP BAR (56px)
-       ======================================================================== -->
-  <header class="mobile-app-bar">
+  <!-- Companion toolbar shown only on desktop standalone mode -->
+  <aside class="desktop-mockup-companion-bar" id="companionBar">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <a href="index.html" style="color: #94a3b8; text-decoration: none; display: flex; align-items: center; gap: 4px; font-weight: 600;" title="Return to Desktop Console">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        <span>Desktop Console</span>
+      </a>
+      <span style="color: rgba(255,255,255,0.2);">|</span>
+      <span style="font-weight: 700;">Mobile Phone Mockup (393px)</span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 4px; background: rgba(15, 23, 42, 0.7); padding: 3px; border-radius: 999px;">
+      <button type="button" class="sim-pill-btn active" id="mpresetIPhone15" onclick="setStandaloneDevice('iphone15')">iPhone 15 Pro (393px)</button>
+      <button type="button" class="sim-pill-btn" id="mpresetIPhoneSE" onclick="setStandaloneDevice('iphonese')">iPhone SE (375px)</button>
+      <button type="button" class="sim-pill-btn" id="mpresetPixel8" onclick="setStandaloneDevice('pixel8')">Galaxy S24 (412px)</button>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 4px; background: rgba(15, 23, 42, 0.7); padding: 3px; border-radius: 999px;">
+      <button type="button" class="sim-pill-btn" onclick="setStandaloneScale(1.0)" id="mscale100Btn">100%</button>
+      <button type="button" class="sim-pill-btn active" onclick="setStandaloneScale(0.88)" id="mscale88Btn">88%</button>
+      <button type="button" class="sim-pill-btn" onclick="setStandaloneScale(0.75)" id="mscale75Btn">75%</button>
+    </div>
+
+    <button type="button" class="sim-pill-btn" onclick="toggleRawMode()" id="rawToggleBtn" title="Toggle between smartphone mockup shape and full-width browser view">
+      <span>Mockup Shape: Active</span>
+    </button>
+  </aside>
+
+  <!-- Smartphone Chassis Wrapper -->
+  <div class="mobile-device-chassis" id="mobileDeviceChassis">
+    <!-- Dynamic Island -->
+    <div class="phone-notch-island">
+      <div class="dynamic-island-pill">
+        <span class="island-lens"></span>
+        <span class="island-sensor"></span>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="phone-standalone-status-bar">
+      <span id="standaloneClock">09:41</span>
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h2"></path><path d="M7 20v-4"></path><path d="M12 20v-8"></path><path d="M17 20V4"></path></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"></rect><line x1="22" x2="22" y1="11" y2="13"></line><rect width="9" height="6" x="4" y="9" fill="currentColor"></rect></svg>
+      </div>
+    </div>
+
+    <!-- Scrollable Screen Canvas -->
+    <div class="mobile-device-scroll-area" id="mobileDeviceScrollArea">
+
+      <!-- ========================================================================
+           MOBILE APP BAR (56px)
+           ======================================================================== -->
+      <header class="mobile-app-bar">
     <div class="brand-cluster">
       <div class="brand-crest-box">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -989,11 +1237,11 @@
 
       <div class="micro-kpi-card">
         <div class="micro-kpi-header">
-          <span>Processing</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>
+          <span>Completed</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
         </div>
-        <div class="micro-kpi-val" style="color: var(--badge-processing-text);">1,894</div>
-        <div class="micro-kpi-sub">In fulfillment</div>
+        <div class="micro-kpi-val" style="color: var(--badge-completed-text);">50,424</div>
+        <div class="micro-kpi-sub">Fulfilled & reconciled</div>
       </div>
     </section>
 
@@ -1280,10 +1528,71 @@
   <!-- TOAST CONTAINER -->
   <div class="m-toast-box" id="mToastBox"></div>
 
+    </div> <!-- /mobile-device-scroll-area -->
+
+    <!-- iOS Home Indicator -->
+    <div class="phone-home-indicator-bar"></div>
+  </div> <!-- /mobile-device-chassis -->
+
   <!-- ========================================================================
        MOBILE LOGIC JAVASCRIPT
        ======================================================================== -->
   <script>
+    // Detect if embedded inside simulator iframe or viewed standalone
+    if (window.self !== window.top) {
+      document.documentElement.classList.add('in-iframe');
+      document.body.classList.add('in-iframe');
+    }
+
+    let isRawMode = false;
+    function toggleRawMode() {
+      isRawMode = !isRawMode;
+      document.body.classList.toggle('raw-mode', isRawMode);
+      document.getElementById('rawToggleBtn').innerHTML = `<span>Mockup Shape: ${isRawMode ? 'Off (Full Width)' : 'Active'}</span>`;
+      showMobileToast(isRawMode ? 'Switched to Full Width' : 'Switched to Phone Shape Mockup', 'info');
+    }
+
+    function setStandaloneDevice(device) {
+      const chassis = document.getElementById('mobileDeviceChassis');
+      document.querySelectorAll('#companionBar .sim-pill-btn[id^="mpreset"]').forEach(b => b.classList.remove('active'));
+
+      if (device === 'iphone15') {
+        chassis.style.width = '393px';
+        chassis.style.height = '840px';
+        chassis.style.borderRadius = '54px';
+        document.getElementById('mpresetIPhone15').classList.add('active');
+      } else if (device === 'iphonese') {
+        chassis.style.width = '375px';
+        chassis.style.height = '667px';
+        chassis.style.borderRadius = '40px';
+        document.getElementById('mpresetIPhoneSE').classList.add('active');
+      } else if (device === 'pixel8') {
+        chassis.style.width = '412px';
+        chassis.style.height = '890px';
+        chassis.style.borderRadius = '48px';
+        document.getElementById('mpresetPixel8').classList.add('active');
+      }
+    }
+
+    function setStandaloneScale(scale) {
+      const chassis = document.getElementById('mobileDeviceChassis');
+      chassis.style.transform = `scale(${scale})`;
+
+      document.getElementById('mscale100Btn').classList.toggle('active', scale === 1.0);
+      document.getElementById('mscale88Btn').classList.toggle('active', scale === 0.88);
+      document.getElementById('mscale75Btn').classList.toggle('active', scale === 0.75);
+    }
+
+    function updateClock() {
+      const now = new Date();
+      const hrs = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      const clockEl = document.getElementById('standaloneClock');
+      if (clockEl) clockEl.textContent = `${hrs}:${mins}`;
+    }
+    updateClock();
+    setInterval(updateClock, 30000);
+
     const MOBILE_ORDERS = [
       {
         id: "ORD-2026-09418",
