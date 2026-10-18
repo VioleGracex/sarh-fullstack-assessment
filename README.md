@@ -57,27 +57,27 @@ Open your browser at **`http://localhost:3000`**.
 
 ## 3. Section 3: Code Review Findings & Fixes
 
-Below are the vulnerabilities and flaws identified in the legacy contractor snippet, along with the fixes implemented:
+Below are the 5 vulnerabilities and flaws identified in the legacy contractor snippet, listed in top-to-bottom line order as they appear in the source code:
 
-1. **CRITICAL SECURITY: `jwt.decode` used instead of `jwt.verify`**
-   - *Problem:* `jwt.decode()` merely decodes base64 JSON payload without verifying the HMAC/RSA cryptographic signature. Any malicious attacker can forge an arbitrary token with `role: "admin"` and bypass authentication completely.
-   - *Fix:* Replaced with `jwt.verify(token, JWT_SECRET)`, which enforces signature validity and checks expiration (`exp`).
+1. **LINE 1 — HARDCODED CREDENTIALS IN SOURCE CODE (`const SECRET = ...`)**
+   - *Problem:* `const SECRET = "sarh-secret-2026"` was hardcoded at the very top of the file in source code. Anyone with access to version control or build artifacts can extract this key and sign forged tokens.
+   - *Fix:* Moved the secret strictly to environment variables (`process.env.JWT_SECRET`) loaded via `dotenv` with safe configuration in `.env.example`.
 
-2. **CRITICAL SECURITY: Server-side Authorization Missing on Destructive Endpoint**
-   - *Problem:* The comment stated `// admin check is done in the React AdminOnly component`. Relying on client-side UI checks means any authenticated agent or attacker with `curl` or Postman can send `DELETE /api/orders/:id` and wipe orders (OWASP A01: Broken Access Control).
-   - *Fix:* Implemented `requireRole("ADMIN")` middleware directly on the Express route, returning `HTTP 403 Forbidden` if a non-admin attempts deletion.
+2. **LOGIN ROUTE — PLAINTEXT PASSWORDS IN DATABASE & TIMING VULNERABILITY**
+   - *Problem:* `db.users.findFirst({ where: { email, password: req.body.password } })` compares plain-text passwords directly in the database query. Any SQL dump, query logger, or unauthorized DB access compromises all employee credentials.
+   - *Fix:* Seeded and verified passwords using salted cryptographic hashes via `bcrypt.compare(password, user.password)`.
 
-3. **SECURITY: Plaintext Passwords in Database & Timing Vulnerability**
-   - *Problem:* `db.users.findFirst({ where: { email, password: req.body.password } })` compares plain-text passwords directly in the database query.
-   - *Fix:* Used salted `bcrypt.hash()` during seeding and `bcrypt.compare()` during login.
+3. **MIDDLEWARE INPUT — TOKEN ACCEPTED FROM URL QUERY PARAMETER (`req.query.token`)**
+   - *Problem:* `const token = req.headers.authorization || req.query.token;` accepts JWTs via URL query parameters. This causes sensitive authentication tokens to be permanently logged in plain text across browser histories, proxy logs (Nginx/Cloudflare), server access logs, and outbound `Referer` headers.
+   - *Fix:* Restricted token extraction strictly to the standard `Authorization: Bearer <token>` HTTP header.
 
-4. **INFORMATION DISCLOSURE: Token Accepted from `req.query.token`**
-   - *Problem:* Passing JWTs via URL query parameters causes tokens to be permanently logged in browser history, proxy logs (Cloudflare, Nginx), and `Referer` headers when clicking outbound links.
-   - *Fix:* Restricted token extraction strictly to the standard `Authorization: Bearer <token>` header.
+4. **MIDDLEWARE VERIFICATION — CRYPTOGRAPHIC SIGNATURE BYPASS (`jwt.decode` vs `jwt.verify`)**
+   - *Problem:* `const decoded = jwt.decode(token);` merely reads the base64 JSON payload without verifying the cryptographic HMAC signature against `SECRET`. Any malicious attacker can craft a base64 string with `{ "role": "ADMIN", "email": "attacker@evil.com" }` and gain instant administrative control.
+   - *Fix:* Replaced with cryptographic `jwt.verify(token, JWT_SECRET)`, enforcing HMAC signature validity and token expiration (`exp`).
 
-5. **HARDCODED CREDENTIALS:**
-   - *Problem:* `const SECRET = "sarh-secret-2026"` was hardcoded in source code.
-   - *Fix:* Moved secrets to environment variables (`process.env.JWT_SECRET`) with `.env.example`.
+5. **DELETE ENDPOINT — MISSING SERVER-SIDE AUTHORIZATION (CLIENT-ONLY RBAC)**
+   - *Problem:* The endpoint comment stated `// admin check is done in the React AdminOnly component`. Relying on client-side UI checks means any authenticated agent or external attacker with `curl`/Postman can invoke `DELETE /api/orders/:id` directly and delete records (OWASP A01: Broken Access Control).
+   - *Fix:* Implemented server-side `requireRole("ADMIN")` middleware directly on the Express route, returning `HTTP 403 Forbidden` if a non-admin attempts deletion.
 
 ### Token Storage Reasoning
 *In our client implementation, tokens are held in React memory (`useState`) and transmitted via `Authorization: Bearer <token>` headers (with httpOnly cookie support as the production target).*  

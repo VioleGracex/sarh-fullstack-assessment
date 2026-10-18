@@ -188,14 +188,14 @@ Legacy developer shortcuts relying on native browser window methods.
 #### Symptom
 The legacy code snippet provided by a previous contractor (Section 3 of the assessment) was severely vulnerable to exploitation and privilege escalation.
 
-#### Vulnerabilities Identified & Resolved
-| # | Vulnerability in Legacy Code | Severity | Production Resolution |
-| :-: | :--- | :---: | :--- |
-| **1** | `jwt.decode(token)` used instead of `jwt.verify()` | **Critical** | Replaced with cryptographic `jwt.verify(token, JWT_SECRET)` verifying HMAC SHA-256 signatures. |
-| **2** | Client-side only admin check on `DELETE /orders/:id` | **Critical** | Enforced server-side `requireAuth` + `requireRole("ADMIN")` RBAC middleware returning `HTTP 403 Forbidden` for agents. |
-| **3** | Plain-text password database lookup (`where: { email, password }`) | **High** | Replaced with salted hashing using `bcryptjs` (`bcrypt.compare`). |
-| **4** | Token accepted in URL query parameter `req.query.token` | **High** | Restricted extraction strictly to `Authorization: Bearer <token>` header, preventing token leaks in server logs, proxy logs, and browser history. |
-| **5** | Hardcoded secrets and credentials in source code | **Medium** | Migrated all credentials to environment variables loaded via `dotenv` with safe fallbacks in `.env.example`. |
+#### Vulnerabilities Identified & Resolved (In Top-to-Bottom Code Order)
+| # | Code Location | Vulnerability in Legacy Code | Severity | Production Resolution |
+| :-: | :--- | :--- | :---: | :--- |
+| **1** | **Line 1 (Top of File)** | Hardcoded secret key in source code (`const SECRET = ...`) | **High** | Migrated all credentials to environment variables loaded via `dotenv` with safe fallbacks in `.env.example`. |
+| **2** | **Login Route** | Plain-text password database lookup (`where: { email, password }`) | **High** | Replaced with salted hashing using `bcryptjs` (`bcrypt.compare`). |
+| **3** | **Middleware Input** | Token accepted in URL query parameter `req.query.token` | **High** | Restricted extraction strictly to `Authorization: Bearer <token>` header, preventing token leaks in server logs, proxy logs, and browser history. |
+| **4** | **Middleware Check** | `jwt.decode(token)` used instead of `jwt.verify()` | **Critical** | Replaced with cryptographic `jwt.verify(token, JWT_SECRET)` verifying HMAC SHA-256 signatures. |
+| **5** | **Delete Route** | Client-side only admin check on `DELETE /orders/:id` | **Critical** | Enforced server-side `requireAuth` + `requireRole("ADMIN")` RBAC middleware returning `HTTP 403 Forbidden` for agents. |
 
 ---
 
