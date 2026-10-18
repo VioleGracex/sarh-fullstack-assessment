@@ -10,8 +10,8 @@ interface OrderDrawerProps {
 
 interface FormItem {
   productName: string;
-  quantity: number;
-  unitPrice: number;
+  quantity: number | "";
+  unitPrice: number | "";
 }
 
 const DEFAULT_ITEMS: FormItem[] = [
@@ -56,7 +56,7 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
     if (items.length >= 5) return;
     setItems((prev) => [
       ...prev,
-      { productName: "Cat6A Shielded Patch Cable 2m", quantity: 1, unitPrice: 85.0 }
+      { productName: "", quantity: 1, unitPrice: "" }
     ]);
   };
 
@@ -74,7 +74,11 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
   };
 
   // Financial calculations (Saudi 15% VAT standard)
-  const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+  const subtotal = items.reduce((sum, item) => {
+    const q = typeof item.quantity === "number" ? item.quantity : (parseFloat(String(item.quantity)) || 0);
+    const p = typeof item.unitPrice === "number" ? item.unitPrice : (parseFloat(String(item.unitPrice)) || 0);
+    return sum + Math.max(0, q) * Math.max(0, p);
+  }, 0);
   const vat = subtotal * 0.15;
   const grandTotal = subtotal + vat;
 
@@ -90,9 +94,28 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
       setError("A valid customer email is required.");
       return;
     }
-    if (items.some((i) => !i.productName.trim() || i.quantity <= 0 || i.unitPrice <= 0)) {
-      setError("All line items must have valid names, quantities >= 1, and positive prices.");
-      return;
+
+    // Strict validation & sanitization for all products
+    const parsedItems = items.map((i) => ({
+      productName: i.productName.trim(),
+      quantity: typeof i.quantity === "number" ? i.quantity : (parseInt(String(i.quantity), 10) || 0),
+      unitPrice: typeof i.unitPrice === "number" ? i.unitPrice : (parseFloat(String(i.unitPrice)) || 0)
+    }));
+
+    for (let i = 0; i < parsedItems.length; i++) {
+      const item = parsedItems[i];
+      if (!item.productName) {
+        setError(`Line Item #${i + 1}: Please enter a product description.`);
+        return;
+      }
+      if (item.quantity < 1 || !Number.isInteger(item.quantity)) {
+        setError(`Line Item #${i + 1} ("${item.productName}"): Quantity must be a whole positive number (minimum 1). Decimals and negative numbers are not allowed.`);
+        return;
+      }
+      if (item.unitPrice <= 0 || isNaN(item.unitPrice)) {
+        setError(`Line Item #${i + 1} ("${item.productName}"): Unit price must be greater than 0 SAR (e.g. 275 or 275.50). Negative numbers and 0 SAR are not allowed.`);
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -108,7 +131,7 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
           customerName: customerName.trim(),
           customerEmail: customerEmail.trim(),
           status,
-          items,
+          items: parsedItems,
           totalAmount: grandTotal
         })
       });
@@ -268,6 +291,48 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
               </button>
             </div>
 
+            {/* Universal Product Constraints Notice */}
+            <div
+              style={{
+                padding: "8px 12px",
+                backgroundColor: "var(--bg-subtle)",
+                border: "1px solid var(--border-subtle)",
+                borderRadius: "var(--radius-md)",
+                fontSize: "11px",
+                color: "var(--text-secondary)",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "10px"
+              }}
+            >
+              <InfoIcon size={14} style={{ color: "var(--accent-primary)", flexShrink: 0 }} />
+              <span>
+                <strong>Universal Product Constraints:</strong> Quantity must be ≥ 1 (whole units). Unit price must be &gt; 0 SAR (e.g. 275 or 275.50). Negative values are strictly blocked.
+              </span>
+            </div>
+
+            {/* Column Headers */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "2fr 1fr 1.2fr 32px",
+                gap: "8px",
+                padding: "0 4px",
+                fontSize: "11px",
+                fontWeight: 700,
+                color: "var(--text-tertiary)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                marginBottom: "6px"
+              }}
+            >
+              <span>Product Description</span>
+              <span>Quantity (≥ 1)</span>
+              <span>Unit Price (SAR)</span>
+              <span></span>
+            </div>
+
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {items.map((item, idx) => (
                 <div key={idx} className="item-row">
@@ -278,29 +343,59 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
                     onChange={(e) => handleItemChange(idx, "productName", e.target.value)}
                     placeholder="Product name"
                     required
+                    aria-label={`Product description for item ${idx + 1}`}
                   />
                   <input
                     type="number"
                     className="form-input item-qty"
                     value={item.quantity}
                     min="1"
-                    onChange={(e) =>
-                      handleItemChange(idx, "quantity", Math.max(1, parseInt(e.target.value) || 1))
-                    }
+                    step="1"
+                    onKeyDown={(e) => {
+                      // Prevent typing negative sign, plus sign, decimal, or exponent
+                      if (e.key === "-" || e.key === "+" || e.key === "e" || e.key === "E" || e.key === ".") {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === "") {
+                        handleItemChange(idx, "quantity", "");
+                        return;
+                      }
+                      const val = parseInt(raw, 10);
+                      handleItemChange(idx, "quantity", isNaN(val) ? "" : Math.max(1, Math.abs(val)));
+                    }}
                     placeholder="Qty"
                     required
+                    aria-label={`Quantity for item ${idx + 1}`}
+                    title="Quantity must be at least 1 (positive integer)"
                   />
                   <input
                     type="number"
                     className="form-input item-price"
                     value={item.unitPrice}
-                    step="10"
-                    min="1"
-                    onChange={(e) =>
-                      handleItemChange(idx, "unitPrice", Math.max(0, parseFloat(e.target.value) || 0))
-                    }
+                    step="any"
+                    min="0.01"
+                    onKeyDown={(e) => {
+                      // Prevent typing negative sign, plus sign, or exponent
+                      if (e.key === "-" || e.key === "+" || e.key === "e" || e.key === "E") {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === "") {
+                        handleItemChange(idx, "unitPrice", "");
+                        return;
+                      }
+                      const val = parseFloat(raw);
+                      handleItemChange(idx, "unitPrice", isNaN(val) ? "" : Math.max(0, Math.abs(val)));
+                    }}
                     placeholder="SAR Price"
                     required
+                    aria-label={`Unit price in SAR for item ${idx + 1}`}
+                    title="Unit price must be greater than 0 SAR (e.g. 275 or 275.50)"
                   />
                   <button
                     type="button"

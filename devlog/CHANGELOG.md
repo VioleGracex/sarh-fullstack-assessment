@@ -3,11 +3,11 @@
 
 > **Assessment Time Budget Status:**
 > - **Session Start Time:** 15:30 (+03:00)
-> - **Current PC Clock:** 17:45 (+03:00)
-> - **Total Session Elapsed:** ~2 hours 15 minutes (`02:15:00`)
+> - **Current PC Clock:** 17:52 (+03:00)
+> - **Total Session Elapsed:** ~2 hours 22 minutes (`02:22:00`)
 > - **Take-Home Hard Time Limit:** 5 hours max (`05:00:00`)
-> - **Remaining Budget:** ~2 hours 45 minutes (`02:45:00`)
-> - **Assessment Pacing:** Comfortable & Ahead of Schedule (~55% budget remaining with 100% core + optional O1 complete)
+> - **Remaining Budget:** ~2 hours 38 minutes (`02:38:00`)
+> - **Assessment Pacing:** Comfortable & Ahead of Schedule (~52% budget remaining with 100% core + optional O1 complete)
 
 ---
 
@@ -36,6 +36,32 @@
 | **17:17:46** | `0f12aac` | Extracted `ToastContainer.tsx` and centralized icon registry in `components/icons` | Architecture |
 | **17:31:40** | `bbb9ec9` | Extracted `useToast.ts` hook, replaced 100% of inline SVGs across all components with modular icons | Optimization |
 | **17:45:00** | `c7252f6` | Dedicated Full-Page LoginPage, Strict Auth Gate & Offline Telemetry (🔴 Operations Down) | Security / UI |
+| **17:52:00** | Pending | Universal Line Item Constraints (`step="any"`), Negative Input Interception & Column Headers | Bug Fix / UX |
+
+---
+
+# [1.0.14] — Universal Line Item Constraints (step="any") & Negative Input Interceptors
+Date: 2026-10-18 | Session Timer: ~2h 22m
+
+## Fixed
+- **HTML5 Step Mismatch Flaw on Unit Price**:
+  - Root cause: `<input type="number" step="10" min="1">` restricted valid values strictly to $1 + 10k$ (1, 11, 21 ... 271, 281), erroneously rejecting standard prices like `275 SAR` with browser tooltip *"The two nearest valid values are 271 and 281"*.
+  - Solution: Replaced `step="10"` with `step="any"` and `min="0.01"`, establishing universal price support for all products (whole integers like `275`, decimals like `275.50`, or enterprise items like `1,850`).
+- **Strict Negative Number Prevention**:
+  - Key-level interceptor: `onKeyDown` prevents typing `-`, `+`, `e`, or `E` into quantity and price inputs.
+  - Paste sanitization: `Math.abs()` and `Math.max()` sanitize pasted negative strings (e.g., `"-275"`) automatically.
+  - Whole integer quantity enforcement: `step="1"`, `min="1"`, with decimal point (`.`) keystroke blocking.
+- **Universal Visual Guidance & Column Headers**:
+  - Added explicit column headers above line item rows: `Product Description`, `Quantity (≥ 1)`, `Unit Price (SAR)`.
+  - Added an informational banner stating universal constraints for all products.
+  - Enhanced input placeholders, `title`, and `aria-label` attributes.
+
+## Files Affected
+- `frontend/src/components/OrderDrawer.tsx`
+- `PROBLEMS_AND_SOLUTIONS.md`
+- `devlog/CHANGELOG.md`
+
+---
 
 ---
 

@@ -25,6 +25,7 @@ During the development and hardening of the **SARH Orders Console**, several rea
 10. [Challenge 10: Notification Flooding & Toast Queue Clamping](#10-notification-flooding--toast-queue-clamping)
 11. [Challenge 11: Monolithic Component Bloat & Inline SVG Redundancy](#11-monolithic-component-bloat--inline-svg-redundancy)
 12. [Challenge 12: Backend Disconnection Telemetry & Strict Security Authentication Gate](#12-backend-disconnection-telemetry--strict-security-authentication-gate)
+13. [Challenge 13: The HTML5 `step="10"` Arithmetic Constraint Flaw & Universal Positive Number Enforcement](#13-the-html5-step10-arithmetic-constraint-flaw--universal-positive-number-enforcement)
 
 ---
 
@@ -275,12 +276,49 @@ When the Express backend service was stopped, crashed, or unreachable during net
 
 ---
 
+### 13. The HTML5 `step="10"` Arithmetic Constraint Flaw & Universal Positive Number Enforcement
+
+#### Symptom
+When operators entered a unit price of `275` SAR in the manual order intake drawer ([`OrderDrawer.tsx`](file:///d:/task/Sarh_group/frontend/src/components/OrderDrawer.tsx)), the browser halted form submission and displayed an unintuitive native tooltip:
+> *"Please enter a valid value. The two nearest valid values are 271 and 281."*
+
+Furthermore, operators were unclear on what constituted a valid input per item, and negative numbers could inadvertently be typed or pasted.
+
+#### Root Cause Analysis
+1. **HTML5 Step Arithmetic Rule**: Under the W3C HTML5 Constraint Validation specification for `<input type="number">`, valid values are strictly computed as:
+   $$\text{valid\_value} = \text{min} + (k \times \text{step}), \quad k \in \mathbb{Z}$$
+   Because the input had `min="1"` and `step="10"`, the browser only allowed numbers where $(x - 1) \bmod 10 = 0$ (e.g. 1, 11, 21 ... 271, 281). Entering a standard price like `275 SAR` produced $(275 - 1) \bmod 10 = 4 \neq 0$, triggering the browser's native step-mismatch error.
+2. **Missing Universal Visual Guidance**: Columns lacked explicit header labels, requiring operators to guess field validation rules.
+3. **Negative Number Gaps**: While the backend rejected negative numbers via Zod (`z.number().positive()`), the frontend lacked key-level interceptors to prevent users from typing `-`, `+`, or `e` characters.
+
+#### Engineering Solution
+1. **Universal Floating-Point Step (`step="any"`, `min="0.01"`)**:
+   - Replaced `step="10"` with `step="any"` and `min="0.01"`. This allows ANY realistic price across ALL products (whole integers like `275`, decimals like `275.50`, or large amounts like `1,850`).
+2. **Key-Level Negative Number Interceptor**:
+   - Implemented `onKeyDown` listeners on both quantity and price inputs blocking `-`, `+`, `e`, and `E` keystrokes before they enter the DOM.
+   - For quantities, also blocked decimal points (`.`), restricting quantities strictly to whole units.
+3. **Pasting Sanitization & React State Hygiene**:
+   - In `onChange`, wrapped values with `Math.abs()` and `Math.max()` so pasted negative strings (e.g. `"-275"`) are automatically sanitized to positive values.
+4. **Explicit Column Headers & Universal Rules Notice**:
+   - Added permanent, clear column headers above line item rows:
+     - `Product Description`
+     - `Quantity (≥ 1)`
+     - `Unit Price (SAR)`
+   - Added an informational banner:
+     > *"Universal Product Constraints: Quantity must be ≥ 1 (whole units). Unit price must be > 0 SAR (e.g. 275 or 275.50). Negative values are strictly blocked."*
+5. **Pre-Flight Form Validation**:
+   - In `handleSubmit`, verified all line items before firing network requests, returning clear in-drawer error messages if any price is $\le 0$ or quantity is $< 1$.
+
+---
+
 ## Conclusion & Verification Status
 
-All 12 engineering challenges have been resolved, verified against the SQLite database, and proven through:
+All 13 engineering challenges have been resolved, verified against the SQLite database, and proven through:
 - **29 Automated Unit Tests** (`npm run test:unit`)
 - **Automated R2 Duplicate Prevention Proof** (`npm run test:duplicate`)
-- **Production Vite Build** (`npm --prefix frontend run build` in ~309ms)
+- **Production Vite Build** (`npm --prefix frontend run build` in ~357ms)
 - **Zero Browser Native Dialogs Rule** fully enforced
 - **100% Modular Icon Architecture** with 0 raw SVGs in UI components
 - **Strict Security Gate** with dedicated `LoginPage` & live backend telemetry
+- **Universal Line Item Constraints** with `step="any"`, zero negative numbers allowed
+

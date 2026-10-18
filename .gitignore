@@ -8,3 +8,4 @@ build
 *.db-wal
 .DS_Store
 *.log
+review_vault/
