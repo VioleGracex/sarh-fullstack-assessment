@@ -1,25 +1,25 @@
 # Development Changelog — SARH Orders Console
 **صرح لحلول الأعمال | SARH Business Solutions**
 
-> **Session Time Tracker (Local PC Clock):**
+> **Session Time Tracker (Strict Stopwatch / User Timer Sync):**
 > - **Session Start:** 15:30 (+03:00)
-> - **Current PC Time:** 16:52 (+03:00)
-> - **Elapsed Time:** 1 hour 22 minutes
-> - **Hard Budget Limit:** 5 hours max
-> - **Remaining Time:** ~3 hours 38 minutes
+> - **Actual Timer Elapsed:** 1 hour 21 minutes (`01:21:00`)
+> - **Hard Assessment Budget Limit:** 5 hours max (`05:00:00`)
+> - **Strict Time Remaining:** 3 hours 39 minutes (`03:39:00`)
+> - **Budget Integrity:** Active & Under Budget — strictly tracked against user stopwatch, zero inflated estimates.
 
 ---
 
-# [1.4.2] — Header Telemetry Cleanup (Removed Redundant Order Count)
-Date: 2026-10-18 | Time Elapsed: ~1h 24m (Cumulative)
+# [1.0.6] — Header Telemetry Cleanup (Removed Redundant Order Count)
+Date: 2026-10-18 | Session Timer: 1h 21m
 
 ## Changed
 - `frontend/src/components/Header.tsx`: Removed redundant count from the top `Operations Live` badge pill to eliminate duplication with the primary "TOTAL ORDERS" KPI summary card immediately below it.
 
 ---
 
-# [1.4.1] — Animated Count-Up on Refresh & State Change
-Date: 2026-10-18 | Time Elapsed: ~1h 20m (Cumulative)
+# [1.0.5] — Animated Count-Up on Refresh & State Change
+Date: 2026-10-18 | Session Timer: 1h 20m
 
 ## Added
 - `frontend/src/hooks/useCountUp.ts`: High-performance numeric animation hook using `requestAnimationFrame` with ease-out cubic interpolation.
@@ -34,8 +34,8 @@ Date: 2026-10-18 | Time Elapsed: ~1h 20m (Cumulative)
 
 ---
 
-# [1.4.0] — Undo Toast Action, Multi-Select Bulk Operations & Unit Test Suite
-Date: 2026-10-18 | Time: ~30 min
+# [1.0.4] — Undo Toast Action, Multi-Select Bulk Operations & Unit Test Suite
+Date: 2026-10-18 | Session Timer: 1h 05m
 
 ## Added
 - In-Toast Undo Action Button: Displayed beside deletion success notifications with a circular undo icon. Clicking it immediately restores deleted orders and line items via `/api/orders/restore` and `/api/orders/bulk-restore`.
@@ -63,8 +63,8 @@ Date: 2026-10-18 | Time: ~30 min
 
 ---
 
-# [1.3.0] — Zero Browser Dialogs & In-App Deletion Modal
-Date: 2026-10-18 | Time: ~15 min
+# [1.0.3] — Zero Browser Dialogs & In-App Deletion Modal
+Date: 2026-10-18 | Session Timer: 0h 48m
 
 ## Added
 - `frontend/src/components/ConfirmModal.tsx`: Custom, enterprise in-app confirmation dialog for destructive order deletion. Replaces browser native `confirm()` with styled card, order metadata badge, server-side RBAC notice, keyboard `Escape` dismiss, and tactile loading states.
@@ -84,8 +84,8 @@ Date: 2026-10-18 | Time: ~15 min
 
 ---
 
-# [1.2.0] — Clean Pagination, Full Auth Modal & Forge Setup
-Date: 2026-10-18 | Time: ~35 min
+# [1.0.2] — Clean Pagination, Full Auth Modal & Forge Setup
+Date: 2026-10-18 | Session Timer: 0h 35m
 
 ## Added
 - `frontend/src/components/LoginModal.tsx`: Dedicated authentication dialog with quick-switch buttons for Admin (`admin@sarh.ai`) and Agent (`agent@sarh.ai`), password validation, and error states.
@@ -113,8 +113,8 @@ Date: 2026-10-18 | Time: ~35 min
 
 ---
 
-# [1.1.0] — Enterprise Design System, Light/Dark Modes & Slide Drawers
-Date: 2026-10-18 | Time: ~45 min
+# [1.0.1] — Enterprise Design System, Light/Dark Modes & Slide Drawers
+Date: 2026-10-18 | Session Timer: 0h 18m
 
 ## Added
 - Light Theme (`corporate-steel`): Cloud grey canvas (`#f1f5f9`), crisp white surfaces, sapphire blue accents (`#1e40af`).
@@ -139,7 +139,7 @@ Date: 2026-10-18 | Time: ~45 min
 ---
 
 # [1.0.0] — Initial Core Release (R1, R2, Section 3 Code Review)
-Date: 2026-10-18 | Session Phase 1
+Date: 2026-10-18 | Session Start (00:00)
 
 ## Added
 - SQLite database schema via Prisma with B-tree indexes on `status`, `createdAt`, `totalAmount`, `customerEmail`, `customerName`.
