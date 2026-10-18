@@ -3,6 +3,27 @@
 
 ---
 
+# [1.3.0] — Zero Browser Dialogs & In-App Deletion Modal
+Date: 2026-10-18 | Time: ~15 min
+
+## Added
+- `frontend/src/components/ConfirmModal.tsx`: Custom, enterprise in-app confirmation dialog for destructive order deletion. Replaces browser native `confirm()` with styled card, order metadata badge, server-side RBAC notice, keyboard `Escape` dismiss, and tactile loading states.
+- Global Standard Rule (`~/.gemini/config/rules/ui_in_app_messaging.md` & `.agents/rules/ui_in_app_messaging.md`): Enforces zero browser alerts/confirms/prompts globally across all web projects.
+
+## Changed
+- `frontend/src/App.tsx`: Replaced browser-native `confirm()` with in-app `ConfirmModal` state flow.
+- `frontend/src/index.css`: Added styles for `.confirm-modal-overlay`, `.confirm-modal-card`, and `.btn-danger`.
+
+## Files Affected
+- `frontend/src/components/ConfirmModal.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/index.css`
+- `.agents/rules/ui_in_app_messaging.md`
+- `~/.gemini/config/rules/ui_in_app_messaging.md`
+- `devlog/CHANGELOG.md`
+
+---
+
 # [1.2.0] — Clean Pagination, Full Auth Modal & Forge Setup
 Date: 2026-10-18 | Time: ~35 min
 

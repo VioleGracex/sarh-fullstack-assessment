@@ -6,6 +6,7 @@ import { OrdersTable } from "./components/OrdersTable";
 import { OrderDrawer } from "./components/OrderDrawer";
 import { OrderDetailDrawer } from "./components/OrderDetailDrawer";
 import { LoginModal } from "./components/LoginModal";
+import { ConfirmModal } from "./components/ConfirmModal";
 import { useOrders } from "./hooks/useOrders";
 import type { User, Theme, Density, Order } from "./types/order";
 
@@ -62,6 +63,8 @@ export function App() {
   });
   const [authToken, setAuthToken] = useState<string>("");
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<{ id: string; orderNumber: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Slide-over Drawers state
   const [isOrderDrawerOpen, setIsOrderDrawerOpen] = useState(false);
@@ -165,8 +168,8 @@ export function App() {
     showToast("Signed out from operations console", "info");
   };
 
-  // Section 3: Delete order protected by server-side RBAC
-  const handleDeleteOrder = async (orderId: string, orderNumber: string) => {
+  // Section 3: Delete order protected by server-side RBAC (In-App Modal Confirmation)
+  const handleRequestDelete = (orderId: string, orderNumber: string) => {
     if (!currentUser) {
       showToast("Authentication required: Please sign in as Admin", "error");
       setIsLoginModalOpen(true);
@@ -176,13 +179,15 @@ export function App() {
       showToast("Access Denied: Agent role cannot delete orders (Server-side RBAC enforced)", "error");
       return;
     }
+    setOrderToDelete({ id: orderId, orderNumber });
+  };
 
-    if (!confirm(`Are you sure you want to delete order ${orderNumber}? This action is protected by server-side RBAC.`)) {
-      return;
-    }
+  const handleConfirmDelete = async () => {
+    if (!orderToDelete) return;
+    setIsDeleting(true);
 
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await fetch(`/api/orders/${orderToDelete.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${authToken}`
@@ -194,10 +199,13 @@ export function App() {
         throw new Error(json.message || json.error || "Failed to delete order");
       }
 
-      showToast(`Order ${orderNumber} deleted successfully by ${currentUser.role}.`, "success");
+      showToast(`Order ${orderToDelete.orderNumber} deleted successfully by ${currentUser?.role || "ADMIN"}.`, "success");
+      setOrderToDelete(null);
       refresh();
     } catch (err: any) {
       showToast(err.message, "error");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -287,7 +295,7 @@ export function App() {
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
           onViewOrder={(order) => setSelectedOrder(order)}
-          onDeleteOrder={handleDeleteOrder}
+          onDeleteOrder={handleRequestDelete}
           onCopyText={handleCopyText}
         />
       </main>
@@ -312,6 +320,21 @@ export function App() {
         onClose={() => setIsLoginModalOpen(false)}
         currentUser={currentUser}
         onLoginSuccess={handleLoginSuccess}
+      />
+
+      <ConfirmModal
+        isOpen={!!orderToDelete}
+        title="Delete Order Confirmation"
+        orderNumber={orderToDelete?.orderNumber}
+        message="Are you sure you want to delete this order? This action is irreversible and will permanently remove all associated line items from active records."
+        confirmLabel="Confirm Delete"
+        cancelLabel="Cancel"
+        isDestructive={true}
+        loading={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => {
+          if (!isDeleting) setOrderToDelete(null);
+        }}
       />
 
       {/* Toast Notification Container */}
