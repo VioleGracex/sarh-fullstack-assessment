@@ -1307,6 +1307,88 @@
         min-width: 100%;
       }
     }
+
+    @media (max-width: 640px) {
+      .theme-toolbar {
+        padding: 8px 14px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .toolbar-left, .toolbar-right {
+        justify-content: space-between;
+        width: 100%;
+      }
+      .app-header {
+        padding: 12px 14px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .brand-section {
+        gap: 8px;
+      }
+      .brand-text h1 span.arabic-title {
+        display: none;
+      }
+      .brand-subtitle {
+        display: none;
+      }
+      .user-meta {
+        display: none;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .stat-card {
+        padding: 12px;
+      }
+      .stat-value {
+        font-size: 18px;
+      }
+      .status-tab-list {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+        padding: 4px;
+      }
+      .status-tab-list::-webkit-scrollbar {
+        display: none;
+      }
+      .tab-btn {
+        flex-shrink: 0;
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+      .filter-options-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .select-dropdown {
+        width: 100%;
+      }
+      .drawer-container {
+        max-width: 100%;
+        top: auto;
+        bottom: 0;
+        max-height: 92vh;
+        border-radius: 20px 20px 0 0;
+        border-left: none;
+        border-top: 1px solid var(--border-subtle);
+        transform: translateY(100%);
+      }
+      .drawer-overlay.open .drawer-container {
+        transform: translateY(0);
+      }
+      .form-row-2 {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .item-row {
+        grid-template-columns: 1fr 70px 85px 30px;
+        gap: 6px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1360,6 +1442,14 @@
         </svg>
         <span>Density:</span>
       </div>
+
+      <a href="mobile.html" class="btn-toolbar" style="color: var(--accent-text); border-color: var(--accent-primary); font-weight: 700;" title="Open Dedicated Mobile Ergonomics Mockup (iPhone 14 / 393px)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect>
+          <line x1="12" x2="12.01" y1="18" y2="18"></line>
+        </svg>
+        <span>Mobile View (393px)</span>
+      </a>
 
       <button class="density-toggle" id="densityBtn" onclick="toggleDensity()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1480,18 +1570,6 @@
         </div>
         <div class="stat-value" style="color: var(--badge-processing-text);">1,894</div>
         <div class="stat-subtext">Active fulfillment</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-header">
-          <span class="stat-title">Duplicate Protection</span>
-          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path>
-            <path d="m9 12 2 2 4-4"></path>
-          </svg>
-        </div>
-        <div class="stat-value" style="color: #10b981;">100%</div>
-        <div class="stat-subtext highlight">0 duplicates recorded</div>
       </div>
     </section>
 

@@ -49,6 +49,17 @@ This document outlines the three primary engineering trade-offs evaluated during
 
 ---
 
+## Additional UI/UX Architecture Decision: Mobile Operations Architecture — Order Card Tiles vs. 8-Column Tables
+
+* **The Decision:**  
+  For mobile viewports (e.g. iPhone 14, 393px × 852px), we replace the desktop 8-column `<table>` with vertical **Elevated Order Card Tiles**, condense the stacked KPI cards into a 2×2 glanceable micro-HUD, convert status tabs into a horizontal swipe rail, and adapt the order creation drawer into a thumb-friendly **Bottom Sheet** with sticky submit footer.
+* **Alternative Considered:**  
+  Keeping the desktop `<table>` inside an `overflow-x: auto` container or aggressively hiding 5 of the 8 columns on mobile.
+* **Why We Rejected It:**  
+  The brief explicitly highlights mobile operations and mobile network retries ("agents double-click, mobile networks retry"). In a high-velocity operations environment where agents take phone orders on a smartphone while walking warehouse floors, horizontally scrolling an 8-column table causes constant disorientation, accidental edge-swipe back navigation, and high mis-tap rates on small 20px action buttons. Card tiles present Order ID, customer, line item summary, status badge, and total SAR amount in a single readable vertical scan with generous 44×44px touch targets. Furthermore, the bottom sheet keeps the Grand Total and "Create Order" button anchored right above the iOS/Android virtual keyboard, preventing the submit action from being obscured.
+
+---
+
 ## AI Tools Disclosure
 
 In accordance with Section 5 and the technical constraints of the brief:

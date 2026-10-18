@@ -3,6 +3,22 @@
 
 ---
 
+# [1.4.1] — Animated Count-Up on Refresh & State Change
+Date: 2026-10-18 | Time: ~10 min
+
+## Added
+- `frontend/src/hooks/useCountUp.ts`: High-performance numeric animation hook using `requestAnimationFrame` with ease-out cubic interpolation.
+- Smooth count-up on KPI Stat Cards: Total Orders, Total Revenue, Pending Orders, and Completed Orders animate smoothly from 0 to their actual values on refresh and state updates rather than abruptly snapping.
+- Operations Live Header Badge: Animated count-up synced with total system registered orders.
+
+## Files Affected
+- `frontend/src/hooks/useCountUp.ts`
+- `frontend/src/components/StatCards.tsx`
+- `frontend/src/components/Header.tsx`
+- `devlog/CHANGELOG.md`
+
+---
+
 # [1.4.0] — Undo Toast Action, Multi-Select Bulk Operations & Unit Test Suite
 Date: 2026-10-18 | Time: ~30 min
 

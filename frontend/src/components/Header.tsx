@@ -1,5 +1,6 @@
 import React from "react";
 import type { User, Theme } from "../types/order";
+import { useCountUp } from "../hooks/useCountUp";
 
 interface HeaderProps {
   theme: Theme;
@@ -21,6 +22,7 @@ export const Header: React.FC<HeaderProps> = ({
   totalOrders
 }) => {
   const isDark = theme === "midnight-obsidian";
+  const animatedTotalOrders = useCountUp(totalOrders, 1000);
 
   return (
     <>
@@ -114,7 +116,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div className="status-indicator-pill">
             <span className="dot-pulse"></span>
-            <span>Operations Live ({totalOrders.toLocaleString()} Orders)</span>
+            <span>Operations Live ({animatedTotalOrders.toLocaleString()} Orders)</span>
           </div>
         </div>
 

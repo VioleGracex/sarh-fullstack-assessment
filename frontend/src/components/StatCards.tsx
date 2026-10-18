@@ -1,5 +1,6 @@
 import React from "react";
 import type { SystemStats } from "../types/order";
+import { useCountUp } from "../hooks/useCountUp";
 
 interface StatCardsProps {
   systemStats: SystemStats;
@@ -8,6 +9,12 @@ interface StatCardsProps {
 export const StatCards: React.FC<StatCardsProps> = ({ systemStats }) => {
   const pendingCount = systemStats.statusCounts["PENDING"] ?? 0;
   const completedCount = systemStats.statusCounts["COMPLETED"] ?? 0;
+
+  // Animated Count-Up on refresh / state change
+  const animatedTotalOrders = useCountUp(systemStats.totalSystemRecords, 1000);
+  const animatedRevenue = useCountUp(systemStats.totalRevenue, 1200, 2);
+  const animatedPending = useCountUp(pendingCount, 900);
+  const animatedCompleted = useCountUp(completedCount, 900);
 
   return (
     <section className="stats-grid">
@@ -30,7 +37,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ systemStats }) => {
           </svg>
         </div>
         <div className="stat-value">
-          {systemStats.totalSystemRecords.toLocaleString()}
+          {animatedTotalOrders.toLocaleString()}
         </div>
         <div className="stat-subtext highlight">
           <svg
@@ -68,7 +75,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ systemStats }) => {
           </svg>
         </div>
         <div className="stat-value">
-          {systemStats.totalRevenue.toLocaleString("en-US", {
+          {animatedRevenue.toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
           })}{" "}
@@ -97,7 +104,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ systemStats }) => {
           </svg>
         </div>
         <div className="stat-value" style={{ color: "var(--badge-pending-text)" }}>
-          {pendingCount.toLocaleString()}
+          {animatedPending.toLocaleString()}
         </div>
         <div className="stat-subtext">Requires agent review</div>
       </div>
@@ -120,7 +127,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ systemStats }) => {
           </svg>
         </div>
         <div className="stat-value" style={{ color: "var(--badge-completed-text)" }}>
-          {completedCount.toLocaleString()}
+          {animatedCompleted.toLocaleString()}
         </div>
         <div className="stat-subtext">Fulfilled & reconciled</div>
       </div>
