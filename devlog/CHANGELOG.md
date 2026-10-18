@@ -1,10 +1,17 @@
 # Development Changelog — SARH Orders Console
 **صرح لحلول الأعمال | SARH Business Solutions**
 
+> **Session Time Tracker (Local PC Clock):**
+> - **Session Start:** 15:30 (+03:00)
+> - **Current PC Time:** 16:52 (+03:00)
+> - **Elapsed Time:** 1 hour 22 minutes
+> - **Hard Budget Limit:** 5 hours max
+> - **Remaining Time:** ~3 hours 38 minutes
+
 ---
 
 # [1.4.1] — Animated Count-Up on Refresh & State Change
-Date: 2026-10-18 | Time: ~10 min
+Date: 2026-10-18 | Time Elapsed: ~1h 20m (Cumulative)
 
 ## Added
 - `frontend/src/hooks/useCountUp.ts`: High-performance numeric animation hook using `requestAnimationFrame` with ease-out cubic interpolation.
@@ -124,7 +131,7 @@ Date: 2026-10-18 | Time: ~45 min
 ---
 
 # [1.0.0] — Initial Core Release (R1, R2, Section 3 Code Review)
-Date: 2026-10-18 | Time: ~2.5 hrs
+Date: 2026-10-18 | Session Phase 1
 
 ## Added
 - SQLite database schema via Prisma with B-tree indexes on `status`, `createdAt`, `totalAmount`, `customerEmail`, `customerName`.
