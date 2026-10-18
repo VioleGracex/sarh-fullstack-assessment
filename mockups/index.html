@@ -1730,10 +1730,10 @@
       align-items: center;
       font-size: 13px;
       font-weight: 600;
-      color: #ffffff;
+      color: var(--text-primary);
       z-index: 25;
       pointer-events: none;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+      transition: color var(--transition-fast);
     }
     .sim-iframe {
       width: 100%;
@@ -1750,10 +1750,12 @@
       transform: translateX(-50%);
       width: 134px;
       height: 5px;
-      background: rgba(255, 255, 255, 0.5);
+      background: var(--text-secondary);
+      opacity: 0.45;
       border-radius: 3px;
       z-index: 25;
       pointer-events: none;
+      transition: background-color var(--transition-fast);
     }
 
     /* Floating Mobile Mockup Pill */
@@ -3482,7 +3484,27 @@
       const modal = document.getElementById('mobileSimulatorModal');
       modal.classList.add('open');
       syncSimIframeTheme();
+      syncSimIframeSafeAreas('iphone15');
       showToast('Mobile simulator active — rendering in realistic smartphone chassis', 'info');
+    }
+
+    function syncSimIframeSafeAreas(device) {
+      const iframe = document.getElementById('simIframe');
+      if (iframe && iframe.contentDocument) {
+        try {
+          let safeTop = '54px';
+          let safeBottom = '34px';
+          if (device === 'iphonese') {
+            safeTop = '24px';
+            safeBottom = '8px';
+          } else if (device === 'pixel8') {
+            safeTop = '38px';
+            safeBottom = '24px';
+          }
+          iframe.contentDocument.documentElement.style.setProperty('--safe-top', safeTop);
+          iframe.contentDocument.documentElement.style.setProperty('--safe-bottom', safeBottom);
+        } catch (e) {}
+      }
     }
 
     function closeMobileSimulator() {
@@ -3497,24 +3519,44 @@
 
     function setSimDevice(device) {
       const chassis = document.getElementById('smartphoneChassis');
+      const island = chassis.querySelector('.phone-dynamic-island');
+      const homeBar = chassis.querySelector('.phone-mockup-home-bar');
       document.querySelectorAll('.sim-pill-btn[id^="preset"]').forEach(b => b.classList.remove('active'));
 
       if (device === 'iphone15') {
         chassis.style.width = '393px';
         chassis.style.height = '840px';
         chassis.style.borderRadius = '54px';
+        if (island) {
+          island.style.display = 'flex';
+          island.style.width = '115px';
+          island.style.height = '30px';
+          island.style.borderRadius = '20px';
+        }
+        if (homeBar) homeBar.style.display = 'block';
         document.getElementById('presetIPhone15').classList.add('active');
       } else if (device === 'iphonese') {
         chassis.style.width = '375px';
         chassis.style.height = '667px';
         chassis.style.borderRadius = '40px';
+        if (island) island.style.display = 'none';
+        if (homeBar) homeBar.style.display = 'none';
         document.getElementById('presetIPhoneSE').classList.add('active');
       } else if (device === 'pixel8') {
         chassis.style.width = '412px';
         chassis.style.height = '890px';
         chassis.style.borderRadius = '48px';
+        if (island) {
+          island.style.display = 'flex';
+          island.style.width = '16px';
+          island.style.height = '16px';
+          island.style.borderRadius = '50%';
+        }
+        if (homeBar) homeBar.style.display = 'block';
         document.getElementById('presetPixel8').classList.add('active');
       }
+
+      syncSimIframeSafeAreas(device);
     }
 
     function setSimScale(scale) {

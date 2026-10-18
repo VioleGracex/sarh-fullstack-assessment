@@ -21,8 +21,8 @@
       --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.12);
       --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
       --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: 54px;
+      --safe-bottom: 34px;
     }
 
     /* LIGHT MODE: CORPORATE STEEL & SAPPHIRE */
@@ -128,13 +128,16 @@
       justify-content: space-between;
       padding-left: 16px;
       padding-right: 16px;
+      padding-bottom: 0px;
       box-shadow: var(--shadow-sm);
+      transition: background-color var(--transition-fast), border-color var(--transition-fast);
     }
 
     .brand-cluster {
       display: flex;
       align-items: center;
       gap: 10px;
+      height: 56px;
     }
 
     .brand-crest-box {
@@ -198,6 +201,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      height: 56px;
     }
 
     .icon-touch-btn {
@@ -900,6 +904,8 @@
       padding: 0 !important;
       display: block !important;
       min-height: 100vh !important;
+      --safe-top: 54px !important;
+      --safe-bottom: 34px !important;
     }
 
     .in-iframe .desktop-mockup-companion-bar,
@@ -926,7 +932,16 @@
       padding-bottom: calc(88px + var(--safe-bottom)) !important;
     }
 
+    body.raw-mode {
+      --safe-top: env(safe-area-inset-top, 0px) !important;
+      --safe-bottom: env(safe-area-inset-bottom, 0px) !important;
+    }
+
     @media (max-width: 599px) {
+      :root {
+        --safe-top: env(safe-area-inset-top, 0px);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+      }
       .desktop-mockup-companion-bar,
       .phone-notch-island,
       .phone-standalone-status-bar,
@@ -1071,10 +1086,10 @@
       align-items: center;
       font-size: 13px;
       font-weight: 600;
-      color: #ffffff;
+      color: var(--text-primary);
       z-index: 45;
       pointer-events: none;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+      transition: color var(--transition-fast);
     }
     .phone-home-indicator-bar {
       position: absolute;
@@ -1083,10 +1098,12 @@
       transform: translateX(-50%);
       width: 134px;
       height: 5px;
-      background: rgba(255, 255, 255, 0.5);
+      background: var(--text-secondary);
+      opacity: 0.45;
       border-radius: 3px;
       z-index: 50;
       pointer-events: none;
+      transition: background-color var(--transition-fast);
     }
   </style>
 </head>
@@ -1548,28 +1565,59 @@
     function toggleRawMode() {
       isRawMode = !isRawMode;
       document.body.classList.toggle('raw-mode', isRawMode);
+      if (isRawMode) {
+        document.documentElement.style.setProperty('--safe-top', 'env(safe-area-inset-top, 0px)');
+        document.documentElement.style.setProperty('--safe-bottom', 'env(safe-area-inset-bottom, 0px)');
+      } else {
+        document.documentElement.style.setProperty('--safe-top', '54px');
+        document.documentElement.style.setProperty('--safe-bottom', '34px');
+      }
       document.getElementById('rawToggleBtn').innerHTML = `<span>Mockup Shape: ${isRawMode ? 'Off (Full Width)' : 'Active'}</span>`;
       showMobileToast(isRawMode ? 'Switched to Full Width' : 'Switched to Phone Shape Mockup', 'info');
     }
 
     function setStandaloneDevice(device) {
       const chassis = document.getElementById('mobileDeviceChassis');
+      const island = document.querySelector('.phone-notch-island');
+      const homeBar = document.querySelector('.phone-home-indicator-bar');
       document.querySelectorAll('#companionBar .sim-pill-btn[id^="mpreset"]').forEach(b => b.classList.remove('active'));
 
       if (device === 'iphone15') {
         chassis.style.width = '393px';
         chassis.style.height = '840px';
         chassis.style.borderRadius = '54px';
+        if (island) {
+          island.style.display = 'flex';
+          island.style.width = '115px';
+          island.style.height = '30px';
+          island.style.borderRadius = '20px';
+        }
+        if (homeBar) homeBar.style.display = 'block';
+        document.documentElement.style.setProperty('--safe-top', '54px');
+        document.documentElement.style.setProperty('--safe-bottom', '34px');
         document.getElementById('mpresetIPhone15').classList.add('active');
       } else if (device === 'iphonese') {
         chassis.style.width = '375px';
         chassis.style.height = '667px';
         chassis.style.borderRadius = '40px';
+        if (island) island.style.display = 'none';
+        if (homeBar) homeBar.style.display = 'none';
+        document.documentElement.style.setProperty('--safe-top', '24px');
+        document.documentElement.style.setProperty('--safe-bottom', '8px');
         document.getElementById('mpresetIPhoneSE').classList.add('active');
       } else if (device === 'pixel8') {
         chassis.style.width = '412px';
         chassis.style.height = '890px';
         chassis.style.borderRadius = '48px';
+        if (island) {
+          island.style.display = 'flex';
+          island.style.width = '16px';
+          island.style.height = '16px';
+          island.style.borderRadius = '50%';
+        }
+        if (homeBar) homeBar.style.display = 'block';
+        document.documentElement.style.setProperty('--safe-top', '38px');
+        document.documentElement.style.setProperty('--safe-bottom', '24px');
         document.getElementById('mpresetPixel8').classList.add('active');
       }
     }
