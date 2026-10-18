@@ -3,11 +3,11 @@
 
 > **Assessment Time Budget Status:**
 > - **Session Start Time:** 15:30 (+03:00)
-> - **Current PC Clock:** 16:59 (+03:00)
-> - **Total Session Elapsed:** ~1 hour 29 minutes (`01:29:00`)
+> - **Current PC Clock:** 17:45 (+03:00)
+> - **Total Session Elapsed:** ~2 hours 15 minutes (`02:15:00`)
 > - **Take-Home Hard Time Limit:** 5 hours max (`05:00:00`)
-> - **Remaining Budget:** ~3 hours 31 minutes (`03:31:00`)
-> - **Assessment Pacing:** Comfortable & Ahead of Schedule (~70% budget remaining with 100% core + optional O1 complete)
+> - **Remaining Budget:** ~2 hours 45 minutes (`02:45:00`)
+> - **Assessment Pacing:** Comfortable & Ahead of Schedule (~55% budget remaining with 100% core + optional O1 complete)
 
 ---
 
@@ -35,6 +35,38 @@
 | **17:05:30** | `32abffa` | Clamped toast notification stack to max 3 visible with deduplication and dismiss button | Bug Fix / UX |
 | **17:17:46** | `0f12aac` | Extracted `ToastContainer.tsx` and centralized icon registry in `components/icons` | Architecture |
 | **17:31:40** | `bbb9ec9` | Extracted `useToast.ts` hook, replaced 100% of inline SVGs across all components with modular icons | Optimization |
+| **17:45:00** | Pending | Dedicated Full-Page LoginPage, Strict Auth Gate & Offline Telemetry (🔴 Operations Down) | Security / UI |
+
+---
+
+# [1.0.13] — Dedicated Full-Page Login, Strict Security Auth Gate & Backend Offline Telemetry
+Date: 2026-10-18 | Session Timer: ~2h 15m
+
+## Added
+- **Dedicated Full-Page Authentication View (`frontend/src/components/LoginPage.tsx`)**:
+  - Replaced modal-only access with an enterprise standalone login portal.
+  - Features corporate SARH crest, bilingual branding (صرح لحلول الأعمال), live backend connectivity status pill, theme toggle, and quick-select credential buttons for Admin (`admin@sarh.ai`) and Agent (`agent@sarh.ai`).
+  - Professional copy: Simplified primary button to clean `"Sign In"` (removed verbose developer labels like `"Sign In & Issue JWT"`).
+- **Strict Security Gate in `App.tsx`**:
+  - Unconditional route check: If unauthenticated (`!currentUser || !authToken`), the application immediately renders `<LoginPage>` and unmounts the workspace layout.
+  - Zero DOM leaks: Unauthenticated users have zero access to order sheets, customer tables, or system metrics.
+- **Active Backend Disconnection Telemetry (`frontend/src/hooks/useBackendHealth.ts`)**:
+  - Pings `/api/health` with a 3-second timeout every 7 seconds.
+  - Transitions the header pill from `🟢 Operations Live` to a pulsing crimson `🔴 Operations Down` badge when the Express service is offline.
+  - Renders a top-of-screen crimson alert banner warning operators that mutations are halted with a tactile "Retry Connection" action.
+- **Health Check Endpoints in `backend/src/server.ts`**:
+  - Serves `/health` and `/api/health` returning `{ status: "ok", timestamp: ... }` for zero-overhead polling.
+
+## Files Affected
+- `backend/src/server.ts`
+- `frontend/src/hooks/useBackendHealth.ts`
+- `frontend/src/components/LoginPage.tsx`
+- `frontend/src/components/Header.tsx`
+- `frontend/src/components/LoginModal.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/index.css`
+- `PROBLEMS_AND_SOLUTIONS.md`
+- `devlog/CHANGELOG.md`
 
 ---
 

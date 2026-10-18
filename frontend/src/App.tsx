@@ -10,8 +10,10 @@ import { ConfirmModal } from "./components/ConfirmModal";
 import { StatsModal } from "./components/StatsModal";
 import { MobileSimulatorModal } from "./components/MobileSimulatorModal";
 import { ToastContainer } from "./components/ToastContainer";
-import { SmartphoneIcon } from "./components/icons/index.tsx";
+import { LoginPage } from "./components/LoginPage";
+import { SmartphoneIcon } from "./components/icons";
 import { useToast } from "./hooks/useToast";
+import { useBackendHealth } from "./hooks/useBackendHealth";
 import { useOrders } from "./hooks/useOrders";
 import type { User, Theme, Density, Order, OrderStatus } from "./types/order";
 
@@ -58,17 +60,25 @@ export function App() {
     showToast(`Layout density set to ${nextDensity}`, "info");
   };
 
-  // 2. USER & RBAC STATE (Admin / Agent)
-  const [currentUser, setCurrentUser] = useState<User | null>({
-    id: "admin-seed-id",
-    email: "admin@sarh.ai",
-    role: "ADMIN"
+  // 2. USER & RBAC STATE (Admin / Agent) - Persisted in localStorage
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    try {
+      const saved = localStorage.getItem("sarh_user");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
-  const [authToken, setAuthToken] = useState<string>("");
+  const [authToken, setAuthToken] = useState<string>(() => {
+    return localStorage.getItem("sarh_token") || "";
+  });
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<{ id: string; orderNumber: string } | null>(null);
   const [bulkToDeleteIds, setBulkToDeleteIds] = useState<string[] | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Live Backend Telemetry & Health Monitoring
+  const { isOnline: isBackendOnline, checkHealth } = useBackendHealth();
 
   // Table Selection & Multi-select State
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
@@ -102,34 +112,6 @@ export function App() {
     refresh
   } = useOrders({ initialPageSize: 25 });
 
-  // Sync authentication token with role
-  useEffect(() => {
-    async function login() {
-      if (!currentUser) return;
-      try {
-        const password =
-          currentUser.role === "ADMIN"
-            ? (import.meta.env.VITE_ADMIN_PASSWORD || "admin123")
-            : (import.meta.env.VITE_AGENT_PASSWORD || "agent123");
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: currentUser.email, password })
-        });
-        if (res.ok) {
-          const json = await res.json();
-          setAuthToken(json.token);
-          setCurrentUser(json.user);
-        }
-      } catch (err) {
-        console.warn("Could not authenticate initial user:", err);
-      }
-    }
-    if (!authToken && currentUser) {
-      login();
-    }
-  }, [currentUser?.email, currentUser?.role]);
-
   const handleSwitchUser = async (newRole: "ADMIN" | "AGENT") => {
     const targetEmail = newRole === "ADMIN" ? "admin@sarh.ai" : "agent@sarh.ai";
     const targetPassword = newRole === "ADMIN" ? "admin123" : "agent123";
@@ -143,6 +125,10 @@ export function App() {
         const json = await res.json();
         setAuthToken(json.token);
         setCurrentUser(json.user);
+        try {
+          localStorage.setItem("sarh_user", JSON.stringify(json.user));
+          localStorage.setItem("sarh_token", json.token);
+        } catch {}
         showToast(
           newRole === "ADMIN"
             ? "Switched to Admin role (Delete operations allowed)"
@@ -154,18 +140,35 @@ export function App() {
     } catch (err) {
       console.warn("Could not switch role:", err);
     }
-    setCurrentUser({ id: `${newRole.toLowerCase()}-id`, email: targetEmail, role: newRole });
+    const fallbackUser: User = { id: `${newRole.toLowerCase()}-id`, email: targetEmail, role: newRole };
+    setCurrentUser(fallbackUser);
+    try {
+      localStorage.setItem("sarh_user", JSON.stringify(fallbackUser));
+    } catch {}
   };
 
   const handleLoginSuccess = (user: User, token: string) => {
     setCurrentUser(user);
     setAuthToken(token);
+    try {
+      localStorage.setItem("sarh_user", JSON.stringify(user));
+      localStorage.setItem("sarh_token", token);
+    } catch (e) {
+      console.warn("Storage error:", e);
+    }
     showToast(`Signed in as ${user.email} (${user.role})`, "success");
+    refresh();
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
     setAuthToken("");
+    try {
+      localStorage.removeItem("sarh_user");
+      localStorage.removeItem("sarh_token");
+    } catch (e) {
+      console.warn("Storage error:", e);
+    }
     showToast("Signed out from operations console", "info");
   };
 
@@ -409,6 +412,22 @@ export function App() {
     showToast("Filters reset to default view", "info");
   };
 
+  // Strict Security Gate: Require authentication to access operational orders sheets
+  if (!currentUser || !authToken) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <LoginPage
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
+          onLoginSuccess={handleLoginSuccess}
+          isBackendOnline={isBackendOnline}
+          onCheckHealth={checkHealth}
+        />
+        <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {/* Top Appearance Toolbar & Main Branding Header */}
@@ -422,7 +441,38 @@ export function App() {
         totalOrders={systemStats.totalSystemRecords}
         onOpenStatsModal={() => setIsStatsModalOpen(true)}
         onOpenMobileSimulator={() => setIsMobileSimulatorOpen(true)}
+        isBackendOnline={isBackendOnline}
       />
+
+      {/* Offline Alert Banner if Backend Unreachable */}
+      {!isBackendOnline && (
+        <div
+          style={{
+            backgroundColor: "rgba(239, 68, 68, 0.12)",
+            borderBottom: "1px solid rgba(239, 68, 68, 0.3)",
+            padding: "9px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            fontSize: "12px",
+            color: "#ef4444",
+            fontWeight: 600
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span className="dot-pulse offline" style={{ width: "8px", height: "8px" }}></span>
+            <span>CRITICAL ALERT: Backend server (http://localhost:4000) is unreachable. Real-time operations and mutations are temporarily disabled.</span>
+          </div>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={checkHealth}
+            style={{ padding: "3px 10px", fontSize: "11px", borderColor: "rgba(239, 68, 68, 0.4)", color: "#ef4444" }}
+          >
+            Retry Connection
+          </button>
+        </div>
+      )}
 
       {/* Main Workspace Layout */}
       <main className="app-main">

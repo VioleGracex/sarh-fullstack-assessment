@@ -272,6 +272,13 @@ body {
   font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.status-indicator-pill.offline {
+  background-color: var(--badge-cancelled-bg);
+  border-color: var(--badge-cancelled-border);
+  color: var(--badge-cancelled-text);
 }
 
 .dot-pulse {
@@ -280,6 +287,37 @@ body {
   border-radius: 50%;
   background-color: #10b981;
   box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  animation: pulse-emerald 2s infinite;
+}
+
+.dot-pulse.offline {
+  background-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+  animation: pulse-crimson 1.5s infinite;
+}
+
+@keyframes pulse-emerald {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes pulse-crimson {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
 }
 
 .header-right {

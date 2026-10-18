@@ -23,6 +23,8 @@ During the development and hardening of the **SARH Orders Console**, several rea
 8. [Challenge 8: Five Critical Security Vulnerabilities in Legacy Contractor Auth](#8-five-critical-security-vulnerabilities-in-legacy-contractor-auth)
 9. [Challenge 9: KPI Metric Snapping From 0 on Refresh](#9-kpi-metric-snapping-from-0-on-refresh)
 10. [Challenge 10: Notification Flooding & Toast Queue Clamping](#10-notification-flooding--toast-queue-clamping)
+11. [Challenge 11: Monolithic Component Bloat & Inline SVG Redundancy](#11-monolithic-component-bloat--inline-svg-redundancy)
+12. [Challenge 12: Backend Disconnection Telemetry & Strict Security Authentication Gate](#12-backend-disconnection-telemetry--strict-security-authentication-gate)
 
 ---
 
@@ -250,11 +252,35 @@ During initial rapid feature velocity, raw SVG snippets were pasted directly int
 
 ---
 
+### 12. Backend Disconnection Telemetry & Strict Security Authentication Gate
+
+#### Symptom
+When the Express backend service was stopped, crashed, or unreachable during network degradation, the console header continued to display `🟢 Operations Live`, misleading operators into believing mutations and order updates were functioning normally. Furthermore, unauthenticated visitors could view the underlying orders sheets, KPI metrics, and customer records if authentication was treated merely as an optional modal overlay.
+
+#### Root Cause Analysis
+1. **Static Telemetry**: The status indicator pill rendered static text and CSS classes without pinging an active health endpoint, creating a false-positive telemetry state.
+2. **Client-Side Auth Exposure**: Rendering the orders dashboard unconditionally while floating a modal on top leaves DOM nodes, table data, and sensitive customer emails accessible in browser inspect tools, violating zero-trust architectural guidelines.
+
+#### Engineering Solution
+1. **Active Heartbeat Telemetry ([`useBackendHealth.ts`](file:///d:/task/Sarh_group/frontend/src/hooks/useBackendHealth.ts))**:
+   - Implemented automated polling against `/api/health` with a 3-second abort timeout every 7 seconds.
+   - When the backend drops, the status pill dynamically transitions to a pulsing crimson badge: `🔴 Operations Down`.
+   - Rendered a top-level alert banner across the workspace notifying operators that real-time mutations are halted, with a tactile "Retry Connection" action.
+2. **Strict Security Gate ([`App.tsx`](file:///d:/task/Sarh_group/frontend/src/App.tsx))**:
+   - Enforced an unconditional route gate: if `!currentUser || !authToken`, the application returns the dedicated [`LoginPage.tsx`](file:///d:/task/Sarh_group/frontend/src/components/LoginPage.tsx) exclusively.
+   - The orders table, metrics, KPI counters, and intake drawers are completely unmounted and inaccessible.
+3. **Enterprise Authentication Experience ([`LoginPage.tsx`](file:///d:/task/Sarh_group/frontend/src/components/LoginPage.tsx))**:
+   - Built a dedicated full-page login portal featuring SARH crest branding, theme switching, live backend telemetry, and quick-select credential buttons for Admin (`admin@sarh.ai`) and Agent (`agent@sarh.ai`).
+   - Replaced verbose technical copy (e.g., "Sign In & Issue JWT") with clean, corporate "Sign In" styling.
+
+---
+
 ## Conclusion & Verification Status
 
-All 11 engineering challenges have been resolved, verified against the SQLite database, and proven through:
+All 12 engineering challenges have been resolved, verified against the SQLite database, and proven through:
 - **29 Automated Unit Tests** (`npm run test:unit`)
 - **Automated R2 Duplicate Prevention Proof** (`npm run test:duplicate`)
-- **Production Vite Build** (`npm --prefix frontend run build` in ~333ms)
+- **Production Vite Build** (`npm --prefix frontend run build` in ~309ms)
 - **Zero Browser Native Dialogs Rule** fully enforced
 - **100% Modular Icon Architecture** with 0 raw SVGs in UI components
+- **Strict Security Gate** with dedicated `LoginPage` & live backend telemetry

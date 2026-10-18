@@ -20,7 +20,7 @@ app.use(
 app.use(express.json());
 
 // Health check endpoint
-app.get("/health", (_req, res) => {
+app.get(["/health", "/api/health"], (_req, res) => {
   res.json({ status: "healthy", timestamp: new Date().toISOString() });
 });
 

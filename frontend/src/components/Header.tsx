@@ -21,6 +21,7 @@ interface HeaderProps {
   totalOrders?: number;
   onOpenStatsModal?: () => void;
   onOpenMobileSimulator?: () => void;
+  isBackendOnline?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -31,7 +32,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenLoginModal,
   onLogout,
   onOpenStatsModal,
-  onOpenMobileSimulator
+  onOpenMobileSimulator,
+  isBackendOnline = true
 }) => {
   const isDark = theme === "midnight-obsidian";
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -144,9 +146,12 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="brand-subtitle">Orders Operations Console · Production System</div>
           </div>
 
-          <div className="status-indicator-pill">
-            <span className="dot-pulse"></span>
-            <span>Operations Live</span>
+          <div
+            className={`status-indicator-pill ${!isBackendOnline ? "offline" : ""}`}
+            title={isBackendOnline ? "Backend operational (http://localhost:4000)" : "Backend service offline or unreachable"}
+          >
+            <span className={`dot-pulse ${!isBackendOnline ? "offline" : ""}`}></span>
+            <span>{isBackendOnline ? "Operations Live" : "Operations Down"}</span>
           </div>
         </div>
 
@@ -311,7 +316,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="btn-primary"
               style={{ padding: "6px 14px", fontSize: "12px" }}
             >
-              Sign In (JWT)
+              Sign In
             </button>
           )}
         </div>

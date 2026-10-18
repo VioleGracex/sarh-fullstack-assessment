@@ -97,7 +97,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             SARH Operations Authentication
           </h2>
           <p style={{ fontSize: "12px", color: "var(--text-tertiary)", marginTop: "4px" }}>
-            Cryptographically signed JWT with Role-Based Access Control (RBAC)
+            Enter your credentials to access the operational orders console
           </p>
         </div>
 
@@ -212,7 +212,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               className="btn-primary"
               style={{ padding: "8px 20px", width: currentUser ? "auto" : "100%", justifyContent: "center" }}
             >
-              {loading ? "Authenticating..." : "Sign In & Issue JWT"}
+              {loading ? "Authenticating..." : "Sign In"}
             </button>
           </div>
         </form>
