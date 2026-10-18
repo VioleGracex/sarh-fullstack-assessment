@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="corporate-steel">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>SARH Orders Console - Mobile Operations</title>
+  <style>
+    /* ==========================================================================
+       SARH BUSINESS SOLUTIONS - MOBILE OPERATIONS CONSOLE
+       Optimized for iPhone 14 & Modern Smartphones (360px - 430px)
+       One-handed thumb navigation, zero horizontal scrolling, high-contrast OLED
+       ========================================================================== */
+
+    :root {
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.12);
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    /* LIGHT MODE: CORPORATE STEEL & SAPPHIRE */
+    [data-theme="corporate-steel"] {
+      --bg-canvas: #f1f5f9;
+      --bg-surface: #ffffff;
+      --bg-subtle: #e2e8f0;
+      --bg-muted: #cbd5e1;
+      --border-subtle: #cbd5e1;
+      --border-strong: #94a3b8;
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-tertiary: #64748b;
+      --accent-primary: #1e40af;
+      --accent-hover: #1e3a8a;
+      --accent-subtle: #eff6ff;
+      --accent-text: #1e40af;
+      --accent-ring: rgba(30, 64, 175, 0.2);
+
+      --badge-pending-bg: #fef3c7;
+      --badge-pending-text: #92400e;
+      --badge-pending-border: #fde68a;
+
+      --badge-processing-bg: #dbeafe;
+      --badge-processing-text: #1e40af;
+      --badge-processing-border: #bfdbfe;
+
+      --badge-completed-bg: #d1fae5;
+      --badge-completed-text: #065f46;
+      --badge-completed-border: #a7f3d0;
+
+      --badge-cancelled-bg: #fee2e2;
+      --badge-cancelled-text: #991b1b;
+      --badge-cancelled-border: #fecaca;
+    }
+
+    /* DARK MODE: MIDNIGHT OBSIDIAN & ZINC */
+    [data-theme="midnight-obsidian"] {
+      --bg-canvas: #12141a;
+      --bg-surface: #191c24;
+      --bg-subtle: #212530;
+      --bg-muted: #2c3241;
+      --border-subtle: #2b3140;
+      --border-strong: #3e4659;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-tertiary: #64748b;
+      --accent-primary: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --accent-subtle: rgba(56, 189, 248, 0.12);
+      --accent-text: #38bdf8;
+      --accent-ring: rgba(56, 189, 248, 0.25);
+
+      --badge-pending-bg: rgba(245, 158, 11, 0.15);
+      --badge-pending-text: #fbbf24;
+      --badge-pending-border: rgba(245, 158, 11, 0.35);
+
+      --badge-processing-bg: rgba(14, 165, 233, 0.15);
+      --badge-processing-text: #38bdf8;
+      --badge-processing-border: rgba(14, 165, 233, 0.35);
+
+      --badge-completed-bg: rgba(34, 197, 94, 0.15);
+      --badge-completed-text: #4ade80;
+      --badge-completed-border: rgba(34, 197, 94, 0.35);
+
+      --badge-cancelled-bg: rgba(239, 68, 68, 0.15);
+      --badge-cancelled-text: #f87171;
+      --badge-cancelled-border: rgba(239, 68, 68, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font-stack);
+      font-size: 14px;
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: calc(88px + var(--safe-bottom));
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ==========================================================================
+       MOBILE APP BAR (Single 56px Sticky Header)
+       ========================================================================== */
+    .mobile-app-bar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      padding-top: var(--safe-top);
+      height: calc(56px + var(--safe-top));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 16px;
+      padding-right: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-crest-box {
+      width: 32px;
+      height: 32px;
+      background: var(--accent-subtle);
+      color: var(--accent-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .role-micro-chip {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 1px 5px;
+      background: var(--accent-subtle);
+      color: var(--accent-text);
+      border-radius: 4px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .live-pulse-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #10b981;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-touch-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .icon-touch-btn:active {
+      transform: scale(0.94);
+      background-color: var(--bg-muted);
+    }
+
+    .avatar-touch-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent-subtle);
+      border: 1.5px solid var(--accent-primary);
+      color: var(--accent-text);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* ==========================================================================
+       CONTAINER & 2x2 COMPACT TELEMETRY MICRO-HUD
+       ========================================================================== */
+    .mobile-main {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .kpi-micro-hud {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .micro-kpi-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .micro-kpi-header {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .micro-kpi-val {
+      font-size: 17px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+      line-height: 1.1;
+    }
+
+    .micro-kpi-sub {
+      font-size: 10px;
+      color: var(--text-tertiary);
+    }
+
+    /* ==========================================================================
+       STICKY SEARCH & HORIZONTAL FILTER CHIPS RAIL
+       ========================================================================== */
+    .controls-sticky-wrap {
+      position: sticky;
+      top: calc(56px + var(--safe-top));
+      z-index: 30;
+      background-color: var(--bg-canvas);
+      padding: 4px 0 8px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mobile-search-bar {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .search-glass-icon {
+      position: absolute;
+      left: 12px;
+      color: var(--text-tertiary);
+      pointer-events: none;
+    }
+
+    .mobile-search-input {
+      width: 100%;
+      height: 44px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 0 40px 0 38px;
+      font-size: 14px;
+      color: var(--text-primary);
+      outline: none;
+      box-shadow: var(--shadow-sm);
+      transition: border-color var(--transition-fast);
+    }
+
+    .mobile-search-input:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--accent-ring);
+    }
+
+    .clear-search-btn {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      display: none;
+      padding: 6px;
+    }
+
+    .clear-search-btn.active {
+      display: flex;
+    }
+
+    /* Horizontal Filter Chip Rail */
+    .filter-chip-rail {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding: 2px 2px 4px 2px;
+    }
+
+    .filter-chip-rail::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+      transition: all var(--transition-fast);
+    }
+
+    .filter-chip:active {
+      transform: scale(0.96);
+    }
+
+    .filter-chip.active {
+      background-color: var(--accent-primary);
+      color: #ffffff;
+      border-color: var(--accent-primary);
+    }
+
+    [data-theme="midnight-obsidian"] .filter-chip.active {
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    .chip-count {
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+      background: rgba(0, 0, 0, 0.08);
+      padding: 1px 6px;
+      border-radius: 999px;
+    }
+
+    .filter-chip.active .chip-count {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Rapid Filter Test Simulation Trigger for Mobile */
+    .r1-test-chip {
+      border: 1px dashed var(--accent-primary);
+      background-color: var(--accent-subtle);
+      color: var(--accent-text);
+    }
+
+    /* ==========================================================================
+       MOBILE ORDER CARDS LIST (Completely replaces desktop <table>)
+       ========================================================================== */
+    .mobile-orders-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mobile-order-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .mobile-order-card:active {
+      transform: scale(0.985);
+      border-color: var(--accent-primary);
+    }
+
+    .card-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .order-id-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: ui-monospace, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-text);
+    }
+
+    .card-copy-btn {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      padding: 4px;
+      display: inline-flex;
+      border-radius: 4px;
+    }
+
+    .card-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      border-width: 1px;
+      border-style: solid;
+    }
+
+    .card-status-badge.completed {
+      background: var(--badge-completed-bg);
+      color: var(--badge-completed-text);
+      border-color: var(--badge-completed-border);
+    }
+    .card-status-badge.processing {
+      background: var(--badge-processing-bg);
+      color: var(--badge-processing-text);
+      border-color: var(--badge-processing-border);
+    }
+    .card-status-badge.pending {
+      background: var(--badge-pending-bg);
+      color: var(--badge-pending-text);
+      border-color: var(--badge-pending-border);
+    }
+    .card-status-badge.cancelled {
+      background: var(--badge-cancelled-bg);
+      color: var(--badge-cancelled-text);
+      border-color: var(--badge-cancelled-border);
+    }
+
+    .card-customer-row {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .card-customer-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .card-items-snippet {
+      font-size: 12px;
+      color: var(--text-secondary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .card-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 8px;
+      margin-top: 2px;
+    }
+
+    .card-date {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .card-amount {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .card-amount-sar {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      margin-left: 2px;
+    }
+
+    /* Mobile Pagination Footer */
+    .mobile-footer-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .pager-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pager-nav-btn {
+      height: 36px;
+      padding: 0 12px;
+      border-radius: var(--radius-sm);
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ==========================================================================
+       FLOATING ACTION BUTTON (FAB) - NATURAL THUMB ZONE
+       ========================================================================== */
+    .fab-new-order {
+      position: fixed;
+      right: 18px;
+      bottom: calc(20px + var(--safe-bottom));
+      z-index: 45;
+      height: 52px;
+      padding: 0 20px;
+      background-color: var(--accent-primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      box-shadow: var(--shadow-lg);
+      font-size: 14px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .fab-new-order:active {
+      transform: scale(0.95);
+    }
+
+    [data-theme="midnight-obsidian"] .fab-new-order {
+      color: #0f172a;
+    }
+
+    /* ==========================================================================
+       MOBILE FULL BOTTOM SHEETS (Create Order & Order Inspection)
+       ========================================================================== */
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(2px);
+      z-index: 100;
+      display: none;
+      opacity: 0;
+      transition: opacity var(--transition-fast);
+    }
+
+    .sheet-overlay.open {
+      display: flex;
+      opacity: 1;
+      align-items: flex-end;
+    }
+
+    .bottom-sheet {
+      width: 100%;
+      max-height: 92vh;
+      background-color: var(--bg-surface);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .sheet-overlay.open .bottom-sheet {
+      transform: translateY(0);
+    }
+
+    .sheet-grabber-bar {
+      width: 100%;
+      padding: 10px 0 4px 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .sheet-grabber-pill {
+      width: 36px;
+      height: 4px;
+      background-color: var(--border-strong);
+      border-radius: 999px;
+    }
+
+    .sheet-header {
+      padding: 10px 18px 14px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sheet-header-text h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .sheet-header-text p {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .sheet-close-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .sheet-content-scroll {
+      padding: 16px 18px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Form Fields for Mobile */
+    .m-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .m-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .m-input, .m-select {
+      width: 100%;
+      height: 44px;
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0 12px;
+      font-size: 14px;
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    .m-input:focus, .m-select:focus {
+      border-color: var(--accent-primary);
+    }
+
+    /* Mobile Item Card Stack (Vertical Layout) */
+    .mobile-item-card {
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .item-card-row1 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .item-card-row2 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .stepper-box {
+      display: flex;
+      align-items: center;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+
+    .stepper-btn {
+      width: 38px;
+      height: 38px;
+      border: none;
+      background: none;
+      color: var(--text-primary);
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stepper-btn:active {
+      background-color: var(--bg-subtle);
+    }
+
+    .stepper-val {
+      width: 32px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Sticky Footer Bar inside Bottom Sheet */
+    .sheet-sticky-footer {
+      background-color: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      padding: 14px 18px calc(14px + var(--safe-bottom)) 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .sheet-total-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+
+    .sheet-grand-total {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--accent-text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .btn-submit-mobile {
+      width: 100%;
+      height: 48px;
+      background-color: var(--accent-primary);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-submit-mobile:active {
+      transform: scale(0.985);
+    }
+
+    [data-theme="midnight-obsidian"] .btn-submit-mobile {
+      color: #0f172a;
+    }
+
+    /* Duplicate Sim Button in Mobile */
+    .btn-double-sim-mobile {
+      width: 100%;
+      height: 38px;
+      background-color: #f59e0b;
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* Toast Notification for Mobile */
+    .m-toast-box {
+      position: fixed;
+      top: calc(66px + var(--safe-top));
+      left: 16px;
+      right: 16px;
+      z-index: 150;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .m-toast {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      box-shadow: var(--shadow-lg);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: translateY(-20px);
+      opacity: 0;
+      transition: all 200ms ease-out;
+    }
+
+    .m-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================================
+       MOBILE APP BAR (56px)
+       ======================================================================== -->
+  <header class="mobile-app-bar">
+    <div class="brand-cluster">
+      <div class="brand-crest-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+      </div>
+      <div class="brand-title-wrap">
+        <div class="brand-title">
+          <span>SARH</span>
+          <span class="role-micro-chip">Agent</span>
+        </div>
+        <div class="live-pulse-indicator">
+          <span class="pulse-dot"></span>
+          <span>Live Operations</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <!-- Dark/Light Mode Switcher -->
+      <button class="icon-touch-btn" onclick="toggleMobileTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+        <span id="themeIconSvg">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="m4.93 4.93 1.41 1.41"></path>
+            <path d="m17.66 17.66 1.41 1.41"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+            <path d="m6.34 17.66-1.41 1.41"></path>
+            <path d="m19.07 4.93-1.41 1.41"></path>
+          </svg>
+        </span>
+      </button>
+
+      <!-- Desktop View Switcher Link -->
+      <a href="index.html" class="icon-touch-btn" title="Switch to Desktop Console View" aria-label="Desktop console">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="20" height="14" x="2" y="3" rx="2"></rect>
+          <line x1="8" x2="16" y1="21" y2="21"></line>
+          <line x1="12" x2="12" y1="17" y2="21"></line>
+        </svg>
+      </a>
+
+      <!-- Profile Avatar Button -->
+      <button class="avatar-touch-btn" onclick="openProfileSheet()" aria-label="Agent profile">
+        TA
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN MOBILE BODY
+       ======================================================================== -->
+  <main class="mobile-main">
+
+    <!-- 2x2 COMPACT TELEMETRY HUD -->
+    <section class="kpi-micro-hud">
+      <div class="micro-kpi-card">
+        <div class="micro-kpi-header">
+          <span>Revenue Today</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"></rect><line x1="2" x2="22" y1="10" y2="10"></line></svg>
+        </div>
+        <div class="micro-kpi-val">142,850 <span style="font-size: 11px; color: var(--text-tertiary);">SAR</span></div>
+        <div class="micro-kpi-sub" style="color: #10b981;">+3.2% vs yesterday</div>
+      </div>
+
+      <div class="micro-kpi-card">
+        <div class="micro-kpi-header">
+          <span>Total Orders</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path></svg>
+        </div>
+        <div class="micro-kpi-val">54,230</div>
+        <div class="micro-kpi-sub">All active records</div>
+      </div>
+
+      <div class="micro-kpi-card">
+        <div class="micro-kpi-header">
+          <span>Pending Review</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <div class="micro-kpi-val" style="color: var(--badge-pending-text);">412</div>
+        <div class="micro-kpi-sub">Needs clearance</div>
+      </div>
+
+      <div class="micro-kpi-card">
+        <div class="micro-kpi-header">
+          <span>Duplicate Shield</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path></svg>
+        </div>
+        <div class="micro-kpi-val" style="color: #10b981;">100%</div>
+        <div class="micro-kpi-sub">0 duplicates</div>
+      </div>
+    </section>
+
+    <!-- STICKY SEARCH & HORIZONTAL FILTER CHIPS -->
+    <section class="controls-sticky-wrap">
+      <div class="mobile-search-bar">
+        <svg class="search-glass-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" x2="16.65" y1="21" y2="16.65"></line>
+        </svg>
+        <input 
+          type="text" 
+          class="mobile-search-input" 
+          id="mobileSearchInput" 
+          placeholder="Search by order ID, customer name..." 
+          oninput="handleMobileSearch(this.value)"
+        >
+        <button class="clear-search-btn" id="clearSearchBtn" onclick="clearMobileSearch()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" x2="6" y1="6" y2="18"></line>
+            <line x1="6" x2="18" y1="6" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Horizontal Swipeable Status Chips -->
+      <div class="filter-chip-rail">
+        <button class="filter-chip active" onclick="setMobileFilter('ALL', this)">
+          <span>All</span>
+          <span class="chip-count">54.2K</span>
+        </button>
+        <button class="filter-chip" onclick="setMobileFilter('PENDING', this)">
+          <span>Pending</span>
+          <span class="chip-count">412</span>
+        </button>
+        <button class="filter-chip" onclick="setMobileFilter('PROCESSING', this)">
+          <span>Processing</span>
+          <span class="chip-count">1.8K</span>
+        </button>
+        <button class="filter-chip" onclick="setMobileFilter('COMPLETED', this)">
+          <span>Completed</span>
+          <span class="chip-count">50.4K</span>
+        </button>
+        <button class="filter-chip" onclick="setMobileFilter('CANCELLED', this)">
+          <span>Cancelled</span>
+          <span class="chip-count">1.5K</span>
+        </button>
+        <button class="filter-chip r1-test-chip" onclick="simulateMobileRaceCondition()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>R1 Race Test</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- MOBILE ORDER CARDS FEED (No horizontal scroll!) -->
+    <section class="mobile-orders-feed" id="mobileOrdersFeed">
+      <!-- Dynamically generated mobile cards -->
+    </section>
+
+    <!-- MOBILE PAGINATION FOOTER -->
+    <footer class="mobile-footer-pager">
+      <span id="mobileRangeText">Showing 1 to 8 of 54,230</span>
+      <div class="pager-btn-group">
+        <button class="pager-nav-btn" onclick="prevMobilePage()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          <span>Prev</span>
+        </button>
+        <button class="pager-nav-btn" onclick="nextMobilePage()">
+          <span>Next</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- ========================================================================
+       FLOATING ACTION BUTTON (FAB) - FAST PHONE ORDER CREATION
+       ======================================================================== -->
+  <button class="fab-new-order" onclick="openCreateOrderSheet()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" x2="12" y1="5" y2="19"></line>
+      <line x1="5" x2="19" y1="12" y2="12"></line>
+    </svg>
+    <span>New Order</span>
+  </button>
+
+  <!-- ========================================================================
+       ADAPTIVE BOTTOM SHEET: CREATE ORDER (R2 DUPLICATE LOCK)
+       ======================================================================== -->
+  <div class="sheet-overlay" id="createOrderSheet" onclick="handleSheetOverlayClick(event, 'createOrderSheet')">
+    <div class="bottom-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-grabber-bar">
+        <div class="sheet-grabber-pill"></div>
+      </div>
+
+      <div class="sheet-header">
+        <div class="sheet-header-text">
+          <h3>Register Phone Order</h3>
+          <p>Duplicate-proof order entry for mobile agents</p>
+        </div>
+        <button class="sheet-close-btn" onclick="closeCreateOrderSheet()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="sheet-content-scroll">
+        <!-- Idempotency Badge -->
+        <div style="background-color: var(--bg-subtle); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700; color: var(--accent-text);">
+            <span>IDEMPOTENCY KEY LOCK (R2)</span>
+            <button style="background:none; border:none; color:var(--accent-text); font-size:10px; font-weight:600; cursor:pointer;" onclick="regenerateMobileIdempotency()">Regen</button>
+          </div>
+          <div style="font-family: ui-monospace, monospace; font-size: 11px; color: var(--text-secondary);" id="mIdempotencyKey">
+            8f921a4c-5501-44bb-912a-0091efda8821
+          </div>
+        </div>
+
+        <div class="m-form-group">
+          <label class="m-label">Customer Name</label>
+          <input type="text" class="m-input" id="mCustName" value="Mohammed Al-Otaibi" placeholder="Customer full name">
+        </div>
+
+        <div class="m-form-group">
+          <label class="m-label">Customer Email</label>
+          <input type="email" class="m-input" id="mCustEmail" value="m.otaibi@sarh.sa" placeholder="customer@domain.sa">
+        </div>
+
+        <div class="m-form-group">
+          <label class="m-label">Status</label>
+          <select class="m-select" id="mStatusSelect">
+            <option value="PENDING">PENDING - Needs Verification</option>
+            <option value="PROCESSING">PROCESSING - In Fulfillment</option>
+          </select>
+        </div>
+
+        <!-- Stacked Items Section -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="m-label">Line Items</span>
+          <button style="background:var(--bg-subtle); border:1px solid var(--border-subtle); color:var(--text-primary); padding:4px 10px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;" onclick="addMobileLineItem()">+ Add Item</button>
+        </div>
+
+        <div id="mLineItemsWrap" style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="mobile-item-card">
+            <div class="item-card-row1">
+              <input type="text" class="m-input m-item-name" style="height:36px; font-size:13px;" value="Enterprise Fiber Gateway XG" placeholder="Product name">
+              <button style="background:none; border:none; color:var(--text-tertiary); padding:4px;" onclick="removeMobileLineItem(this)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path></svg>
+              </button>
+            </div>
+            <div class="item-card-row2">
+              <div class="stepper-box">
+                <button class="stepper-btn" onclick="stepQty(this, -1)">-</button>
+                <span class="stepper-val m-item-qty">2</span>
+                <button class="stepper-btn" onclick="stepQty(this, 1)">+</button>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 11px; color: var(--text-tertiary);">Unit SAR:</span>
+                <input type="number" class="m-input m-item-price" style="width:90px; height:36px; text-align:right;" value="1850" oninput="calculateMobileTotal()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Concurrency Double-Tap Simulation Sandbox -->
+        <div style="border:1px solid var(--border-subtle); border-radius:8px; padding:10px; background:var(--bg-canvas); display:flex; flex-direction:column; gap:6px;">
+          <span style="font-size:11px; font-weight:700; color:var(--text-primary);">Mobile Network Retry Simulation (R2)</span>
+          <p style="font-size:10px; color:var(--text-secondary);">Test rapid double-tapping on mobile cellular connection:</p>
+          <button class="btn-double-sim-mobile" onclick="simulateMobileDoubleTap()">
+            Simulate Rapid Double-Tap
+          </button>
+        </div>
+      </div>
+
+      <!-- Sticky Bottom Action Footer (Above Keyboard & Home Bar) -->
+      <footer class="sheet-sticky-footer">
+        <div class="sheet-total-row">
+          <span style="color: var(--text-secondary);">Subtotal + 15% VAT:</span>
+          <span class="sheet-grand-total" id="mGrandTotal">4,255.00 SAR</span>
+        </div>
+        <button class="btn-submit-mobile" id="mSubmitBtn" onclick="submitMobileOrder()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span id="mSubmitText">Create Order</span>
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       BOTTOM SHEET: ORDER INSPECTION
+       ======================================================================== -->
+  <div class="sheet-overlay" id="orderInspectSheet" onclick="handleSheetOverlayClick(event, 'orderInspectSheet')">
+    <div class="bottom-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-grabber-bar">
+        <div class="sheet-grabber-pill"></div>
+      </div>
+
+      <div class="sheet-header">
+        <div class="sheet-header-text">
+          <h3 id="inspectId">ORD-2026-09418</h3>
+          <p id="inspectDate">18 Oct 2026 at 14:22 AST</p>
+        </div>
+        <button class="sheet-close-btn" onclick="closeInspectSheet()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="sheet-content-scroll">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:12px; color:var(--text-tertiary);">Status:</span>
+          <span class="card-status-badge completed" id="inspectStatusBadge">COMPLETED</span>
+        </div>
+
+        <div style="background-color: var(--bg-subtle); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+          <div style="font-size: 14px; font-weight: 700;" id="inspectCustomerName">Sultan Al-Otaibi</div>
+          <div style="font-size: 12px; color: var(--text-secondary);" id="inspectCustomerEmail">sultan.otaibi@sarh.sa</div>
+        </div>
+
+        <div class="m-label">Purchased Items</div>
+        <div id="inspectItemsList" style="display:flex; flex-direction:column; gap:6px;"></div>
+
+        <div style="background-color: var(--bg-canvas); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display:flex; justify-content:space-between;">
+          <span style="font-weight: 600;">Total Paid:</span>
+          <span style="font-size: 16px; font-weight: 700; color: var(--accent-text);" id="inspectTotalAmount">4,850.00 SAR</span>
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-tertiary);">
+          Idempotency Audit Key: <br>
+          <code style="font-size: 10px;" id="inspectAuditKey">e1a90c4d-b352-4fe8-8c11-923f7190d64a</code>
+        </div>
+      </div>
+
+      <footer class="sheet-sticky-footer">
+        <button class="btn-submit-mobile" style="background-color: var(--bg-subtle); color: var(--text-primary); border: 1px solid var(--border-subtle);" onclick="closeInspectSheet()">
+          Back to List
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       BOTTOM SHEET: AGENT ACCOUNT & ROLE TOGGLE
+       ======================================================================== -->
+  <div class="sheet-overlay" id="profileSheet" onclick="handleSheetOverlayClick(event, 'profileSheet')">
+    <div class="bottom-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-grabber-bar">
+        <div class="sheet-grabber-pill"></div>
+      </div>
+
+      <div class="sheet-header">
+        <div class="sheet-header-text">
+          <h3>Agent Account</h3>
+          <p>Tariq Al-Harbi · Operations Shift 1</p>
+        </div>
+        <button class="sheet-close-btn" onclick="closeProfileSheet()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="sheet-content-scroll">
+        <div style="background-color: var(--bg-subtle); padding: 12px; border-radius: var(--radius-sm); display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; font-weight: 700;">Active Role</span>
+          <div style="display: flex; gap: 8px;">
+            <button style="flex:1; height:38px; border-radius:6px; border:none; background:var(--accent-primary); color:#ffffff; font-weight:700; font-size:12px;">Agent</button>
+            <button style="flex:1; height:38px; border-radius:6px; border:1px solid var(--border-subtle); background:var(--bg-surface); color:var(--text-secondary); font-weight:600; font-size:12px;" onclick="showMobileToast('Admin view simulated', 'info')">Admin</button>
+          </div>
+        </div>
+
+        <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+          <strong>SARH Business Solutions (صرح لحلول الأعمال)</strong><br>
+          Connected to SQLite Production Engine<br>
+          54,230 orders active in database.
+        </div>
+      </div>
+
+      <footer class="sheet-sticky-footer">
+        <button class="btn-submit-mobile" style="background-color: var(--bg-subtle); color: var(--text-primary); border: 1px solid var(--border-subtle);" onclick="closeProfileSheet()">
+          Done
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="m-toast-box" id="mToastBox"></div>
+
+  <!-- ========================================================================
+       MOBILE LOGIC JAVASCRIPT
+       ======================================================================== -->
+  <script>
+    const MOBILE_ORDERS = [
+      {
+        id: "ORD-2026-09418",
+        customerName: "Sultan Al-Otaibi",
+        customerEmail: "sultan.otaibi@sarh.sa",
+        itemsSnippet: "Enterprise Cloud Router, 10G SFP+ Module...",
+        createdAt: "18 Oct 2026, 14:22",
+        status: "COMPLETED",
+        totalAmount: 4850.00,
+        idempotencyKey: "e1a90c4d-b352-4fe8-8c11-923f7190d64a",
+        items: [
+          { name: "Enterprise Cloud Router XG-90", qty: 1, price: 3450.00 },
+          { name: "10G SFP+ Optical Transceiver", qty: 2, price: 700.00 }
+        ]
+      },
+      {
+        id: "ORD-2026-09417",
+        customerName: "Sarah Mansoor Al-Ghamdi",
+        customerEmail: "sarah.mansoor@aramco.com",
+        itemsSnippet: "Dedicated Rack Server Power Unit 1200W",
+        createdAt: "18 Oct 2026, 14:18",
+        status: "PROCESSING",
+        totalAmount: 1890.00,
+        idempotencyKey: "9f3c21a4-7809-40ea-9bf2-66a9821d3f11",
+        items: [
+          { name: "Dedicated Rack Server Power Unit 1200W", qty: 1, price: 1890.00 }
+        ]
+      },
+      {
+        id: "ORD-2026-09416",
+        customerName: "Faisal Al-Zahrani",
+        customerEmail: "faisal.zahrani@stc.com.sa",
+        itemsSnippet: "Managed PoE+ Switch 48-Port, Cat6A Cables...",
+        createdAt: "18 Oct 2026, 14:05",
+        status: "PENDING",
+        totalAmount: 7620.00,
+        idempotencyKey: "4d71e892-3c5b-4221-a7b3-19df83a62ec0",
+        items: [
+          { name: "Managed PoE+ Switch 48-Port", qty: 1, price: 5200.00 },
+          { name: "Cat6A Shielded Patch Cable 2m", qty: 4, price: 605.00 }
+        ]
+      },
+      {
+        id: "ORD-2026-09415",
+        customerName: "Reem Khalid Al-Dossari",
+        customerEmail: "reem.dossari@sabic.com",
+        itemsSnippet: "Hardware Security Module (HSM) Level 3...",
+        createdAt: "18 Oct 2026, 13:54",
+        status: "COMPLETED",
+        totalAmount: 12450.00,
+        idempotencyKey: "81bc3290-67df-48aa-b91c-7f551982bde4",
+        items: [
+          { name: "Hardware Security Module (HSM)", qty: 1, price: 11500.00 },
+          { name: "Backup Smartcards", qty: 2, price: 475.00 }
+        ]
+      },
+      {
+        id: "ORD-2026-09414",
+        customerName: "Nasser Al-Subaie",
+        customerEmail: "nasser.subaie@elm.sa",
+        itemsSnippet: "Network Monitoring Sensor Probe",
+        createdAt: "18 Oct 2026, 13:30",
+        status: "CANCELLED",
+        totalAmount: 920.00,
+        idempotencyKey: "12ae89bc-9932-44df-911e-35ba70211dca",
+        items: [
+          { name: "Network Monitoring Sensor Probe", qty: 1, price: 920.00 }
+        ]
+      },
+      {
+        id: "ORD-2026-09413",
+        customerName: "Dr. Laila Al-Omari",
+        customerEmail: "laila.omari@kfshrc.edu.sa",
+        itemsSnippet: "SAN Storage Controller, Dual Port HBA...",
+        createdAt: "18 Oct 2026, 13:12",
+        status: "PROCESSING",
+        totalAmount: 16800.00,
+        idempotencyKey: "55df77bb-12a8-44ec-944b-48192a009ef3",
+        items: [
+          { name: "High-Availability SAN Controller", qty: 1, price: 14200.00 },
+          { name: "Dual Port HBA 16Gbps", qty: 2, price: 1300.00 }
+        ]
+      }
+    ];
+
+    let currentFilter = 'ALL';
+    let searchQuery = '';
+    let isDarkMode = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderMobileFeed(MOBILE_ORDERS);
+      calculateMobileTotal();
+    });
+
+    // Render Card Tiles (replaces desktop table)
+    function renderMobileFeed(orders) {
+      const feed = document.getElementById('mobileOrdersFeed');
+      feed.innerHTML = '';
+
+      if (orders.length === 0) {
+        feed.innerHTML = `
+          <div style="text-align: center; padding: 40px 16px; color: var(--text-tertiary);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" x2="16.65" y1="21" y2="16.65"></line></svg>
+            <div style="font-weight: 700; margin-top: 8px; color: var(--text-secondary);">No orders found</div>
+            <div style="font-size: 11px;">Try adjusting your search or status filter.</div>
+          </div>
+        `;
+        return;
+      }
+
+      orders.forEach(order => {
+        const card = document.createElement('div');
+        card.className = 'mobile-order-card';
+        card.onclick = () => openInspectSheet(order.id);
+        card.innerHTML = `
+          <div class="card-top-row">
+            <div class="order-id-group">
+              <span>${order.id}</span>
+              <button class="card-copy-btn" onclick="event.stopPropagation(); copyMobileText('${order.id}')" title="Copy Order ID">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+              </button>
+            </div>
+            <span class="card-status-badge ${order.status.toLowerCase()}">
+              ${order.status}
+            </span>
+          </div>
+
+          <div class="card-customer-row">
+            <div class="card-customer-name">${order.customerName}</div>
+            <div class="card-items-snippet">${order.itemsSnippet}</div>
+          </div>
+
+          <div class="card-bottom-row">
+            <span class="card-date">${order.createdAt}</span>
+            <div class="card-amount">
+              ${order.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              <span class="card-amount-sar">SAR</span>
+            </div>
+          </div>
+        `;
+        feed.appendChild(card);
+      });
+
+      document.getElementById('mobileRangeText').textContent = `Showing 1 to ${orders.length} of 54,230`;
+    }
+
+    // Filters and Search
+    function setMobileFilter(status, btn) {
+      currentFilter = status;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      applyMobileFilters();
+    }
+
+    function handleMobileSearch(val) {
+      searchQuery = val.toLowerCase().trim();
+      document.getElementById('clearSearchBtn').classList.toggle('active', searchQuery.length > 0);
+      applyMobileFilters();
+    }
+
+    function clearMobileSearch() {
+      document.getElementById('mobileSearchInput').value = '';
+      searchQuery = '';
+      document.getElementById('clearSearchBtn').classList.remove('active');
+      applyMobileFilters();
+    }
+
+    function applyMobileFilters() {
+      const filtered = MOBILE_ORDERS.filter(o => {
+        const matchesStatus = (currentFilter === 'ALL') || (o.status === currentFilter);
+        const matchesSearch = !searchQuery || 
+          o.customerName.toLowerCase().includes(searchQuery) ||
+          o.id.toLowerCase().includes(searchQuery) ||
+          o.customerEmail.toLowerCase().includes(searchQuery);
+        return matchesStatus && matchesSearch;
+      });
+      renderMobileFeed(filtered);
+    }
+
+    // Toggle Theme Light (Corporate Steel) <-> Dark (Midnight Obsidian)
+    function toggleMobileTheme() {
+      isDarkMode = !isDarkMode;
+      const targetTheme = isDarkMode ? 'midnight-obsidian' : 'corporate-steel';
+      document.documentElement.setAttribute('data-theme', targetTheme);
+
+      const iconBox = document.getElementById('themeIconSvg');
+      if (isDarkMode) {
+        iconBox.innerHTML = `
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+        `;
+        showMobileToast('Dark Mode: Midnight Obsidian', 'info');
+      } else {
+        iconBox.innerHTML = `
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+        `;
+        showMobileToast('Light Mode: Corporate Steel', 'info');
+      }
+    }
+
+    // Simulate R1 Race Condition on Mobile
+    function simulateMobileRaceCondition() {
+      showMobileToast('Req #1 [PENDING] sent...', 'info');
+      setTimeout(() => {
+        showMobileToast('Req #2 [PROCESSING] sent -> Req #1 Aborted!', 'info');
+      }, 150);
+      setTimeout(() => {
+        setMobileFilter('COMPLETED', document.querySelectorAll('.filter-chip')[3]);
+        showMobileToast('R1 Passed: Req #3 [COMPLETED] rendered cleanly!', 'success');
+      }, 350);
+    }
+
+    // Bottom Sheet Handlers
+    function openCreateOrderSheet() {
+      regenerateMobileIdempotency();
+      document.getElementById('createOrderSheet').classList.add('open');
+    }
+
+    function closeCreateOrderSheet() {
+      document.getElementById('createOrderSheet').classList.remove('open');
+    }
+
+    function openInspectSheet(orderId) {
+      const order = MOBILE_ORDERS.find(o => o.id === orderId) || MOBILE_ORDERS[0];
+      document.getElementById('inspectId').textContent = order.id;
+      document.getElementById('inspectDate').textContent = `${order.createdAt} AST`;
+      document.getElementById('inspectCustomerName').textContent = order.customerName;
+      document.getElementById('inspectCustomerEmail').textContent = order.customerEmail;
+      document.getElementById('inspectTotalAmount').textContent = `${order.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR`;
+      document.getElementById('inspectAuditKey').textContent = order.idempotencyKey;
+
+      const badge = document.getElementById('inspectStatusBadge');
+      badge.className = `card-status-badge ${order.status.toLowerCase()}`;
+      badge.textContent = order.status;
+
+      const list = document.getElementById('inspectItemsList');
+      list.innerHTML = '';
+      order.items.forEach(item => {
+        const line = document.createElement('div');
+        line.style.cssText = 'display:flex; justify-content:space-between; font-size:12px; background:var(--bg-canvas); padding:6px 10px; border-radius:6px;';
+        line.innerHTML = `<span>${item.qty}x ${item.name}</span><strong>${(item.qty * item.price).toLocaleString('en-US')} SAR</strong>`;
+        list.appendChild(line);
+      });
+
+      document.getElementById('orderInspectSheet').classList.add('open');
+    }
+
+    function closeInspectSheet() {
+      document.getElementById('orderInspectSheet').classList.remove('open');
+    }
+
+    function openProfileSheet() {
+      document.getElementById('profileSheet').classList.add('open');
+    }
+
+    function closeProfileSheet() {
+      document.getElementById('profileSheet').classList.remove('open');
+    }
+
+    function handleSheetOverlayClick(e, sheetId) {
+      if (e.target.id === sheetId) {
+        document.getElementById(sheetId).classList.remove('open');
+      }
+    }
+
+    // Stepper & Calculations
+    function stepQty(btn, delta) {
+      const stepper = btn.closest('.stepper-box');
+      const valSpan = stepper.querySelector('.m-item-qty');
+      let current = parseInt(valSpan.textContent) || 1;
+      current = Math.max(1, current + delta);
+      valSpan.textContent = current;
+      calculateMobileTotal();
+    }
+
+    function calculateMobileTotal() {
+      const items = document.querySelectorAll('#mLineItemsWrap .mobile-item-card');
+      let subtotal = 0;
+      items.forEach(card => {
+        const qty = parseInt(card.querySelector('.m-item-qty').textContent) || 1;
+        const price = parseFloat(card.querySelector('.m-item-price').value) || 0;
+        subtotal += (qty * price);
+      });
+      const vat = subtotal * 0.15;
+      const grandTotal = subtotal + vat;
+      document.getElementById('mGrandTotal').textContent = `${grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR`;
+    }
+
+    function addMobileLineItem() {
+      const wrap = document.getElementById('mLineItemsWrap');
+      const card = document.createElement('div');
+      card.className = 'mobile-item-card';
+      card.innerHTML = `
+        <div class="item-card-row1">
+          <input type="text" class="m-input m-item-name" style="height:36px; font-size:13px;" value="Cat6A Shielded Patch Cable" placeholder="Product name">
+          <button style="background:none; border:none; color:var(--text-tertiary); padding:4px;" onclick="removeMobileLineItem(this)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path></svg>
+          </button>
+        </div>
+        <div class="item-card-row2">
+          <div class="stepper-box">
+            <button class="stepper-btn" onclick="stepQty(this, -1)">-</button>
+            <span class="stepper-val m-item-qty">1</span>
+            <button class="stepper-btn" onclick="stepQty(this, 1)">+</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 11px; color: var(--text-tertiary);">Unit SAR:</span>
+            <input type="number" class="m-input m-item-price" style="width:90px; height:36px; text-align:right;" value="150" oninput="calculateMobileTotal()">
+          </div>
+        </div>
+      `;
+      wrap.appendChild(card);
+      calculateMobileTotal();
+    }
+
+    function removeMobileLineItem(btn) {
+      const wrap = document.getElementById('mLineItemsWrap');
+      if (wrap.children.length > 1) {
+        btn.closest('.mobile-item-card').remove();
+        calculateMobileTotal();
+      } else {
+        showMobileToast('Minimum 1 line item required', 'warning');
+      }
+    }
+
+    function regenerateMobileIdempotency() {
+      const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+      document.getElementById('mIdempotencyKey').textContent = uuid;
+    }
+
+    function submitMobileOrder() {
+      const name = document.getElementById('mCustName').value.trim();
+      const email = document.getElementById('mCustEmail').value.trim();
+      if (!name || !email) {
+        showMobileToast('Please enter customer name & email', 'warning');
+        return;
+      }
+
+      const submitBtn = document.getElementById('mSubmitBtn');
+      const submitText = document.getElementById('mSubmitText');
+      submitBtn.disabled = true;
+      submitText.textContent = 'Locking Transaction...';
+
+      setTimeout(() => {
+        const newId = `ORD-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+        const totalNum = parseFloat(document.getElementById('mGrandTotal').textContent.replace(' SAR', '').replace(',', '')) || 2500;
+        
+        MOBILE_ORDERS.unshift({
+          id: newId,
+          customerName: name,
+          customerEmail: email,
+          itemsSnippet: "Manual Phone Order · Idempotency-Verified",
+          createdAt: "Just now",
+          status: document.getElementById('mStatusSelect').value,
+          totalAmount: totalNum,
+          idempotencyKey: document.getElementById('mIdempotencyKey').textContent,
+          items: [{ name: "Manual Mobile Items", qty: 1, price: totalNum }]
+        });
+
+        submitBtn.disabled = false;
+        submitText.textContent = 'Create Order';
+        closeCreateOrderSheet();
+        applyMobileFilters();
+        showMobileToast(`Order ${newId} created safely!`, 'success');
+      }, 500);
+    }
+
+    function simulateMobileDoubleTap() {
+      showMobileToast('Simulating concurrent cellular retries...', 'info');
+      setTimeout(() => {
+        showMobileToast('Request A: Lock acquired. Order created in DB.', 'success');
+      }, 200);
+      setTimeout(() => {
+        showMobileToast('Request B: Lock active in DB. 0 duplicate created!', 'success');
+      }, 500);
+    }
+
+    function copyMobileText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showMobileToast(`Copied ${text}`, 'info');
+      });
+    }
+
+    function prevMobilePage() { showMobileToast('Page 1 of 6,778', 'info'); }
+    function nextMobilePage() { showMobileToast('Page 2 of 6,778', 'info'); }
+
+    function showMobileToast(msg, type = 'info') {
+      const box = document.getElementById('mToastBox');
+      const toast = document.createElement('div');
+      toast.className = 'm-toast';
+      toast.innerHTML = `
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>${msg}</span>
+      `;
+      box.appendChild(toast);
+      setTimeout(() => toast.classList.add('show'), 20);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 250);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

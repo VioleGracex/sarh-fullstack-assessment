@@ -3,6 +3,35 @@
 
 ---
 
+# [1.4.0] — Undo Toast Action, Multi-Select Bulk Operations & Unit Test Suite
+Date: 2026-10-18 | Time: ~30 min
+
+## Added
+- In-Toast Undo Action Button: Displayed beside deletion success notifications with a circular undo icon. Clicking it immediately restores deleted orders and line items via `/api/orders/restore` and `/api/orders/bulk-restore`.
+- Multi-Select & "Select All on Page": Header checkbox toggles selection for all visible rows on the current page with indeterminate visual state. Rows highlight upon selection with `var(--accent-subtle)`.
+- Floating Bulk Actions Toolbar: Appears automatically when 1 or more orders are selected:
+  - Selected count badge (`[ 3 ] orders selected`).
+  - Bulk Status Updater: 1-click update to `Processing`, `Completed`, or `Cancelled`.
+  - Bulk Export to CSV: Generates and downloads a clean CSV file of selected rows.
+  - Copy IDs: Copies comma-separated Order IDs to the clipboard.
+  - Bulk Delete (ADMIN only): Protected by server-side RBAC with in-app `<ConfirmModal>` and full bulk undo support.
+  - Deselect All button (`✕`).
+- Database Reset Script: `npm run db:reset` or `npm run reset` resets and re-seeds the 50,000-order database in ~40 seconds.
+- Comprehensive Unit Test Suite (`backend/tests/api.unit.test.ts`): 29 unit tests covering pagination, sorting, search, Zod schema validation, idempotency replay, RBAC deletion, restore/undo, and bulk operations.
+- Root test runner: `npm test` runs both the unit test suite and the R2 duplicate prevention test concurrently.
+
+## Files Affected
+- `backend/src/routes/order.routes.ts`
+- `backend/tests/api.unit.test.ts`
+- `backend/package.json`
+- `package.json`
+- `frontend/src/App.tsx`
+- `frontend/src/components/OrdersTable.tsx`
+- `frontend/src/index.css`
+- `devlog/CHANGELOG.md`
+
+---
+
 # [1.3.0] — Zero Browser Dialogs & In-App Deletion Modal
 Date: 2026-10-18 | Time: ~15 min
 

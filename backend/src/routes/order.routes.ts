@@ -221,7 +221,10 @@ router.post("/orders", requireIdempotency, async (req: Request, res: Response) =
 router.delete("/orders/:id", requireAuth, requireRole("ADMIN"), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const existing = await prisma.order.findUnique({ where: { id } });
+    const existing = await prisma.order.findUnique({
+      where: { id },
+      include: { items: true }
+    });
 
     if (!existing) {
       return res.status(404).json({ error: "Order not found" });
@@ -231,11 +234,182 @@ router.delete("/orders/:id", requireAuth, requireRole("ADMIN"), async (req: Requ
 
     return res.json({
       ok: true,
-      message: `Order ${existing.orderNumber} deleted successfully by admin.`
+      message: `Order ${existing.orderNumber} deleted successfully by admin.`,
+      deletedOrder: existing
     });
   } catch (error) {
     console.error("Delete order error:", error);
     return res.status(500).json({ error: "Failed to delete order" });
+  }
+});
+
+/**
+ * POST /api/orders/restore
+ * Undo deletion: restores an order with its exact items
+ */
+router.post("/orders/restore", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { order } = req.body;
+    if (!order || !order.orderNumber) {
+      return res.status(400).json({ error: "Invalid payload: 'order' object required" });
+    }
+
+    // Check if already restored
+    const existing = await prisma.order.findUnique({
+      where: { id: order.id },
+      include: { items: true }
+    });
+    if (existing) {
+      return res.status(200).json({ ok: true, order: existing, alreadyExisted: true });
+    }
+
+    const restored = await prisma.order.create({
+      data: {
+        id: order.id,
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        status: order.status || "PENDING",
+        totalAmount: order.totalAmount,
+        createdAt: new Date(order.createdAt),
+        updatedAt: new Date(order.updatedAt || order.createdAt),
+        items: {
+          create: (order.items || []).map((item: any) => ({
+            id: item.id || undefined,
+            productName: item.productName,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            subtotal: item.subtotal
+          }))
+        }
+      },
+      include: { items: true }
+    });
+
+    return res.status(201).json({
+      ok: true,
+      message: `Order ${restored.orderNumber} restored successfully.`,
+      order: restored
+    });
+  } catch (error: any) {
+    console.error("Restore order error:", error);
+    return res.status(500).json({ error: error.message || "Failed to restore order" });
+  }
+});
+
+/**
+ * POST /api/orders/bulk-status
+ * Updates status for multiple selected orders
+ */
+router.post("/orders/bulk-status", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { ids, status } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0 || !status) {
+      return res.status(400).json({ error: "ids array and status string required" });
+    }
+
+    const result = await prisma.order.updateMany({
+      where: { id: { in: ids } },
+      data: { status }
+    });
+
+    return res.json({
+      ok: true,
+      count: result.count,
+      status,
+      message: `Updated status to ${status} for ${result.count} order(s).`
+    });
+  } catch (error: any) {
+    console.error("Bulk status error:", error);
+    return res.status(500).json({ error: "Failed to update bulk status" });
+  }
+});
+
+/**
+ * POST /api/orders/bulk-delete
+ * Protected by server-side requireAuth AND requireRole("ADMIN")
+ * Returns deletedOrders array so full bulk undo is supported!
+ */
+router.post("/orders/bulk-delete", requireAuth, requireRole("ADMIN"), async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: "ids array required" });
+    }
+
+    const existingOrders = await prisma.order.findMany({
+      where: { id: { in: ids } },
+      include: { items: true }
+    });
+
+    if (existingOrders.length === 0) {
+      return res.status(404).json({ error: "No matching orders found to delete" });
+    }
+
+    await prisma.order.deleteMany({
+      where: { id: { in: ids } }
+    });
+
+    return res.json({
+      ok: true,
+      count: existingOrders.length,
+      deletedOrders: existingOrders,
+      message: `Successfully deleted ${existingOrders.length} order(s).`
+    });
+  } catch (error: any) {
+    console.error("Bulk delete error:", error);
+    return res.status(500).json({ error: "Failed to execute bulk deletion" });
+  }
+});
+
+/**
+ * POST /api/orders/bulk-restore
+ * Undoes bulk deletion
+ */
+router.post("/orders/bulk-restore", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { orders } = req.body;
+    if (!Array.isArray(orders) || orders.length === 0) {
+      return res.status(400).json({ error: "orders array required" });
+    }
+
+    let restoredCount = 0;
+    for (const order of orders) {
+      const exists = await prisma.order.findUnique({ where: { id: order.id } });
+      if (!exists) {
+        await prisma.order.create({
+          data: {
+            id: order.id,
+            orderNumber: order.orderNumber,
+            customerName: order.customerName,
+            customerEmail: order.customerEmail,
+            status: order.status || "PENDING",
+            totalAmount: order.totalAmount,
+            createdAt: new Date(order.createdAt),
+            updatedAt: new Date(order.updatedAt || order.createdAt),
+            items: {
+              create: (order.items || []).map((item: any) => ({
+                id: item.id || undefined,
+                productName: item.productName,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                subtotal: item.subtotal
+              }))
+            }
+          }
+        });
+        restoredCount++;
+      }
+    }
+
+    return res.json({
+      ok: true,
+      restoredCount,
+      message: `Restored ${restoredCount} order(s) successfully.`
+    });
+  } catch (error: any) {
+    console.error("Bulk restore error:", error);
+    return res.status(500).json({ error: "Failed to restore bulk orders" });
   }
 });
 

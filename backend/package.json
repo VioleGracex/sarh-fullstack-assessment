@@ -10,6 +10,10 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "seed": "tsx prisma/seed.ts",
+    "db:reset": "tsx prisma/seed.ts",
+    "reset": "tsx prisma/seed.ts",
+    "test": "tsx tests/api.unit.test.ts && tsx tests/duplicate.test.ts",
+    "test:unit": "tsx tests/api.unit.test.ts",
     "test:duplicate": "tsx tests/duplicate.test.ts"
   },
   "dependencies": {

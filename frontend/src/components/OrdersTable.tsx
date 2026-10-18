@@ -9,6 +9,14 @@ interface OrdersTableProps {
   sortBy: "createdAt" | "totalAmount" | "orderNumber";
   sortOrder: "asc" | "desc";
   currentUser: User | null;
+  selectedOrderIds: string[];
+  onToggleSelectOrder: (orderId: string) => void;
+  onToggleSelectAllPage: () => void;
+  onBulkUpdateStatus: (status: OrderStatus) => void;
+  onBulkDelete: () => void;
+  onClearSelection: () => void;
+  onExportSelectedCsv: () => void;
+  onCopySelectedIds: () => void;
   onSortToggle: (column: "createdAt" | "totalAmount" | "orderNumber") => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
@@ -25,6 +33,14 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
   sortBy,
   sortOrder,
   currentUser,
+  selectedOrderIds,
+  onToggleSelectOrder,
+  onToggleSelectAllPage,
+  onBulkUpdateStatus,
+  onBulkDelete,
+  onClearSelection,
+  onExportSelectedCsv,
+  onCopySelectedIds,
   onSortToggle,
   onPageChange,
   onPageSizeChange,
@@ -174,14 +190,129 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
     });
   };
 
+  const isAllSelectedOnPage = orders.length > 0 && orders.every((o) => selectedOrderIds.includes(o.id));
+  const isSomeSelectedOnPage = orders.some((o) => selectedOrderIds.includes(o.id));
+
   return (
     <section className="table-container">
+      {/* Floating / Docked Bulk Actions Toolbar */}
+      {selectedOrderIds.length > 0 && (
+        <div className="bulk-actions-bar">
+          <div className="bulk-info">
+            <span className="bulk-badge">{selectedOrderIds.length}</span>
+            <span className="bulk-label">
+              {selectedOrderIds.length === 1 ? "1 order selected" : `${selectedOrderIds.length} orders selected`}
+            </span>
+          </div>
+
+          <div className="bulk-actions-group">
+            <div className="bulk-status-dropdown-wrapper">
+              <span style={{ fontSize: "11px", color: "var(--text-tertiary)", fontWeight: 600 }}>Set Status:</span>
+              <button
+                type="button"
+                className="btn-bulk-action"
+                onClick={() => onBulkUpdateStatus("PROCESSING")}
+                title="Mark selected orders as Processing"
+              >
+                Processing
+              </button>
+              <button
+                type="button"
+                className="btn-bulk-action"
+                onClick={() => onBulkUpdateStatus("COMPLETED")}
+                title="Mark selected orders as Completed"
+              >
+                Completed
+              </button>
+              <button
+                type="button"
+                className="btn-bulk-action"
+                onClick={() => onBulkUpdateStatus("CANCELLED")}
+                title="Mark selected orders as Cancelled"
+              >
+                Cancelled
+              </button>
+            </div>
+
+            <div className="bulk-divider" />
+
+            <button
+              type="button"
+              className="btn-bulk-action"
+              onClick={onExportSelectedCsv}
+              title="Export selected orders as CSV"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Export CSV</span>
+            </button>
+
+            <button
+              type="button"
+              className="btn-bulk-action"
+              onClick={onCopySelectedIds}
+              title="Copy selected Order Numbers to clipboard"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+              </svg>
+              <span>Copy IDs</span>
+            </button>
+
+            {currentUser?.role === "ADMIN" && (
+              <>
+                <div className="bulk-divider" />
+                <button
+                  type="button"
+                  className="btn-bulk-action delete"
+                  onClick={onBulkDelete}
+                  title="Admin Delete Selected Orders"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                  </svg>
+                  <span>Delete ({selectedOrderIds.length})</span>
+                </button>
+              </>
+            )}
+
+            <button
+              type="button"
+              className="btn-bulk-clear"
+              onClick={onClearSelection}
+              title="Clear selection"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="table-responsive">
         <table className="orders-table">
           <thead>
             <tr>
               <th style={{ width: "40px" }}>
-                <input type="checkbox" className="custom-checkbox" aria-label="Select all orders" />
+                <input
+                  type="checkbox"
+                  className="custom-checkbox"
+                  aria-label="Select all orders on this page"
+                  checked={isAllSelectedOnPage}
+                  ref={(el) => {
+                    if (el) {
+                      el.indeterminate = isSomeSelectedOnPage && !isAllSelectedOnPage;
+                    }
+                  }}
+                  onChange={onToggleSelectAllPage}
+                />
               </th>
               <th
                 className="sortable"
@@ -285,9 +416,15 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                     : "No items";
 
                 return (
-                  <tr key={order.id}>
+                  <tr key={order.id} className={selectedOrderIds.includes(order.id) ? "selected-row" : ""}>
                     <td>
-                      <input type="checkbox" className="custom-checkbox" aria-label={`Select order ${order.orderNumber}`} />
+                      <input
+                        type="checkbox"
+                        className="custom-checkbox"
+                        aria-label={`Select order ${order.orderNumber}`}
+                        checked={selectedOrderIds.includes(order.id)}
+                        onChange={() => onToggleSelectOrder(order.id)}
+                      />
                     </td>
                     <td>
                       <div className="order-number-cell">

@@ -8,12 +8,17 @@ import { OrderDetailDrawer } from "./components/OrderDetailDrawer";
 import { LoginModal } from "./components/LoginModal";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { useOrders } from "./hooks/useOrders";
-import type { User, Theme, Density, Order } from "./types/order";
+import type { User, Theme, Density, Order, OrderStatus } from "./types/order";
 
 interface ToastItem {
   id: string;
   message: string;
   type: "info" | "success" | "warning" | "error";
+  action?: {
+    label: string;
+    icon?: "undo";
+    onClick: () => void;
+  };
 }
 
 export function App() {
@@ -64,7 +69,11 @@ export function App() {
   const [authToken, setAuthToken] = useState<string>("");
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<{ id: string; orderNumber: string } | null>(null);
+  const [bulkToDeleteIds, setBulkToDeleteIds] = useState<string[] | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Table Selection & Multi-select State
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
 
   // Slide-over Drawers state
   const [isOrderDrawerOpen, setIsOrderDrawerOpen] = useState(false);
@@ -73,13 +82,20 @@ export function App() {
   // In-page Toast Notifications
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  const showToast = useCallback((message: string, type: "info" | "success" | "warning" | "error" = "info") => {
-    const id = `${Date.now()}-${Math.random()}`;
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3800);
-  }, []);
+  const showToast = useCallback(
+    (
+      message: string,
+      type: "info" | "success" | "warning" | "error" = "info",
+      action?: { label: string; icon?: "undo"; onClick: () => void }
+    ) => {
+      const id = `${Date.now()}-${Math.random()}`;
+      setToasts((prev) => [...prev, { id, message, type, action }]);
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, action ? 7500 : 3800);
+    },
+    []
+  );
 
   // 3. CORE ORDERS HOOK (Silent AbortController Race Condition Defense + System Stats)
   const {
@@ -199,9 +215,196 @@ export function App() {
         throw new Error(json.message || json.error || "Failed to delete order");
       }
 
-      showToast(`Order ${orderToDelete.orderNumber} deleted successfully by ${currentUser?.role || "ADMIN"}.`, "success");
+      const deletedOrder = json.deletedOrder;
+      const deletedNumber = orderToDelete.orderNumber;
       setOrderToDelete(null);
       refresh();
+
+      showToast(
+        `Order ${deletedNumber} deleted successfully by ${currentUser?.role || "ADMIN"}.`,
+        "success",
+        deletedOrder
+          ? {
+              label: "Undo",
+              icon: "undo",
+              onClick: async () => {
+                try {
+                  const restoreRes = await fetch("/api/orders/restore", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ order: deletedOrder })
+                  });
+                  if (restoreRes.ok) {
+                    showToast(`Order ${deletedOrder.orderNumber} restored successfully!`, "info");
+                    refresh();
+                  } else {
+                    const err = await restoreRes.json();
+                    showToast(err.message || "Failed to restore order", "error");
+                  }
+                } catch (err: any) {
+                  showToast(err.message || "Failed to restore order", "error");
+                }
+              }
+            }
+          : undefined
+      );
+    } catch (err: any) {
+      showToast(err.message, "error");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  // MULTI-SELECT & BULK ACTIONS HANDLERS
+  // --------------------------------------------------------------------------
+  const handleToggleSelectOrder = (orderId: string) => {
+    setSelectedOrderIds((prev) =>
+      prev.includes(orderId) ? prev.filter((id) => id !== orderId) : [...prev, orderId]
+    );
+  };
+
+  const handleToggleSelectAllPage = () => {
+    const pageIds = orders.map((o) => o.id);
+    const allSelected = pageIds.length > 0 && pageIds.every((id) => selectedOrderIds.includes(id));
+
+    if (allSelected) {
+      setSelectedOrderIds((prev) => prev.filter((id) => !pageIds.includes(id)));
+    } else {
+      setSelectedOrderIds((prev) => Array.from(new Set([...prev, ...pageIds])));
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedOrderIds([]);
+  };
+
+  const handleBulkUpdateStatus = async (newStatus: OrderStatus) => {
+    if (selectedOrderIds.length === 0) return;
+    try {
+      const res = await fetch("/api/orders/bulk-status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ ids: selectedOrderIds, status: newStatus })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update status");
+
+      showToast(`Updated ${data.count} order(s) to ${newStatus}.`, "success");
+      setSelectedOrderIds([]);
+      refresh();
+    } catch (err: any) {
+      showToast(err.message, "error");
+    }
+  };
+
+  const handleCopySelectedIds = () => {
+    const selectedOrders = orders.filter((o) => selectedOrderIds.includes(o.id));
+    const ids = selectedOrders.map((o) => o.orderNumber).join(", ");
+    navigator.clipboard.writeText(ids);
+    showToast(`Copied ${selectedOrders.length} Order ID(s) to clipboard`, "info");
+  };
+
+  const handleExportSelectedCsv = () => {
+    const selectedOrders = orders.filter((o) => selectedOrderIds.includes(o.id));
+    if (selectedOrders.length === 0) return;
+
+    const headers = ["Order ID", "Customer Name", "Customer Email", "Status", "Total Amount (SAR)", "Created Date"];
+    const rows = selectedOrders.map((o) => [
+      `"${o.orderNumber}"`,
+      `"${o.customerName.replace(/"/g, '""')}"`,
+      `"${o.customerEmail.replace(/"/g, '""')}"`,
+      `"${o.status}"`,
+      `"${o.totalAmount.toFixed(2)}"`,
+      `"${new Date(o.createdAt).toISOString()}"`
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `SARH_Orders_Export_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast(`Exported ${selectedOrders.length} orders as CSV`, "success");
+  };
+
+  const handleRequestBulkDelete = () => {
+    if (selectedOrderIds.length === 0) return;
+    if (!currentUser) {
+      showToast("Authentication required: Please sign in as Admin", "error");
+      setIsLoginModalOpen(true);
+      return;
+    }
+    if (currentUser.role !== "ADMIN") {
+      showToast("Access Denied: Agent role cannot delete orders (Server-side RBAC enforced)", "error");
+      return;
+    }
+    setBulkToDeleteIds([...selectedOrderIds]);
+  };
+
+  const handleConfirmBulkDelete = async () => {
+    if (!bulkToDeleteIds || bulkToDeleteIds.length === 0) return;
+    setIsDeleting(true);
+
+    try {
+      const res = await fetch("/api/orders/bulk-delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ ids: bulkToDeleteIds })
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to delete orders");
+
+      const count = json.count;
+      const deletedOrders = json.deletedOrders;
+      setSelectedOrderIds([]);
+      setBulkToDeleteIds(null);
+      refresh();
+
+      showToast(
+        `Successfully deleted ${count} order(s) by ${currentUser?.role || "ADMIN"}.`,
+        "success",
+        deletedOrders && deletedOrders.length > 0
+          ? {
+              label: "Undo",
+              icon: "undo",
+              onClick: async () => {
+                try {
+                  const restoreRes = await fetch("/api/orders/bulk-restore", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ orders: deletedOrders })
+                  });
+                  if (restoreRes.ok) {
+                    showToast(`Restored ${deletedOrders.length} order(s) successfully!`, "info");
+                    refresh();
+                  } else {
+                    const err = await restoreRes.json();
+                    showToast(err.message || "Failed to restore orders", "error");
+                  }
+                } catch (err: any) {
+                  showToast(err.message || "Failed to restore orders", "error");
+                }
+              }
+            }
+          : undefined
+      );
     } catch (err: any) {
       showToast(err.message, "error");
     } finally {
@@ -291,6 +494,14 @@ export function App() {
           sortBy={sortBy}
           sortOrder={sortOrder}
           currentUser={currentUser}
+          selectedOrderIds={selectedOrderIds}
+          onToggleSelectOrder={handleToggleSelectOrder}
+          onToggleSelectAllPage={handleToggleSelectAllPage}
+          onBulkUpdateStatus={handleBulkUpdateStatus}
+          onBulkDelete={handleRequestBulkDelete}
+          onClearSelection={handleClearSelection}
+          onExportSelectedCsv={handleExportSelectedCsv}
+          onCopySelectedIds={handleCopySelectedIds}
           onSortToggle={toggleSort}
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
@@ -337,6 +548,21 @@ export function App() {
         }}
       />
 
+      <ConfirmModal
+        isOpen={!!bulkToDeleteIds && bulkToDeleteIds.length > 0}
+        title="Bulk Delete Orders Confirmation"
+        orderNumber={`${bulkToDeleteIds?.length || 0} Orders Selected`}
+        message={`Are you sure you want to delete all ${bulkToDeleteIds?.length || 0} selected orders? This action will permanently remove them from active records and is protected by server-side RBAC.`}
+        confirmLabel={`Delete ${bulkToDeleteIds?.length || 0} Orders`}
+        cancelLabel="Cancel"
+        isDestructive={true}
+        loading={isDeleting}
+        onConfirm={handleConfirmBulkDelete}
+        onCancel={() => {
+          if (!isDeleting) setBulkToDeleteIds(null);
+        }}
+      />
+
       {/* Toast Notification Container */}
       <div className="toast-container" id="toastContainer">
         {toasts.map((toast) => (
@@ -369,6 +595,25 @@ export function App() {
               </svg>
             )}
             <span>{toast.message}</span>
+            {toast.action && (
+              <button
+                type="button"
+                className="toast-action-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toast.action?.onClick();
+                  setToasts((prev) => prev.filter((t) => t.id !== toast.id));
+                }}
+              >
+                {toast.action.icon === "undo" && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 7v6h6"></path>
+                    <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+                  </svg>
+                )}
+                <span>{toast.action.label}</span>
+              </button>
+            )}
           </div>
         ))}
       </div>

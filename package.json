@@ -6,6 +6,10 @@
   "scripts": {
     "install:all": "npm --prefix backend install && npm --prefix frontend install",
     "seed": "npm --prefix backend run seed",
+    "reset": "npm --prefix backend run reset",
+    "db:reset": "npm --prefix backend run db:reset",
+    "test": "npm --prefix backend run test",
+    "test:unit": "npm --prefix backend run test:unit",
     "test:duplicate": "npm --prefix backend run test:duplicate",
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
