@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import type { User } from "../types/order";
+import { BrandLogoIcon } from "./icons";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -90,11 +91,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               justifyContent: "center"
             }}
           >
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-              <polyline points="2 17 12 22 22 17"></polyline>
-              <polyline points="2 12 12 17 22 12"></polyline>
-            </svg>
+            <BrandLogoIcon size={26} />
           </div>
           <h2 style={{ fontSize: "18px", fontWeight: 700, color: "var(--text-primary)" }}>
             SARH Operations Authentication

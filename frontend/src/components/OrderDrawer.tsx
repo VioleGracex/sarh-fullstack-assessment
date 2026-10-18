@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { OrderStatus } from "../types/order";
+import { CloseIcon, InfoIcon, LockIcon, PlusIcon, TrashIcon, CheckIcon } from "./icons";
 
 interface OrderDrawerProps {
   isOpen: boolean;
@@ -150,39 +151,14 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
             onClick={onClose}
             aria-label="Close drawer"
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
+            <CloseIcon size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="drawer-body">
           {/* Architecture Note */}
           <div className="drawer-ux-note">
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
+            <InfoIcon size={15} />
             <span>
               <strong>UX Architecture Note:</strong> The slide-over drawer was chosen for speed in this scenario (rapid 1–5 item intake while keeping the orders table in view). For larger enterprise scopes with 20+ items, customs documents, or multi-step billing, a dedicated <code>/orders/new</code> full page would be preferred.
             </span>
@@ -192,19 +168,7 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
           <div className="idempotency-callout">
             <div className="idempotency-callout-header">
               <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
+                <LockIcon size={14} />
                 <span>Idempotency-Key Lock (R2 Guarantee)</span>
               </div>
               <button
@@ -299,19 +263,7 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
                 onClick={handleAddItem}
                 disabled={items.length >= 5}
               >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
+                <PlusIcon size={12} />
                 <span>Add Item ({items.length}/5)</span>
               </button>
             </div>
@@ -357,19 +309,7 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
                     disabled={items.length <= 1}
                     title="Remove item"
                   >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M3 6h18"></path>
-                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                    </svg>
+                    <TrashIcon size={14} />
                   </button>
                 </div>
               ))}
@@ -415,18 +355,7 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
               Cancel
             </button>
             <button type="submit" className="btn-primary" disabled={submitting}>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
+              <CheckIcon size={14} />
               <span>{submitting ? "Locking Transaction..." : "Create Order"}</span>
             </button>
           </div>

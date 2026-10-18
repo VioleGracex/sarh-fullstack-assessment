@@ -2,6 +2,9 @@
 
 A high-performance, concurrency-resilient full-stack web application designed for e-commerce customer operations teams to manage 50,000+ orders without lag or duplicate entries.
 
+> 🛡️ **Technical Provenance & Architectural Dossier:**  
+> To inspect how each core requirement (Idempotency Key locking, SQLite B-Tree indexing, `AbortController` cancellation, and Zod validation) is directly grounded in systems I previously architected and shipped prior to this assessment, please open the interactive [Candidate Technical Precedents Dossier (`ARCHEOLOGY.html`)](./ARCHEOLOGY.html) in your browser.
+
 ---
 
 ## 1. Quick Start (< 2 Minutes from Clone)

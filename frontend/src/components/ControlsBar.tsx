@@ -1,5 +1,6 @@
 import React from "react";
 import type { SystemStats, Density } from "../types/order";
+import { PlusIcon, SearchIcon, DensityIcon, ResetIcon } from "./icons";
 
 interface ControlsBarProps {
   status: string;
@@ -89,19 +90,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
             className="btn-primary"
             onClick={onOpenCreateDrawer}
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
+            <PlusIcon size={16} />
             <span>Register New Order</span>
           </button>
         </div>
@@ -110,18 +99,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
       {/* Search, Sorting & Secondary Filters */}
       <div className="controls-bottom-row">
         <div className="search-input-wrapper">
-          <svg
-            className="search-icon-left"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="16.65" x2="16.65" y2="11"></line>
-          </svg>
+          <SearchIcon className="search-icon-left" />
           <input
             type="text"
             className="search-input"
@@ -154,20 +132,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
             onClick={onToggleDensity}
             title="Toggle comfortable vs compact table density"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect width="18" height="18" x="3" y="3" rx="2"></rect>
-              <path d="M3 9h18"></path>
-              <path d="M3 15h18"></path>
-            </svg>
+            <DensityIcon size={14} />
             <span style={{ textTransform: "capitalize" }}>Density: {density}</span>
           </button>
 
@@ -178,21 +143,7 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
             onClick={onResetFilters}
             title="Reset filters and search query"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-              <path d="M21 3v5h-5"></path>
-              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-              <path d="M8 16H3v5"></path>
-            </svg>
+            <ResetIcon size={14} />
             <span>Reset</span>
           </button>
         </div>

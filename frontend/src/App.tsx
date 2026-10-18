@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "./components/Header";
 import { StatCards } from "./components/StatCards";
 import { ControlsBar } from "./components/ControlsBar";
@@ -8,7 +8,10 @@ import { OrderDetailDrawer } from "./components/OrderDetailDrawer";
 import { LoginModal } from "./components/LoginModal";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { StatsModal } from "./components/StatsModal";
-import { ToastContainer, type ToastItem } from "./components/ToastContainer";
+import { MobileSimulatorModal } from "./components/MobileSimulatorModal";
+import { ToastContainer } from "./components/ToastContainer";
+import { SmartphoneIcon } from "./components/icons/index.tsx";
+import { useToast } from "./hooks/useToast";
 import { useOrders } from "./hooks/useOrders";
 import type { User, Theme, Density, Order, OrderStatus } from "./types/order";
 
@@ -70,39 +73,14 @@ export function App() {
   // Table Selection & Multi-select State
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
 
-  // Slide-over Drawers state
+  // Slide-over Drawers & Modals state
   const [isOrderDrawerOpen, setIsOrderDrawerOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+  const [isMobileSimulatorOpen, setIsMobileSimulatorOpen] = useState(false);
 
-  // In-page Toast Notifications (Strict Clamping to Max 3 + Deduplication)
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-
-  const dismissToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
-
-  const showToast = useCallback(
-    (
-      message: string,
-      type: "info" | "success" | "warning" | "error" = "info",
-      action?: { label: string; icon?: "undo"; onClick: () => void }
-    ) => {
-      const id = `${Date.now()}-${Math.random()}`;
-      setToasts((prev) => {
-        // 1. Deduplication: replace any existing toast with the exact same message
-        const withoutDuplicate = prev.filter((t) => t.message !== message);
-        // 2. Strict Clamping: keep at most 2 previous toasts, so adding 1 gives at most 3 visible
-        const clamped = withoutDuplicate.slice(-2);
-        return [...clamped, { id, message, type, action }];
-      });
-
-      setTimeout(() => {
-        setToasts((prev) => prev.filter((t) => t.id !== id));
-      }, action ? 7500 : 3200);
-    },
-    []
-  );
+  // In-page Toast Notifications (Strict Clamping to Max 3 + Deduplication via useToast hook)
+  const { toasts, showToast, dismissToast } = useToast();
 
   // 3. CORE ORDERS HOOK (Silent AbortController Race Condition Defense + System Stats)
   const {
@@ -443,6 +421,7 @@ export function App() {
         onLogout={handleLogout}
         totalOrders={systemStats.totalSystemRecords}
         onOpenStatsModal={() => setIsStatsModalOpen(true)}
+        onOpenMobileSimulator={() => setIsMobileSimulatorOpen(true)}
       />
 
       {/* Main Workspace Layout */}
@@ -578,6 +557,24 @@ export function App() {
 
       {/* Modular Toast Notification Container */}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
+      {/* Interactive Mobile Device Simulator (iPhone 15 Pro / SE / Galaxy Chassis) */}
+      <MobileSimulatorModal
+        isOpen={isMobileSimulatorOpen}
+        onClose={() => setIsMobileSimulatorOpen(false)}
+        theme={theme}
+      />
+
+      {/* Floating Mobile Pill (Always accessible from bottom right) */}
+      <button
+        type="button"
+        className="floating-mobile-pill"
+        onClick={() => setIsMobileSimulatorOpen(true)}
+        title="Preview Mobile App in Smartphone Frame (No F12 Needed)"
+      >
+        <SmartphoneIcon size={16} />
+        <span>Mobile Device View</span>
+      </button>
     </div>
   );
 }

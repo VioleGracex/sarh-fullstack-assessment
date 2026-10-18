@@ -231,10 +231,30 @@ Naive toast notification handlers pushed new items into an unbounded React state
 
 ---
 
+### 11. Monolithic Component Bloat & Inline SVG Redundancy
+
+#### Symptom
+`App.tsx` accumulated over 600 lines of code, tangling root workspace coordination with low-level toast notification markup, timer timeouts, and in-place DOM rendering. Concurrently, over 40 duplicate inline `<svg>` blocks were scattered across table, modal, and drawer components, increasing DOM payload size and degrading code maintainability.
+
+#### Root Cause Analysis
+During initial rapid feature velocity, raw SVG snippets were pasted directly into component JSX, and notification presentation was coupled directly into `App.tsx` rather than abstracted into modular hooks and container components.
+
+#### Engineering Solution
+1. **Modular Toast Architecture**:
+   - Extracted [`ToastContainer.tsx`](file:///d:/task/Sarh_group/frontend/src/components/ToastContainer.tsx) to encapsulate toast presentation, animations, and interactive undo buttons.
+   - Extracted custom hook [`useToast.ts`](file:///d:/task/Sarh_group/frontend/src/hooks/useToast.ts) to manage queue state, strict 3-item clamping, and deduplication independently of `App.tsx`.
+2. **Centralized SVG Icon Library**:
+   - Established a centralized icon registry in [`frontend/src/components/icons/index.tsx`](file:///d:/task/Sarh_group/frontend/src/components/icons/index.tsx) providing typed, tree-shakeable SVG components (`PlusIcon`, `SearchIcon`, `ResetIcon`, `DensityIcon`, `TrashIcon`, `CopyIcon`, `ViewEyeIcon`, `CheckIcon`, `ClockIcon`, `SpinLoaderIcon`, etc.).
+   - Replaced **100% of raw inline `<svg>` tags** across all components (`OrdersTable`, `OrderDrawer`, `OrderDetailDrawer`, `StatCards`, `ConfirmModal`, `LoginModal`, `StatsModal`, `Header`, `ControlsBar`, `MobileSimulatorModal`).
+   - Achieved 0 raw SVGs outside of `icons/`, resulting in clean JSX and a 333ms production build.
+
+---
+
 ## Conclusion & Verification Status
 
-All 10 engineering challenges have been resolved, verified against the SQLite database, and proven through:
+All 11 engineering challenges have been resolved, verified against the SQLite database, and proven through:
 - **29 Automated Unit Tests** (`npm run test:unit`)
 - **Automated R2 Duplicate Prevention Proof** (`npm run test:duplicate`)
-- **Production Vite Build** (`npm --prefix frontend run build` in ~420ms)
+- **Production Vite Build** (`npm --prefix frontend run build` in ~333ms)
 - **Zero Browser Native Dialogs Rule** fully enforced
+- **100% Modular Icon Architecture** with 0 raw SVGs in UI components

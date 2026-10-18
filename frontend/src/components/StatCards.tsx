@@ -1,6 +1,13 @@
 import React from "react";
 import type { SystemStats } from "../types/order";
 import { useCountUp } from "../hooks/useCountUp";
+import {
+  PackageBoxIcon,
+  TrendingUpIcon,
+  CreditCardIcon,
+  ClockIcon,
+  CheckCircleIcon
+} from "./icons";
 
 interface StatCardsProps {
   systemStats: SystemStats;
@@ -22,37 +29,13 @@ export const StatCards: React.FC<StatCardsProps> = ({ systemStats }) => {
       <div className="stat-card">
         <div className="stat-header">
           <span className="stat-title">Total Orders</span>
-          <svg
-            className="stat-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
-            <path d="m3.3 7 8.7 5 8.7-5"></path>
-            <path d="M12 22V12"></path>
-          </svg>
+          <PackageBoxIcon className="stat-icon" />
         </div>
         <div className="stat-value">
           {animatedTotalOrders.toLocaleString()}
         </div>
         <div className="stat-subtext highlight">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-            <polyline points="16 7 22 7 22 13"></polyline>
-          </svg>
+          <TrendingUpIcon size={12} />
           <span>All registered orders</span>
         </div>
       </div>
@@ -61,18 +44,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ systemStats }) => {
       <div className="stat-card">
         <div className="stat-header">
           <span className="stat-title">Total Revenue</span>
-          <svg
-            className="stat-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect width="20" height="14" x="2" y="5" rx="2"></rect>
-            <line x1="2" x2="22" y1="10" y2="10"></line>
-          </svg>
+          <CreditCardIcon className="stat-icon" />
         </div>
         <div className="stat-value">
           {animatedRevenue.toLocaleString("en-US", {
@@ -90,18 +62,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ systemStats }) => {
       <div className="stat-card">
         <div className="stat-header">
           <span className="stat-title">Pending Orders</span>
-          <svg
-            className="stat-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
+          <ClockIcon className="stat-icon" />
         </div>
         <div className="stat-value" style={{ color: "var(--badge-pending-text)" }}>
           {animatedPending.toLocaleString()}
@@ -113,18 +74,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ systemStats }) => {
       <div className="stat-card">
         <div className="stat-header">
           <span className="stat-title">Completed</span>
-          <svg
-            className="stat-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
+          <CheckCircleIcon className="stat-icon" />
         </div>
         <div className="stat-value" style={{ color: "var(--badge-completed-text)" }}>
           {animatedCompleted.toLocaleString()}

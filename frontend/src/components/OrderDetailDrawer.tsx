@@ -1,5 +1,13 @@
 import React from "react";
 import type { Order, OrderStatus } from "../types/order";
+import {
+  CheckIcon,
+  ClockIcon,
+  SpinLoaderIcon,
+  XCircleIcon,
+  CloseIcon,
+  PrinterIcon
+} from "./icons";
 
 interface OrderDetailDrawerProps {
   order: Order | null;
@@ -12,32 +20,13 @@ export const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({ order, onC
   const getStatusIconSvg = (status: OrderStatus) => {
     switch (status) {
       case "COMPLETED":
-        return (
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-        );
+        return <CheckIcon size={10} strokeWidth={3} />;
       case "PENDING":
-        return (
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-        );
+        return <ClockIcon size={10} strokeWidth={2.5} />;
       case "PROCESSING":
-        return (
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
-          </svg>
-        );
+        return <SpinLoaderIcon size={10} strokeWidth={2.5} />;
       case "CANCELLED":
-        return (
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="15" y1="9" x2="9" y2="15"></line>
-            <line x1="9" y1="9" x2="15" y2="15"></line>
-          </svg>
-        );
+        return <XCircleIcon size={10} strokeWidth={2.5} />;
       default:
         return null;
     }
@@ -76,19 +65,7 @@ export const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({ order, onC
             onClick={onClose}
             aria-label="Close details drawer"
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
+            <CloseIcon size={18} />
           </button>
         </div>
 
@@ -108,84 +85,77 @@ export const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({ order, onC
               style={{
                 fontSize: "11px",
                 fontWeight: 700,
-                color: "var(--text-secondary)",
-                textTransform: "uppercase"
+                color: "var(--accent-text)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em"
               }}
             >
-              Idempotency Signature & Audit Lock
+              Audit Signature & Transaction Guard
             </span>
-            <div className="idempotency-key-display">
-              <span>{order.idempotencyKey || "N/A (Direct System Transaction)"}</span>
-              <span style={{ fontSize: "10px", color: "var(--text-tertiary)" }}>UUIDv4</span>
-            </div>
-            <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
-              Locked at DB transaction timestamp: {order.createdAt}
-            </span>
+            <p style={{ margin: "4px 0 0 0", color: "var(--text-secondary)", fontSize: "12px", lineHeight: "1.5" }}>
+              Idempotency Key: <code style={{ color: "var(--accent-text)" }}>{order.idempotencyKey || "N/A"}</code>
+            </p>
           </div>
 
-          {/* Customer Profile */}
-          <div className="form-group">
-            <label className="form-label">Customer Profile</label>
-            <div
-              style={{
-                backgroundColor: "var(--bg-subtle)",
-                padding: "12px",
-                borderRadius: "var(--radius-md)",
-                border: "1px solid var(--border-subtle)"
-              }}
-            >
-              <div style={{ fontWeight: 700, fontSize: "14px", color: "var(--text-primary)" }}>
-                {order.customerName}
+          {/* Customer Profile Box */}
+          <div className="detail-section">
+            <h3 className="section-title">Customer Information</h3>
+            <div className="detail-card">
+              <div className="detail-field">
+                <span className="field-label">Full Name</span>
+                <span className="field-value">{order.customerName}</span>
               </div>
-              <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>
-                {order.customerEmail}
+              <div className="detail-field">
+                <span className="field-label">Contact Email</span>
+                <span className="field-value">{order.customerEmail}</span>
               </div>
-              <div style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "4px" }}>
-                Riyadh Corporate Account #{order.id.slice(-6).toUpperCase()}
+              <div className="detail-field">
+                <span className="field-label">Internal Order ID</span>
+                <span className="field-value font-mono" style={{ fontSize: "11px" }}>
+                  {order.id}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Items Purchased */}
-          <div className="line-items-section">
-            <span className="form-label">Items Purchased</span>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {order.items && order.items.length > 0 ? (
-                order.items.map((item, idx) => {
-                  const lineTotal = item.quantity * item.unitPrice;
-                  return (
-                    <div
-                      key={idx}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        fontSize: "13px",
-                        backgroundColor: "var(--bg-subtle)",
-                        padding: "8px 12px",
-                        borderRadius: "var(--radius-sm)",
-                        border: "1px solid var(--border-subtle)"
-                      }}
-                    >
-                      <span>
-                        {item.quantity}x {item.productName}
-                      </span>
-                      <strong style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-primary)" }}>
-                        {lineTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })} SAR
-                      </strong>
+          {/* Line Items List */}
+          <div className="detail-section">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <h3 className="section-title" style={{ margin: 0 }}>Line Items</h3>
+              <span className="items-count-badge">
+                {order.items?.length || 0} {(order.items?.length || 0) === 1 ? "Product" : "Products"}
+              </span>
+            </div>
+
+            {order.items && order.items.length > 0 ? (
+              <div className="line-items-table">
+                {order.items.map((item, index) => (
+                  <div key={item.id || index} className="line-item-row">
+                    <div className="item-main">
+                      <div className="item-name">{item.productName}</div>
+                      <div className="item-meta">
+                        {item.quantity} × {item.unitPrice.toFixed(2)} SAR
+                      </div>
                     </div>
-                  );
-                })
-              ) : (
-                <div style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>No item details available.</div>
-              )}
-            </div>
+                    <div className="item-subtotal">
+                      {(item.quantity * item.unitPrice).toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}{" "}
+                      SAR
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-items-notice">No individual line items recorded.</div>
+            )}
           </div>
 
-          {/* Totals Summary */}
+          {/* Financial Breakdown */}
           <div className="order-totals-summary">
             <div className="summary-line">
-              <span>Line Items Total</span>
+              <span>Taxable Subtotal</span>
               <span>
                 {preTax.toLocaleString("en-US", {
                   minimumFractionDigits: 2,
@@ -195,7 +165,7 @@ export const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({ order, onC
               </span>
             </div>
             <div className="summary-line">
-              <span>Tax (15% VAT)</span>
+              <span>Value Added Tax (15% KSA Standard)</span>
               <span>
                 {tax.toLocaleString("en-US", {
                   minimumFractionDigits: 2,
@@ -227,20 +197,7 @@ export const OrderDetailDrawer: React.FC<OrderDetailDrawerProps> = ({ order, onC
             onClick={() => window.print()}
             title="Print receipt or export PDF"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="6 9 6 2 18 2 18 9"></polyline>
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-              <rect width="12" height="8" x="6" y="14"></rect>
-            </svg>
+            <PrinterIcon size={14} />
             <span>Print Receipt</span>
           </button>
         </div>

@@ -7,7 +7,8 @@ import {
   UserIcon,
   CaretDownIcon,
   LogoutIcon,
-  StatsAnalyticsIcon
+  StatsAnalyticsIcon,
+  SmartphoneIcon
 } from "./icons/index.tsx";
 
 interface HeaderProps {
@@ -19,6 +20,7 @@ interface HeaderProps {
   onLogout: () => void;
   totalOrders?: number;
   onOpenStatsModal?: () => void;
+  onOpenMobileSimulator?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -28,7 +30,8 @@ export const Header: React.FC<HeaderProps> = ({
   onSwitchUser,
   onOpenLoginModal,
   onLogout,
-  onOpenStatsModal
+  onOpenStatsModal,
+  onOpenMobileSimulator
 }) => {
   const isDark = theme === "midnight-obsidian";
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -57,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
     <>
       {/* Top Appearance Toolbar */}
       <header className="theme-toolbar">
-        <div className="toolbar-left">
+        <div className="toolbar-left" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <button
             type="button"
             className="mode-toggle-btn"
@@ -72,6 +75,32 @@ export const Header: React.FC<HeaderProps> = ({
               {isDark ? "Dark Mode" : "Light Mode"}
             </span>
           </button>
+
+          {onOpenMobileSimulator && (
+            <button
+              type="button"
+              className="btn-toolbar"
+              onClick={onOpenMobileSimulator}
+              title="Open Interactive Smartphone Simulator (iPhone 15 Pro / SE / Galaxy)"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "3px 10px",
+                fontSize: "11px",
+                fontWeight: 600,
+                borderRadius: "var(--radius-sm)",
+                background: "var(--bg-subtle)",
+                border: "1px solid var(--border-subtle)",
+                color: "var(--text-secondary)",
+                cursor: "pointer",
+                transition: "all var(--transition-fast)"
+              }}
+            >
+              <SmartphoneIcon size={13} />
+              <span>Mobile Phone Mockup (393px)</span>
+            </button>
+          )}
         </div>
 
         <div className="toolbar-right" style={{ display: "flex", alignItems: "center", gap: "10px" }}>

@@ -1,5 +1,20 @@
 import React, { useState } from "react";
 import type { Order, PaginationMeta, User, OrderStatus } from "../types/order";
+import {
+  SortIndicatorIcon,
+  CheckIcon,
+  ClockIcon,
+  SpinLoaderIcon,
+  XCircleIcon,
+  ExportCsvIcon,
+  CopyIcon,
+  TrashIcon,
+  CloseIcon,
+  SearchIcon,
+  ViewEyeIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
+} from "./icons";
 
 interface OrdersTableProps {
   orders: Order[];
@@ -51,57 +66,28 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
   const renderSortIndicator = (column: "createdAt" | "totalAmount" | "orderNumber") => {
     const isCurrent = sortBy === column;
     return (
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+      <SortIndicatorIcon
+        size={13}
         style={{
           opacity: isCurrent ? 1 : 0.35,
           color: isCurrent ? "var(--accent-text)" : "currentColor",
           transform: isCurrent && sortOrder === "asc" ? "rotate(180deg)" : "none",
           transition: "transform 150ms ease"
         }}
-      >
-        <path d="m7 15 5 5 5-5"></path>
-        <path d="m7 9 5-5 5 5"></path>
-      </svg>
+      />
     );
   };
 
   const getStatusIconSvg = (status: OrderStatus) => {
     switch (status) {
       case "COMPLETED":
-        return (
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-        );
+        return <CheckIcon size={10} strokeWidth={3} />;
       case "PENDING":
-        return (
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-        );
+        return <ClockIcon size={10} strokeWidth={2.5} />;
       case "PROCESSING":
-        return (
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
-          </svg>
-        );
+        return <SpinLoaderIcon size={10} strokeWidth={2.5} />;
       case "CANCELLED":
-        return (
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="15" y1="9" x2="9" y2="15"></line>
-            <line x1="9" y1="9" x2="15" y2="15"></line>
-          </svg>
-        );
+        return <XCircleIcon size={10} strokeWidth={2.5} />;
       default:
         return null;
     }
@@ -242,11 +228,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
               onClick={onExportSelectedCsv}
               title="Export selected orders as CSV"
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
+              <ExportCsvIcon size={13} />
               <span>Export CSV</span>
             </button>
 
@@ -256,10 +238,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
               onClick={onCopySelectedIds}
               title="Copy selected Order Numbers to clipboard"
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
-                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
-              </svg>
+              <CopyIcon size={13} />
               <span>Copy IDs</span>
             </button>
 
@@ -272,10 +251,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                   onClick={onBulkDelete}
                   title="Admin Delete Selected Orders"
                 >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 6h18"></path>
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                  </svg>
+                  <TrashIcon size={13} />
                   <span>Delete ({selectedOrderIds.length})</span>
                 </button>
               </>
@@ -287,10 +263,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
               onClick={onClearSelection}
               title="Clear selection"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
+              <CloseIcon size={14} />
             </button>
           </div>
         </div>
@@ -382,20 +355,11 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
             ) : orders.length === 0 ? (
               <tr>
                 <td colSpan={8} style={{ textAlign: "center", padding: "56px 24px", color: "var(--text-tertiary)" }}>
-                  <svg
-                    width="36"
-                    height="36"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                  <SearchIcon
+                    size={36}
+                    strokeWidth={1.5}
                     style={{ margin: "0 auto 10px auto", opacity: 0.6 }}
-                  >
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="16.65" x2="16.65" y2="11"></line>
-                  </svg>
+                  />
                   <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-secondary)" }}>
                     No orders match your filter criteria
                   </div>
@@ -435,19 +399,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                           onClick={() => onCopyText(order.orderNumber)}
                           title="Copy Order ID"
                         >
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
-                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
-                          </svg>
+                          <CopyIcon size={12} />
                         </button>
                       </div>
                     </td>
@@ -484,19 +436,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                           onClick={() => onViewOrder(order)}
                           title="Inspect Order Details"
                         >
-                          <svg
-                            width="13"
-                            height="13"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                          </svg>
+                          <ViewEyeIcon size={13} />
                           <span>View</span>
                         </button>
 
@@ -507,19 +447,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                             onClick={() => onDeleteOrder(order.id, order.orderNumber)}
                             title="Admin Delete Order (Protected by server RBAC)"
                           >
-                            <svg
-                              width="12"
-                              height="12"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path d="M3 6h18"></path>
-                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                            </svg>
+                            <TrashIcon size={12} />
                             <span>Delete</span>
                           </button>
                         )}
@@ -565,18 +493,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
             style={{ padding: "0 14px", gap: "6px" }}
             title="Previous Page"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
+            <ChevronLeftIcon size={14} />
             <span>Prev</span>
           </button>
 
@@ -591,18 +508,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
             title="Next Page"
           >
             <span>Next</span>
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
+            <ChevronRightIcon size={14} />
           </button>
 
           <form onSubmit={handleJumpSubmit} className="page-jump-box">

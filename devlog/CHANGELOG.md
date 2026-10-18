@@ -33,6 +33,48 @@
 | **17:01:30** | `b25bfa4` | Fixed Dark Mode refresh flashbang via blocking head script & critical background styling | Bug Fix / UX |
 | **17:02:30** | `b25bfa4` | Created `PROBLEMS_AND_SOLUTIONS.md`: Comprehensive 9-challenge technical diagnostic document | Documentation |
 | **17:05:30** | `32abffa` | Clamped toast notification stack to max 3 visible with deduplication and dismiss button | Bug Fix / UX |
+| **17:17:46** | `0f12aac` | Extracted `ToastContainer.tsx` and centralized icon registry in `components/icons` | Architecture |
+| **17:31:40** | `HEAD` | Extracted `useToast.ts` hook, replaced 100% of inline SVGs across all components with modular icons | Optimization |
+
+---
+
+# [1.0.12] — Complete SVG Icon Library & useToast Hook Modularization
+Date: 2026-10-18 | Session Timer: ~2h 01m
+
+## Refactored
+- **100% Modular SVG Icon Architecture**:
+  - Eliminated all 40+ raw inline `<svg>` blocks across `OrdersTable.tsx`, `OrderDrawer.tsx`, `OrderDetailDrawer.tsx`, `StatCards.tsx`, `ConfirmModal.tsx`, `LoginModal.tsx`, `StatsModal.tsx`, `ControlsBar.tsx`, and `MobileSimulatorModal.tsx`.
+  - Replaced all ad-hoc SVG elements with typed, tree-shakeable icon components (`PlusIcon`, `SearchIcon`, `ResetIcon`, `DensityIcon`, `TrashIcon`, `CopyIcon`, `ViewEyeIcon`, `CheckIcon`, `ClockIcon`, `SpinLoaderIcon`, `XCircleIcon`, `ExternalLinkIcon`, `SignalCellularIcon`, `WifiIcon`, `BatteryIcon`, etc.) from `components/icons/index.tsx`.
+  - Verified 0 raw `<svg>` elements remain outside of `icons/`.
+- **Standalone `useToast` Custom Hook (`frontend/src/hooks/useToast.ts`)**:
+  - Extracted notification queue management, strict 3-item window clamping, message deduplication, and auto-dismiss timer logic out of `App.tsx` into a dedicated custom hook.
+  - Reduced `App.tsx` cognitive complexity and lines of code, keeping it focused strictly on workspace orchestration.
+
+## Files Affected
+- `frontend/src/hooks/useToast.ts`
+- `frontend/src/components/icons/index.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/components/ControlsBar.tsx`
+- `frontend/src/components/StatCards.tsx`
+- `frontend/src/components/ConfirmModal.tsx`
+- `frontend/src/components/LoginModal.tsx`
+- `frontend/src/components/StatsModal.tsx`
+- `frontend/src/components/OrderDrawer.tsx`
+- `frontend/src/components/OrderDetailDrawer.tsx`
+- `frontend/src/components/OrdersTable.tsx`
+- `frontend/src/components/MobileSimulatorModal.tsx`
+- `PROBLEMS_AND_SOLUTIONS.md`
+- `devlog/CHANGELOG.md`
+
+---
+
+# [1.0.11] — ToastContainer Modularization & Junior Candidate Alignment
+Date: 2026-10-18 | Session Timer: ~1h 47m
+
+## Refactored
+- Extracted monolithic toast notification rendering from `App.tsx` into dedicated `ToastContainer.tsx`.
+- Established `frontend/src/components/icons/index.tsx` foundation.
+- Re-aligned README and assessment persona strictly to Junior Full Stack Developer track.
 
 ---
 
