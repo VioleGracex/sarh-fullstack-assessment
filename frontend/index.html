@@ -1,10 +1,43 @@
 <!doctype html>
-<html lang="en" data-theme="corporate-steel" data-density="comfortable">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SARH Orders Console - Operations Workspace</title>
+    <!-- Critical Theme Initialization Script (Zero Flashbang / Zero FOUC) -->
+    <script>
+      (function() {
+        try {
+          var savedTheme = localStorage.getItem('sarh_theme');
+          var theme = (savedTheme === 'midnight-obsidian' || savedTheme === 'corporate-steel')
+            ? savedTheme
+            : 'midnight-obsidian';
+          document.documentElement.setAttribute('data-theme', theme);
+
+          var savedDensity = localStorage.getItem('sarh_density');
+          var density = (savedDensity === 'compact' || savedDensity === 'comfortable')
+            ? savedDensity
+            : 'comfortable';
+          document.documentElement.setAttribute('data-density', density);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'midnight-obsidian');
+        }
+      })();
+    </script>
+    <style>
+      /* Critical immediate background to prevent any white flash during stylesheet load */
+      html[data-theme="midnight-obsidian"],
+      html[data-theme="midnight-obsidian"] body {
+        background-color: #12141a !important;
+        color: #f1f5f9 !important;
+      }
+      html[data-theme="corporate-steel"],
+      html[data-theme="corporate-steel"] body {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

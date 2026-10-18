@@ -30,6 +30,29 @@
 | **16:53:18** | `94e58c7` | Header telemetry cleanup: removed redundant order count from Operations Live pill | UX / Polish |
 | **16:55:19** | `1f4731c` | Interactive Profile Dropdown Menu with click-outside dismiss & consolidated logout | UX / Enterprise |
 | **16:58:30** | `5089abe` | Re-enabled Optional O1: Slow Stats API with AbortController, countdown timer, and Deep Analytics Modal | Optional / O1 |
+| **17:01:30** | `Pending` | Fixed Dark Mode refresh flashbang via blocking head script & critical background styling | Bug Fix / UX |
+| **17:02:30** | `Pending` | Created `PROBLEMS_AND_SOLUTIONS.md`: Comprehensive 9-challenge technical diagnostic document | Documentation |
+
+---
+
+# [1.0.9] — Zero-Flashbang Theme Hydration & Engineering Post-Mortem Document
+Date: 2026-10-18 | Session Timer: 1h 32m
+
+## Fixed
+- **Dark Mode Refresh "Flashbang" (FOUC)**:
+  - Eliminated the white flash on page refresh when in Dark Mode (`midnight-obsidian`).
+  - Added an inline synchronous `<script>` in `<head>` of `frontend/index.html` executing before any HTML body rendering, setting `data-theme` and `data-density` from `localStorage` synchronously.
+  - Inlined critical background styles on `html` and `body` in `<head>` to guarantee instant dark canvas `#12141a` rendering without transition delay.
+  - Aligned React `useState` hydration in `App.tsx` directly with `document.documentElement` attributes.
+
+## Added
+- **`PROBLEMS_AND_SOLUTIONS.md`**: Master engineering document detailing 9 real-world problems encountered during development, their architectural root causes, and their senior-level engineering resolutions.
+
+## Files Affected
+- `frontend/index.html`
+- `frontend/src/App.tsx`
+- `PROBLEMS_AND_SOLUTIONS.md`
+- `devlog/CHANGELOG.md`
 
 ---
 

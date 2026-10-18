@@ -23,13 +23,17 @@ interface ToastItem {
 }
 
 export function App() {
-  // 1. THEME & DENSITY PERSISTENCE
+  // 1. THEME & DENSITY PERSISTENCE (Synced with blocking head script)
   const [theme, setTheme] = useState<Theme>(() => {
+    const fromDom = document.documentElement.getAttribute("data-theme") as Theme | null;
+    if (fromDom === "midnight-obsidian" || fromDom === "corporate-steel") return fromDom;
     const saved = localStorage.getItem("sarh_theme");
     return saved === "midnight-obsidian" ? "midnight-obsidian" : "corporate-steel";
   });
 
   const [density, setDensity] = useState<Density>(() => {
+    const fromDom = document.documentElement.getAttribute("data-density") as Density | null;
+    if (fromDom === "compact" || fromDom === "comfortable") return fromDom;
     const saved = localStorage.getItem("sarh_density");
     return saved === "compact" ? "compact" : "comfortable";
   });
