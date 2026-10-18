@@ -99,10 +99,12 @@ Tokens are stored strictly in client-side React memory (`useState`) and transmit
 > **Question:** The operations lead asks for a button: *"Delete all cancelled orders."* Before you build it, what do you ask her, and what do you propose instead if she cannot answer?
 
 **What I ask her:**  
-*"What specific problem are we trying to solve: is this to unclutter the daily view for agents, free up database disk space, or comply with a legal data retention/GDPR requirement?"*
+*"What is the core problem: are cancelled orders cluttering daily agent views, causing database storage concerns, or driven by a legal retention requirement?"*
 
-**What I propose if she cannot answer:**  
-*"Instead of permanently destroying financial records and audit trails, I propose adding a default UI toggle to **'Hide Cancelled Orders'** from active view, combined with a **'Trash / 30-Day Archive'** view where cancelled orders can be audited or restored with one click."*
+**What I propose if she cannot answer (or insists on 'just do it'):**  
+- **UI clutter:** Add a default **'Hide Cancelled'** toggle with a non-destructive 30-day archive view where orders can be audited or restored.  
+- **Database storage:** Offload historical records to **cold storage / data warehouse** rather than deleting transactional rows.  
+- **Unclear / blind push:** **Escalate to the tech lead and compliance team**, as hard-deleting financial records destroys audit trails and violates accounting regulations.
 
 ---
 

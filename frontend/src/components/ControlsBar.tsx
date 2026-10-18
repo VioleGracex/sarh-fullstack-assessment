@@ -1,6 +1,6 @@
 import React from "react";
 import type { SystemStats, Density } from "../types/order";
-import { PlusIcon, SearchIcon, DensityIcon, ResetIcon } from "./icons";
+import { PlusIcon, SearchIcon, DensityIcon, ResetIcon, SpinLoaderIcon } from "./icons";
 
 interface ControlsBarProps {
   status: string;
@@ -15,6 +15,8 @@ interface ControlsBarProps {
   onToggleDensity: () => void;
   onResetFilters: () => void;
   onOpenCreateDrawer: () => void;
+  totalFilteredRecords?: number;
+  loading?: boolean;
 }
 
 const STATUS_TABS = [
@@ -37,7 +39,9 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
   density,
   onToggleDensity,
   onResetFilters,
-  onOpenCreateDrawer
+  onOpenCreateDrawer,
+  totalFilteredRecords,
+  loading
 }) => {
   const currentSortKey = `${sortBy}_${sortOrder}`;
 
@@ -106,8 +110,40 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search by order ID, customer name, email..."
+            style={{ paddingRight: search.trim() ? "145px" : "60px" }}
+            aria-label="Search orders"
           />
-          <span className="search-shortcut-badge">Search</span>
+          {search.trim() ? (
+            <div className="search-active-controls">
+              <span className={`search-count-badge ${loading ? "loading" : "active"}`}>
+                {loading ? (
+                  <>
+                    <SpinLoaderIcon size={11} className="spin-animation" />
+                    <span>Searching...</span>
+                  </>
+                ) : (
+                  <span>
+                    {totalFilteredRecords !== undefined
+                      ? `${totalFilteredRecords.toLocaleString()} ${
+                          totalFilteredRecords === 1 ? "result" : "results"
+                        }`
+                      : "Active"}
+                  </span>
+                )}
+              </span>
+              <button
+                type="button"
+                className="btn-clear-search-icon"
+                onClick={() => onSearchChange("")}
+                title="Clear search query"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <span className="search-shortcut-badge">Search</span>
+          )}
         </div>
 
         <div className="filter-options-group">
@@ -148,6 +184,29 @@ export const ControlsBar: React.FC<ControlsBarProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Active Search Results Telemetry Banner */}
+      {search.trim() !== "" && (
+        <div className="search-results-summary-bar">
+          <div className="search-summary-text">
+            <SearchIcon size={14} style={{ color: "var(--accent-primary)", flexShrink: 0 }} />
+            <span>
+              Found <strong>{totalFilteredRecords !== undefined ? totalFilteredRecords.toLocaleString() : 0}</strong> {totalFilteredRecords === 1 ? "order" : "orders"} matching <strong>"{search}"</strong>
+              {status !== "ALL" && <span> under <strong>{status}</strong> status</span>}
+              {" "}out of <strong>{systemStats.totalSystemRecords.toLocaleString()}</strong> registered
+            </span>
+          </div>
+          <button
+            type="button"
+            className="btn-clear-search-pill"
+            onClick={() => onSearchChange("")}
+            title="Clear search query"
+          >
+            <span>Clear search</span>
+            <span style={{ fontSize: "10px", marginLeft: "2px" }}>✕</span>
+          </button>
+        </div>
+      )}
     </section>
   );
 };

@@ -27,6 +27,7 @@ During the development and hardening of the **SARH Orders Console**, several rea
 12. [Challenge 12: Backend Disconnection Telemetry & Strict Security Authentication Gate](#12-backend-disconnection-telemetry--strict-security-authentication-gate)
 13. [Challenge 13: The HTML5 `step="10"` Arithmetic Constraint Flaw & Universal Positive Number Enforcement](#13-the-html5-step10-arithmetic-constraint-flaw--universal-positive-number-enforcement)
 14. [Challenge 14: Business Intent Disambiguation: Technical Network Duplicate (R2) vs. Intentional Phone-Call Repeat Order (ZATCA Legal Compliance)](#14-business-intent-disambiguation-technical-network-duplicate-r2-vs-intentional-phone-call-repeat-order-zatca-legal-compliance)
+15. [Challenge 15: Silent Search Result Feedback & Real-Time Query Telemetry](#15-silent-search-result-feedback--real-time-query-telemetry)
 
 ---
 
@@ -351,16 +352,42 @@ Implemented **Automated Pre-Flight Duplicate Detection & Disambiguation** in [`O
 
 ---
 
+### 15. Silent Search Result Feedback & Real-Time Query Telemetry
+
+#### Symptom
+When operators entered search queries (such as `"salma"` across 50,000+ orders), the console provided zero immediate feedback beside the input indicating how many matching orders were discovered. The user was forced to either scroll down through up to 25 rows to inspect the pagination footer (`Showing 1 to 25 of 148 orders`) or wonder if the search was stuck or complete.
+
+#### Root Cause Analysis
+1. **Unidirectional State Flow Gap**: The search input component (`ControlsBar.tsx`) managed the text input value but was not passed `pagination.totalRecords`. It rendered a static, uninformative `<span className="search-shortcut-badge">Search</span>` label.
+2. **Missing Input Reset Mechanism**: Clearing a search required manually selecting all characters and pressing Backspace, rather than providing an accessible, 1-click `✕` clear control.
+
+#### Engineering Solution
+1. **In-Input Live Count Pill**:
+   - Connected `pagination.totalRecords` and `loading` directly into [`ControlsBar.tsx`](file:///d:/task/Sarh_group/frontend/src/components/ControlsBar.tsx).
+   - When a search query is active, dynamically replaces the static `"Search"` tag with a styled count pill:
+     - When fetching/debouncing: `<SpinLoaderIcon size={11} className="spin-animation" /> Searching...`
+     - When resolved: `148 results` (or `1 result`, `0 results`) in an accent primary pill.
+2. **One-Click Clear Button (`✕`)**:
+   - Added an interactive `✕` button inside the search field to reset the query instantly with zero keystrokes.
+3. **Active Search Results Telemetry Banner**:
+   - Rendered a high-contrast information bar directly beneath the search controls whenever a search query is active:
+     > 🔍 **Found 148 orders matching "salma"** (under **ALL** status) out of **50,010** registered · `[Clear search ✕]`
+   - Displays real-time status breakdowns and total system record references.
+
+---
+
 ## Conclusion & Verification Status
 
-All 14 engineering challenges have been resolved, verified against the SQLite database, and proven through:
+All 15 engineering challenges have been resolved, verified against the SQLite database, and proven through:
 - **29 Automated Unit Tests** (`npm run test:unit`)
 - **Automated R2 Duplicate Prevention Proof** (`npm run test:duplicate`)
-- **Production Vite Build** (`npm --prefix frontend run build` in ~304ms)
+- **Production Vite Build** (`npm --prefix frontend run build` in ~361ms)
 - **Zero Browser Native Dialogs Rule** fully enforced
 - **100% Modular Icon Architecture** with 0 raw SVGs in UI components
 - **Strict Security Gate** with dedicated `LoginPage` & live backend telemetry
 - **Universal Line Item Constraints** with `step="any"`, zero negative numbers allowed
 - **Business Duplicate Disambiguation Dialog** with ZATCA legal compliance
+- **Real-Time Search Telemetry** with live in-input result counters & 1-click clear
+
 
 

@@ -520,6 +520,8 @@ export function App() {
           onToggleDensity={handleToggleDensity}
           onResetFilters={handleResetFilters}
           onOpenCreateDrawer={() => setIsOrderDrawerOpen(true)}
+          totalFilteredRecords={pagination.totalRecords}
+          loading={loading}
         />
 
         {/* 3. Orders Table with Copy, Customer details, Badges, and Registered total in footer */}

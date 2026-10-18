@@ -3,11 +3,11 @@
 
 > **Assessment Time Budget Status:**
 > - **Session Start Time:** 15:30 (+03:00)
-> - **Current PC Clock:** 17:58 (+03:00)
-> - **Total Session Elapsed:** ~2 hours 28 minutes (`02:28:00`)
+> - **Current PC Clock:** 18:02 (+03:00)
+> - **Total Session Elapsed:** ~2 hours 32 minutes (`02:32:00`)
 > - **Take-Home Hard Time Limit:** 5 hours max (`05:00:00`)
-> - **Remaining Budget:** ~2 hours 32 minutes (`02:32:00`)
-> - **Assessment Pacing:** Comfortable & Ahead of Schedule (~51% budget remaining with 100% core + optional O1 complete)
+> - **Remaining Budget:** ~2 hours 28 minutes (`02:28:00`)
+> - **Assessment Pacing:** Comfortable & Ahead of Schedule (~49% budget remaining with 100% core + optional O1 complete)
 
 ---
 
@@ -38,6 +38,29 @@
 | **17:45:00** | `c7252f6` | Dedicated Full-Page LoginPage, Strict Auth Gate & Offline Telemetry (🔴 Operations Down) | Security / UI |
 | **17:52:00** | `08229da` | Universal Line Item Constraints (`step="any"`), Negative Input Interception & Column Headers | Bug Fix / UX |
 | **17:58:00** | `ae8d90d` | Business Duplicate Intent Disambiguation Modal (ZATCA e-Invoicing Compliance) & Loading States | Enterprise / UX |
+| **18:02:00** | Pending | Real-Time Search Result Telemetry, In-Input Count Badge & 1-Click Clear Button | UX / Polish |
+
+---
+
+# [1.0.16] — Real-Time Search Result Telemetry & In-Input Count Badge
+Date: 2026-10-18 | Session Timer: ~2h 32m
+
+## Added
+- **Real-Time Search Result Telemetry in `ControlsBar.tsx`**:
+  - Connected `pagination.totalRecords` and `loading` state directly into the search bar.
+  - **In-Input Count Pill**: Whenever a query is active, displays a live count badge (e.g. `148 results`, `1 result`, `0 results`) or a spinning loader (`Searching...`) directly inside the right edge of the input.
+  - **1-Click Clear Search Button (`✕`)**: Fast reset icon button inside the input clears query and restores baseline pagination instantly.
+  - **Active Search Results Summary Banner**: Displays a prominent summary card directly beneath the controls:
+    `🔍 Found 148 orders matching "salma" out of 50,010 registered` with a tactile `"Clear search ✕"` button.
+
+## Files Affected
+- `frontend/src/components/ControlsBar.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/index.css`
+- `PROBLEMS_AND_SOLUTIONS.md`
+- `devlog/CHANGELOG.md`
+
+---
 
 ---
 
