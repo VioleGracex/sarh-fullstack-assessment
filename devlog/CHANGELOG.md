@@ -35,7 +35,7 @@
 | **17:05:30** | `32abffa` | Clamped toast notification stack to max 3 visible with deduplication and dismiss button | Bug Fix / UX |
 | **17:17:46** | `0f12aac` | Extracted `ToastContainer.tsx` and centralized icon registry in `components/icons` | Architecture |
 | **17:31:40** | `bbb9ec9` | Extracted `useToast.ts` hook, replaced 100% of inline SVGs across all components with modular icons | Optimization |
-| **17:45:00** | Pending | Dedicated Full-Page LoginPage, Strict Auth Gate & Offline Telemetry (🔴 Operations Down) | Security / UI |
+| **17:45:00** | `c7252f6` | Dedicated Full-Page LoginPage, Strict Auth Gate & Offline Telemetry (🔴 Operations Down) | Security / UI |
 
 ---
 
