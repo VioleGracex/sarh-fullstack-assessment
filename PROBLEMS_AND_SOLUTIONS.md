@@ -1,6 +1,6 @@
 # Engineering Challenges, Diagnostic Post-Mortems & Solutions
 **Project:** SARH Orders Console V2 (Technical Assessment)  
-**Author:** Senior Full-Stack Engineering Candidate  
+**Author:** Full-Stack Engineering Candidate (Junior React Track)  
 **Date:** October 18, 2026  
 
 ---

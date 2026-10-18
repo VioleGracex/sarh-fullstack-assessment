@@ -24,6 +24,13 @@ A high-performance, concurrency-resilient full-stack web application designed fo
    ```
    *(Runs high-speed SQLite batch transaction; completes in ~30 seconds)*
 
+   > **Database Indexing (R1):** To ensure sub-50ms queries over 50,000+ records, dedicated B-Tree indexes are applied in Prisma schema:
+   > - `@@index([status])`: Accelerates status filtering (`PENDING`, `PROCESSING`, `COMPLETED`, `CANCELLED`).
+   > - `@@index([createdAt])`: Powers default chronological sorting (`DESC` / `ASC`).
+   > - `@@index([totalAmount])`: Speeds up order value sorting.
+   > - `@@index([customerEmail])` & `@@index([customerName])`: Accelerates customer lookups.
+   > - Unique indexes on `orderNumber` and `idempotencyKey`: Enforces uniqueness and fast idempotency resolution.
+
 3. **Run R2 Concurrency Proof Test:**
    ```bash
    npm run test:duplicate
@@ -101,7 +108,7 @@ Below are the 5 vulnerabilities and flaws identified in the legacy contractor sn
 ## 5. What I Skipped and Why
 
 1. **Senior Memo (`SCALE.md`):**  
-   Skipped intentionally because I am applying for the **Junior Full Stack Developer** role (the brief states: *"The 'Senior applicants only' section does not apply to you"*).
+   Skipped because I am applying for the **Junior Full Stack Developer (React)** track; Section 5 of the brief explicitly designates the one-page design memo (`SCALE.md`) as *"Senior applicants only"*.
 2. **Heavy Docker / Container Orchestration:**  
    Skipped because the brief explicitly emphasizes that Docker is not needed (*"What it does not need: Docker, deployment. Everything runs locally from the README in under five minutes"*). SQLite was chosen so the project runs with zero friction on any reviewer's machine.
 3. **Heavy Component Libraries (MUI/AntD):**  
