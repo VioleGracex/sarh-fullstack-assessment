@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import type { Order, PaginationMeta, User, OrderStatus } from "../types/order";
 
 interface OrdersTableProps {
@@ -8,7 +8,7 @@ interface OrdersTableProps {
   loading: boolean;
   sortBy: "createdAt" | "totalAmount" | "orderNumber";
   sortOrder: "asc" | "desc";
-  currentUser: User;
+  currentUser: User | null;
   onSortToggle: (column: "createdAt" | "totalAmount" | "orderNumber") => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
@@ -106,11 +106,22 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
     }
   };
 
+  const [jumpPageInput, setJumpPageInput] = useState<string>("");
+
   // Pagination bounds
   const totalFilteredRecords = pagination.totalRecords;
   const startItem = totalFilteredRecords === 0 ? 0 : (pagination.page - 1) * pagination.pageSize + 1;
   const endItem = Math.min(pagination.page * pagination.pageSize, totalFilteredRecords);
   const totalPages = Math.max(1, pagination.totalPages || Math.ceil(totalFilteredRecords / pagination.pageSize));
+
+  const handleJumpSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const target = parseInt(jumpPageInput);
+    if (!isNaN(target) && target >= 1 && target <= totalPages) {
+      onPageChange(target);
+      setJumpPageInput("");
+    }
+  };
 
   const renderPaginationButtons = () => {
     const pages: (number | string)[] = [];
@@ -131,8 +142,16 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
     return pages.map((p, idx) => {
       if (typeof p === "string") {
         return (
-          <span key={`ellipsis-${idx}`} style={{ padding: "0 4px", color: "var(--text-tertiary)" }}>
-            ...
+          <span
+            key={`ellipsis-${idx}`}
+            style={{
+              padding: "0 6px",
+              color: "var(--text-tertiary)",
+              fontWeight: 700,
+              fontSize: "14px"
+            }}
+          >
+            ···
           </span>
         );
       }
@@ -142,6 +161,12 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
           type="button"
           className={`page-btn ${p === current ? "active" : ""}`}
           onClick={() => onPageChange(p)}
+          style={{
+            minWidth: p > 999 ? "54px" : "38px",
+            height: "34px",
+            fontSize: "12px",
+            fontWeight: p === current ? 700 : 600
+          }}
         >
           {p.toLocaleString()}
         </button>
@@ -338,7 +363,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                           <span>View</span>
                         </button>
 
-                        {currentUser.role === "ADMIN" && (
+                        {currentUser?.role === "ADMIN" && (
                           <button
                             type="button"
                             className="btn-row-action delete"
@@ -398,44 +423,24 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
           <button
             type="button"
             className="page-btn"
-            disabled={pagination.page <= 1 || loading}
-            onClick={() => onPageChange(1)}
-            title="First Page"
-          >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="11 17 6 12 11 7"></polyline>
-              <polyline points="18 17 13 12 18 7"></polyline>
-            </svg>
-          </button>
-
-          <button
-            type="button"
-            className="page-btn"
             disabled={!pagination.hasPrev || loading}
             onClick={() => onPageChange(pagination.page - 1)}
+            style={{ padding: "0 14px", gap: "6px" }}
             title="Previous Page"
           >
             <svg
-              width="13"
-              height="13"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
+            <span>Prev</span>
           </button>
 
           {renderPaginationButtons()}
@@ -445,15 +450,17 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
             className="page-btn"
             disabled={!pagination.hasNext || loading}
             onClick={() => onPageChange(pagination.page + 1)}
+            style={{ padding: "0 14px", gap: "6px" }}
             title="Next Page"
           >
+            <span>Next</span>
             <svg
-              width="13"
-              height="13"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
@@ -461,27 +468,20 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
             </svg>
           </button>
 
-          <button
-            type="button"
-            className="page-btn"
-            disabled={pagination.page >= totalPages || loading}
-            onClick={() => onPageChange(totalPages)}
-            title="Last Page"
-          >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="13 17 18 12 13 7"></polyline>
-              <polyline points="6 17 11 12 6 7"></polyline>
-            </svg>
-          </button>
+          <form onSubmit={handleJumpSubmit} className="page-jump-box">
+            <span>Page</span>
+            <input
+              type="number"
+              min="1"
+              max={totalPages}
+              value={jumpPageInput}
+              onChange={(e) => setJumpPageInput(e.target.value)}
+              placeholder={pagination.page.toString()}
+              className="page-jump-input"
+              aria-label="Direct jump to page"
+            />
+            <span>of {totalPages.toLocaleString()}</span>
+          </form>
         </div>
       </footer>
     </section>

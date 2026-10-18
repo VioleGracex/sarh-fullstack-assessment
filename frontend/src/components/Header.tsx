@@ -4,8 +4,10 @@ import type { User, Theme } from "../types/order";
 interface HeaderProps {
   theme: Theme;
   onToggleTheme: () => void;
-  currentUser: User;
+  currentUser: User | null;
   onSwitchUser: (role: "ADMIN" | "AGENT") => void;
+  onOpenLoginModal: () => void;
+  onLogout: () => void;
   totalOrders: number;
 }
 
@@ -14,6 +16,8 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleTheme,
   currentUser,
   onSwitchUser,
+  onOpenLoginModal,
+  onLogout,
   totalOrders
 }) => {
   const isDark = theme === "midnight-obsidian";
@@ -115,84 +119,118 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <div className="header-right">
-          {/* Role Switcher */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              backgroundColor: "var(--bg-subtle)",
-              border: "1px solid var(--border-subtle)",
-              borderRadius: "var(--radius-md)",
-              padding: "2px"
-            }}
-          >
-            <span
-              style={{
-                fontSize: "11px",
-                fontWeight: 600,
-                color: "var(--text-tertiary)",
-                padding: "0 8px"
-              }}
-            >
-              Active Role:
-            </span>
-            <button
-              type="button"
-              onClick={() => onSwitchUser("ADMIN")}
-              style={{
-                background: currentUser.role === "ADMIN" ? "var(--accent-primary)" : "none",
-                color: currentUser.role === "ADMIN" ? "#ffffff" : "var(--text-secondary)",
-                border: "none",
-                borderRadius: "var(--radius-sm)",
-                padding: "4px 10px",
-                fontSize: "11px",
-                fontWeight: 700,
-                cursor: "pointer",
-                transition: "all var(--transition-fast)"
-              }}
-            >
-              Admin
-            </button>
-            <button
-              type="button"
-              onClick={() => onSwitchUser("AGENT")}
-              style={{
-                background: currentUser.role === "AGENT" ? "var(--accent-primary)" : "none",
-                color: currentUser.role === "AGENT" ? "#ffffff" : "var(--text-secondary)",
-                border: "none",
-                borderRadius: "var(--radius-sm)",
-                padding: "4px 10px",
-                fontSize: "11px",
-                fontWeight: 700,
-                cursor: "pointer",
-                transition: "all var(--transition-fast)"
-              }}
-            >
-              Agent
-            </button>
-          </div>
-
-          <div className="user-profile">
-            <div className="avatar-icon-box">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+          {currentUser ? (
+            <>
+              {/* Role Switcher */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  backgroundColor: "var(--bg-subtle)",
+                  border: "1px solid var(--border-subtle)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "2px"
+                }}
               >
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-            </div>
-            <div className="user-meta">
-              <div className="name">{currentUser.email}</div>
-              <div className="dept">{currentUser.role === "ADMIN" ? "Operations Manager" : "Order Intake Agent"}</div>
-            </div>
-          </div>
+                <span
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "var(--text-tertiary)",
+                    padding: "0 8px"
+                  }}
+                >
+                  Active Role:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onSwitchUser("ADMIN")}
+                  style={{
+                    background: currentUser.role === "ADMIN" ? "var(--accent-primary)" : "none",
+                    color: currentUser.role === "ADMIN" ? "#ffffff" : "var(--text-secondary)",
+                    border: "none",
+                    borderRadius: "var(--radius-sm)",
+                    padding: "4px 10px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    transition: "all var(--transition-fast)"
+                  }}
+                >
+                  Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSwitchUser("AGENT")}
+                  style={{
+                    background: currentUser.role === "AGENT" ? "var(--accent-primary)" : "none",
+                    color: currentUser.role === "AGENT" ? "#ffffff" : "var(--text-secondary)",
+                    border: "none",
+                    borderRadius: "var(--radius-sm)",
+                    padding: "4px 10px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    transition: "all var(--transition-fast)"
+                  }}
+                >
+                  Agent
+                </button>
+              </div>
+
+              {/* User Profile info */}
+              <div
+                className="user-profile"
+                onClick={onOpenLoginModal}
+                title="Click to switch account or re-authenticate"
+              >
+                <div className="avatar-icon-box">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+                <div className="user-meta">
+                  <div className="name">{currentUser.email}</div>
+                  <div className="dept">{currentUser.role === "ADMIN" ? "Operations Manager" : "Order Intake Agent"}</div>
+                </div>
+              </div>
+
+              {/* Logout Button */}
+              <button
+                type="button"
+                onClick={onLogout}
+                className="btn-toolbar"
+                title="Log out from console"
+                style={{ padding: "6px 12px", fontSize: "11px", color: "var(--badge-cancelled-text)" }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Log Out</span>
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={onOpenLoginModal}
+              className="btn-primary"
+              style={{ padding: "6px 14px", fontSize: "12px" }}
+            >
+              Sign In (JWT)
+            </button>
+          )}
         </div>
       </header>
     </>

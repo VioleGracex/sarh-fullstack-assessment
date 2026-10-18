@@ -5,6 +5,7 @@ import { ControlsBar } from "./components/ControlsBar";
 import { OrdersTable } from "./components/OrdersTable";
 import { OrderDrawer } from "./components/OrderDrawer";
 import { OrderDetailDrawer } from "./components/OrderDetailDrawer";
+import { LoginModal } from "./components/LoginModal";
 import { useOrders } from "./hooks/useOrders";
 import type { User, Theme, Density, Order } from "./types/order";
 
@@ -54,12 +55,13 @@ export function App() {
   };
 
   // 2. USER & RBAC STATE (Admin / Agent)
-  const [currentUser, setCurrentUser] = useState<User>({
+  const [currentUser, setCurrentUser] = useState<User | null>({
     id: "admin-seed-id",
     email: "admin@sarh.ai",
     role: "ADMIN"
   });
   const [authToken, setAuthToken] = useState<string>("");
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // Slide-over Drawers state
   const [isOrderDrawerOpen, setIsOrderDrawerOpen] = useState(false);
@@ -99,11 +101,12 @@ export function App() {
   // Sync authentication token with role
   useEffect(() => {
     async function login() {
+      if (!currentUser) return;
       try {
         const password =
           currentUser.role === "ADMIN"
-            ? (import.meta.env.VITE_ADMIN_PASSWORD || "")
-            : (import.meta.env.VITE_AGENT_PASSWORD || "");
+            ? (import.meta.env.VITE_ADMIN_PASSWORD || "admin123")
+            : (import.meta.env.VITE_AGENT_PASSWORD || "agent123");
         const res = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -118,21 +121,62 @@ export function App() {
         console.warn("Could not authenticate initial user:", err);
       }
     }
-    login();
-  }, [currentUser.email, currentUser.role]);
-
-  const handleSwitchUser = (newRole: "ADMIN" | "AGENT") => {
-    if (newRole === "ADMIN") {
-      setCurrentUser({ id: "admin-id", email: "admin@sarh.ai", role: "ADMIN" });
-      showToast("Switched to Admin role (Delete operations allowed)", "info");
-    } else {
-      setCurrentUser({ id: "agent-id", email: "agent@sarh.ai", role: "AGENT" });
-      showToast("Switched to Agent role (Delete operations blocked by server RBAC)", "warning");
+    if (!authToken && currentUser) {
+      login();
     }
+  }, [currentUser?.email, currentUser?.role]);
+
+  const handleSwitchUser = async (newRole: "ADMIN" | "AGENT") => {
+    const targetEmail = newRole === "ADMIN" ? "admin@sarh.ai" : "agent@sarh.ai";
+    const targetPassword = newRole === "ADMIN" ? "admin123" : "agent123";
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: targetEmail, password: targetPassword })
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setAuthToken(json.token);
+        setCurrentUser(json.user);
+        showToast(
+          newRole === "ADMIN"
+            ? "Switched to Admin role (Delete operations allowed)"
+            : "Switched to Agent role (Delete operations blocked by server RBAC)",
+          "info"
+        );
+        return;
+      }
+    } catch (err) {
+      console.warn("Could not switch role:", err);
+    }
+    setCurrentUser({ id: `${newRole.toLowerCase()}-id`, email: targetEmail, role: newRole });
+  };
+
+  const handleLoginSuccess = (user: User, token: string) => {
+    setCurrentUser(user);
+    setAuthToken(token);
+    showToast(`Signed in as ${user.email} (${user.role})`, "success");
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setAuthToken("");
+    showToast("Signed out from operations console", "info");
   };
 
   // Section 3: Delete order protected by server-side RBAC
   const handleDeleteOrder = async (orderId: string, orderNumber: string) => {
+    if (!currentUser) {
+      showToast("Authentication required: Please sign in as Admin", "error");
+      setIsLoginModalOpen(true);
+      return;
+    }
+    if (currentUser.role !== "ADMIN") {
+      showToast("Access Denied: Agent role cannot delete orders (Server-side RBAC enforced)", "error");
+      return;
+    }
+
     if (!confirm(`Are you sure you want to delete order ${orderNumber}? This action is protected by server-side RBAC.`)) {
       return;
     }
@@ -177,6 +221,8 @@ export function App() {
         onToggleTheme={handleToggleTheme}
         currentUser={currentUser}
         onSwitchUser={handleSwitchUser}
+        onOpenLoginModal={() => setIsLoginModalOpen(true)}
+        onLogout={handleLogout}
         totalOrders={systemStats.totalSystemRecords}
       />
 
@@ -259,6 +305,13 @@ export function App() {
       <OrderDetailDrawer
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}
+      />
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        currentUser={currentUser}
+        onLoginSuccess={handleLoginSuccess}
       />
 
       {/* Toast Notification Container */}

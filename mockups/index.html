@@ -1,0 +1,2504 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="corporate-steel" data-density="comfortable">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SARH Orders Console - Operations Workspace</title>
+  <style>
+    /* ==========================================================================
+       SARH BUSINESS SOLUTIONS - ORDERS CONSOLE DESIGN SYSTEM
+       Primary Modes:
+       - Light Mode: Corporate Steel & Sapphire (High clarity, zero glare)
+       - Dark Mode: Midnight Obsidian & Zinc (Low-luminance, anti-halation)
+       ========================================================================== */
+
+    :root {
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    /* LIGHT MODE: CORPORATE STEEL & SAPPHIRE */
+    [data-theme="corporate-steel"] {
+      --bg-canvas: #f1f5f9;
+      --bg-surface: #ffffff;
+      --bg-subtle: #e2e8f0;
+      --bg-muted: #cbd5e1;
+      --border-subtle: #cbd5e1;
+      --border-strong: #94a3b8;
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-tertiary: #64748b;
+      --accent-primary: #1e40af;
+      --accent-hover: #1e3a8a;
+      --accent-subtle: #eff6ff;
+      --accent-text: #1e40af;
+      --accent-ring: rgba(30, 64, 175, 0.2);
+
+      --badge-pending-bg: #fef3c7;
+      --badge-pending-text: #92400e;
+      --badge-pending-border: #fde68a;
+
+      --badge-processing-bg: #dbeafe;
+      --badge-processing-text: #1e40af;
+      --badge-processing-border: #bfdbfe;
+
+      --badge-completed-bg: #d1fae5;
+      --badge-completed-text: #065f46;
+      --badge-completed-border: #a7f3d0;
+
+      --badge-cancelled-bg: #fee2e2;
+      --badge-cancelled-text: #991b1b;
+      --badge-cancelled-border: #fecaca;
+    }
+
+    /* DARK MODE: MIDNIGHT OBSIDIAN & ZINC */
+    [data-theme="midnight-obsidian"] {
+      --bg-canvas: #12141a;
+      --bg-surface: #191c24;
+      --bg-subtle: #212530;
+      --bg-muted: #2c3241;
+      --border-subtle: #2b3140;
+      --border-strong: #3e4659;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-tertiary: #64748b;
+      --accent-primary: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --accent-subtle: rgba(56, 189, 248, 0.12);
+      --accent-text: #38bdf8;
+      --accent-ring: rgba(56, 189, 248, 0.25);
+
+      --badge-pending-bg: rgba(245, 158, 11, 0.15);
+      --badge-pending-text: #fbbf24;
+      --badge-pending-border: rgba(245, 158, 11, 0.35);
+
+      --badge-processing-bg: rgba(14, 165, 233, 0.15);
+      --badge-processing-text: #38bdf8;
+      --badge-processing-border: rgba(14, 165, 233, 0.35);
+
+      --badge-completed-bg: rgba(34, 197, 94, 0.15);
+      --badge-completed-text: #4ade80;
+      --badge-completed-border: rgba(34, 197, 94, 0.35);
+
+      --badge-cancelled-bg: rgba(239, 68, 68, 0.15);
+      --badge-cancelled-text: #f87171;
+      --badge-cancelled-border: rgba(239, 68, 68, 0.35);
+    }
+
+    /* Density Overrides */
+    [data-density="comfortable"] {
+      --spacing-table-y: 12px;
+      --spacing-card-p: 20px;
+      --font-size-base: 14px;
+    }
+
+    [data-density="compact"] {
+      --spacing-table-y: 7px;
+      --spacing-card-p: 14px;
+      --font-size-base: 13px;
+    }
+
+    /* Base Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-stack);
+      font-size: var(--font-size-base);
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color var(--transition-normal), color var(--transition-normal);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ==========================================================================
+       TOP CONTROL & MODE SWITCHER TOOLBAR
+       ========================================================================== */
+    .theme-toolbar {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .toolbar-left, .toolbar-center, .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .toolbar-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Primary Dark/Light Mode Switcher Button */
+    .mode-toggle-btn {
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      user-select: none;
+    }
+
+    .mode-toggle-btn:hover {
+      background-color: var(--bg-muted);
+      border-color: var(--border-strong);
+    }
+
+    .mode-icon-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-text);
+    }
+
+    .density-toggle, .btn-toolbar {
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+
+    .density-toggle:hover, .btn-toolbar:hover {
+      background-color: var(--bg-muted);
+      color: var(--text-primary);
+    }
+
+    /* ==========================================================================
+       APP HEADER & BRANDING
+       ========================================================================== */
+    .app-header {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo-crest {
+      width: 38px;
+      height: 38px;
+      background: var(--accent-subtle);
+      color: var(--accent-primary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-text h1 span.arabic-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      direction: rtl;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      letter-spacing: 0.02em;
+    }
+
+    .status-indicator-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .dot-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: #10b981;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background-color: var(--accent-subtle);
+      color: var(--accent-text);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 8px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+    }
+
+    .avatar-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-subtle);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .user-meta {
+      text-align: left;
+    }
+
+    .user-meta .name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .user-meta .dept {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    /* ==========================================================================
+       MAIN APP LAYOUT
+       ========================================================================== */
+    .app-main {
+      flex: 1;
+      padding: 24px 28px;
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ==========================================================================
+       STATS & KPIS CARDS
+       ========================================================================== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-card-p);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .stat-card:hover {
+      border-color: var(--border-strong);
+    }
+
+    .stat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-tertiary);
+    }
+
+    .stat-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .stat-icon {
+      width: 18px;
+      height: 18px;
+      color: var(--text-tertiary);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    .stat-subtext {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-subtext.highlight {
+      color: var(--accent-text);
+      font-weight: 600;
+    }
+
+    /* ==========================================================================
+       SECTION CONTROLS: FILTERS, SEARCH, SORT, ACTIONS
+       ========================================================================== */
+    .console-header-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .controls-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .status-tab-list {
+      display: flex;
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 3px;
+      gap: 2px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition-fast);
+      user-select: none;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      background-color: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tab-count {
+      background-color: var(--bg-muted);
+      color: var(--text-secondary);
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .tab-btn.active .tab-count {
+      background-color: var(--accent-subtle);
+      color: var(--accent-text);
+    }
+
+    .action-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-primary {
+      background-color: var(--accent-primary);
+      color: #ffffff;
+      border: 1px solid transparent;
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-hover);
+    }
+
+    [data-theme="midnight-obsidian"] .btn-primary {
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--bg-subtle);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+    }
+
+    .btn-test-race {
+      background-color: var(--bg-subtle);
+      color: var(--accent-text);
+      border: 1px dashed var(--accent-primary);
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-test-race:hover {
+      background-color: var(--accent-subtle);
+    }
+
+    /* Filter & Search Bar */
+    .controls-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      min-width: 280px;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-icon-left {
+      position: absolute;
+      left: 12px;
+      width: 16px;
+      height: 16px;
+      color: var(--text-tertiary);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 8px 12px 8px 36px;
+      font-size: 13px;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--accent-ring);
+    }
+
+    .search-shortcut-badge {
+      position: absolute;
+      right: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      pointer-events: none;
+    }
+
+    .filter-options-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .select-dropdown {
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      outline: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .select-dropdown:focus {
+      border-color: var(--accent-primary);
+    }
+
+    /* Simulation Alert Bar */
+    .race-alert-banner {
+      display: none;
+      background-color: var(--accent-subtle);
+      border: 1px solid var(--accent-primary);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--accent-text);
+      align-items: center;
+      justify-content: space-between;
+      animation: fadeIn 200ms ease-out;
+    }
+
+    .race-alert-banner.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       DATA TABLE CONTAINER
+       ========================================================================== */
+    .table-container {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    .orders-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .orders-table th {
+      background-color: var(--bg-subtle);
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .orders-table th.sortable {
+      cursor: pointer;
+    }
+
+    .orders-table th.sortable:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-muted);
+    }
+
+    .th-content {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .orders-table td {
+      padding: var(--spacing-table-y) 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      vertical-align: middle;
+      transition: background-color var(--transition-fast);
+    }
+
+    .orders-table tr:hover td {
+      background-color: var(--bg-subtle);
+    }
+
+    .orders-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Table Cell Specifics */
+    .order-number-cell {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-weight: 700;
+      color: var(--accent-text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .copy-btn {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      display: inline-flex;
+      padding: 3px;
+      border-radius: var(--radius-sm);
+      transition: all var(--transition-fast);
+    }
+
+    .copy-btn:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-muted);
+    }
+
+    .customer-info-box {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .customer-name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .customer-email {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .items-pill {
+      font-size: 12px;
+      color: var(--text-secondary);
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .amount-cell {
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+      text-align: right;
+    }
+
+    .amount-currency {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      margin-left: 3px;
+    }
+
+    .date-cell {
+      color: var(--text-secondary);
+      font-size: 12px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* STATUS BADGES */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      border-width: 1px;
+      border-style: solid;
+      white-space: nowrap;
+    }
+
+    .status-badge.pending {
+      background-color: var(--badge-pending-bg);
+      color: var(--badge-pending-text);
+      border-color: var(--badge-pending-border);
+    }
+
+    .status-badge.processing {
+      background-color: var(--badge-processing-bg);
+      color: var(--badge-processing-text);
+      border-color: var(--badge-processing-border);
+    }
+
+    .status-badge.completed {
+      background-color: var(--badge-completed-bg);
+      color: var(--badge-completed-text);
+      border-color: var(--badge-completed-border);
+    }
+
+    .status-badge.cancelled {
+      background-color: var(--badge-cancelled-bg);
+      color: var(--badge-cancelled-text);
+      border-color: var(--badge-cancelled-border);
+    }
+
+    .row-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .btn-row-action {
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 5px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      transition: all var(--transition-fast);
+    }
+
+    .btn-row-action:hover {
+      background-color: var(--accent-subtle);
+      color: var(--accent-text);
+      border-color: var(--accent-primary);
+    }
+
+    .custom-checkbox {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid var(--border-strong);
+      cursor: pointer;
+      accent-color: var(--accent-primary);
+    }
+
+    /* ==========================================================================
+       PAGINATION BAR
+       ========================================================================== */
+    .table-footer {
+      background-color: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .rows-per-page-select {
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 4px 8px;
+      font-size: 12px;
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .page-btn {
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      min-width: 30px;
+      height: 30px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-fast);
+      user-select: none;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      background-color: var(--bg-subtle);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+    }
+
+    .page-btn.active {
+      background-color: var(--accent-primary);
+      color: #ffffff;
+      border-color: var(--accent-primary);
+    }
+
+    [data-theme="midnight-obsidian"] .page-btn.active {
+      color: #0f172a;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ==========================================================================
+       SLIDE-OVER DRAWER (Create Order - R2 Duplicate Lock)
+       ========================================================================== */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(2px);
+      z-index: 100;
+      display: none;
+      opacity: 0;
+      transition: opacity var(--transition-normal);
+    }
+
+    .drawer-overlay.open {
+      display: block;
+      opacity: 1;
+    }
+
+    .drawer-container {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: 580px;
+      background-color: var(--bg-surface);
+      border-left: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-lg);
+      z-index: 101;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .drawer-overlay.open .drawer-container {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .drawer-title h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .drawer-title p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .btn-close-drawer {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+    }
+
+    .btn-close-drawer:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-subtle);
+    }
+
+    .drawer-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* UX Architecture Note Banner inside Drawer */
+    .drawer-ux-note {
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.45;
+    }
+
+    .drawer-ux-note svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: var(--accent-primary);
+    }
+
+    /* Idempotency Lock Callout Card */
+    .idempotency-callout {
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .idempotency-callout-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-text);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .idempotency-key-display {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      word-break: break-all;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-input, .form-select {
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 9px 12px;
+      font-size: 13px;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+      width: 100%;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--accent-ring);
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* Line Items Dynamic Builder */
+    .line-items-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 16px;
+    }
+
+    .line-items-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .item-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1.2fr 32px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-delete-row {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn-delete-row:hover {
+      color: #ef4444;
+      background-color: var(--bg-subtle);
+    }
+
+    .order-totals-summary {
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .summary-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-secondary);
+    }
+
+    .summary-line.grand-total {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .drawer-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-subtle);
+      background-color: var(--bg-surface);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    /* Duplicate proof demo banner inside drawer */
+    .duplicate-sim-box {
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      background-color: var(--bg-canvas);
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .btn-sim-double {
+      background-color: #f59e0b;
+      color: #ffffff;
+      border: none;
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-lg);
+      border-radius: var(--radius-md);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      min-width: 320px;
+      max-width: 440px;
+      pointer-events: auto;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 250ms ease-out;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast-icon {
+      flex-shrink: 0;
+    }
+
+    .toast-success .toast-icon { color: #10b981; }
+    .toast-info .toast-icon { color: var(--accent-primary); }
+    .toast-warning .toast-icon { color: #f59e0b; }
+
+    /* Responsive adjustments */
+    @media (max-width: 960px) {
+      .app-main {
+        padding: 16px;
+      }
+      .controls-top-row, .controls-bottom-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-input-wrapper {
+        min-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================================
+       TOP TOOLBAR: STREAMLINED LIGHT / DARK MODE & DENSITY
+       ======================================================================== -->
+  <header class="theme-toolbar">
+    <div class="toolbar-left">
+      <div class="toolbar-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" x2="12" y1="1" y2="3"></line>
+          <line x1="12" x2="12" y1="21" y2="23"></line>
+          <line x1="4.22" x2="5.64" y1="4.22" y2="5.64"></line>
+          <line x1="18.36" x2="19.78" y1="18.36" y2="19.78"></line>
+          <line x1="1" x2="3" y1="12" y2="12"></line>
+          <line x1="21" x2="23" y1="12" y2="12"></line>
+          <line x1="4.22" x2="5.64" y1="19.78" y2="18.36"></line>
+          <line x1="18.36" x2="19.78" y1="5.64" y2="4.22"></line>
+        </svg>
+        <span>Appearance Mode:</span>
+      </div>
+
+      <!-- Quick Toggle: Corporate Steel (Light) <-> Midnight Obsidian (Dark) -->
+      <button class="mode-toggle-btn" id="modeToggleBtn" onclick="toggleColorMode()">
+        <span class="mode-icon-box" id="modeIconBox">
+          <!-- Default: Sun icon for Light Mode -->
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="m4.93 4.93 1.41 1.41"></path>
+            <path d="m17.66 17.66 1.41 1.41"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+            <path d="m6.34 17.66-1.41 1.41"></path>
+            <path d="m19.07 4.93-1.41 1.41"></path>
+          </svg>
+        </span>
+        <span id="modeTextLabel">Light Mode (Corporate Steel)</span>
+      </button>
+    </div>
+
+    <div class="toolbar-right">
+      <div class="toolbar-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="21" x2="3" y1="6" y2="6"></line>
+          <line x1="21" x2="3" y1="12" y2="12"></line>
+          <line x1="21" x2="3" y1="18" y2="18"></line>
+        </svg>
+        <span>Density:</span>
+      </div>
+
+      <button class="density-toggle" id="densityBtn" onclick="toggleDensity()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+          <path d="M3 9h18"></path>
+          <path d="M3 15h18"></path>
+        </svg>
+        <span id="densityLabel">Comfortable</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       APPLICATION HEADER: BRANDING & ROLE STATUS
+       ======================================================================== -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-logo-crest">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>
+          <span>SARH Business Solutions</span>
+          <span class="arabic-title">صرح لحلول الأعمال</span>
+        </h1>
+        <div class="brand-subtitle">Orders Operations Console · Production System</div>
+      </div>
+
+      <div class="status-indicator-pill">
+        <span class="dot-pulse"></span>
+        <span>Operations Live</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="role-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path>
+        </svg>
+        <span>Agent Console</span>
+      </div>
+
+      <div class="user-profile">
+        <div class="avatar-icon-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <div class="user-meta">
+          <div class="name">Tariq Al-Harbi</div>
+          <div class="dept">Operations Team · Shift 1</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN APP WORKSPACE
+       ======================================================================== -->
+  <main class="app-main">
+
+    <!-- STATS / KPIS ROW -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-title">Total Orders</span>
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+            <path d="m3.3 7 8.7 5 8.7-5"></path>
+            <path d="M12 22V12"></path>
+          </svg>
+        </div>
+        <div class="stat-value">54,230</div>
+        <div class="stat-subtext highlight">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+            <polyline points="16 7 22 7 22 13"></polyline>
+          </svg>
+          <span>All registered orders</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-title">Today's Revenue</span>
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="14" x="2" y="5" rx="2"></rect>
+            <line x1="2" x2="22" y1="10" y2="10"></line>
+          </svg>
+        </div>
+        <div class="stat-value">142,850 <span style="font-size: 14px; font-weight: 500; color: var(--text-tertiary);">SAR</span></div>
+        <div class="stat-subtext">Aggregated from today's orders</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-title">Pending Orders</span>
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="stat-value" style="color: var(--badge-pending-text);">412</div>
+        <div class="stat-subtext">Requires agent review</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-title">Processing</span>
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+          </svg>
+        </div>
+        <div class="stat-value" style="color: var(--badge-processing-text);">1,894</div>
+        <div class="stat-subtext">Active fulfillment</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-title">Duplicate Protection</span>
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path>
+            <path d="m9 12 2 2 4-4"></path>
+          </svg>
+        </div>
+        <div class="stat-value" style="color: #10b981;">100%</div>
+        <div class="stat-subtext highlight">0 duplicates recorded</div>
+      </div>
+    </section>
+
+    <!-- CONSOLE CONTROLS & FILTER SECTION -->
+    <section class="console-header-card">
+      <div class="controls-top-row">
+        <!-- Status Tabs -->
+        <div class="status-tab-list" role="tablist">
+          <button class="tab-btn active" onclick="filterByStatus('ALL', this)">
+            <span>All Orders</span>
+            <span class="tab-count">54,230</span>
+          </button>
+          <button class="tab-btn" onclick="filterByStatus('PENDING', this)">
+            <span>Pending</span>
+            <span class="tab-count">412</span>
+          </button>
+          <button class="tab-btn" onclick="filterByStatus('PROCESSING', this)">
+            <span>Processing</span>
+            <span class="tab-count">1,894</span>
+          </button>
+          <button class="tab-btn" onclick="filterByStatus('COMPLETED', this)">
+            <span>Completed</span>
+            <span class="tab-count">50,424</span>
+          </button>
+          <button class="tab-btn" onclick="filterByStatus('CANCELLED', this)">
+            <span>Cancelled</span>
+            <span class="tab-count">1,500</span>
+          </button>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-btn-group">
+          <!-- Rapid Filter Test Simulator (Requirement R1) -->
+          <button class="btn-test-race" onclick="simulateRapidFilterRace()" title="Demonstrates AbortController cancellation when filter is changed 3 times rapidly">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            <span>Simulate Rapid Filter (R1 Test)</span>
+          </button>
+
+          <!-- Create Order Primary Button (Requirement R2) -->
+          <button class="btn-primary" onclick="openCreateOrderDrawer()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" x2="12" y1="5" y2="19"></line>
+              <line x1="5" x2="19" y1="12" y2="12"></line>
+            </svg>
+            <span>Register New Order</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search, Sorting & Secondary Filters -->
+      <div class="controls-bottom-row">
+        <div class="search-input-wrapper">
+          <svg class="search-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" x2="16.65" y1="21" y2="16.65"></line>
+          </svg>
+          <input 
+            type="text" 
+            class="search-input" 
+            id="searchInput" 
+            placeholder="Search by order ID, customer name, email..." 
+            oninput="handleSearch(this.value)"
+          >
+          <span class="search-shortcut-badge">Ctrl + K</span>
+        </div>
+
+        <div class="filter-options-group">
+          <select class="select-dropdown" id="sortSelect" onchange="handleSortChange(this.value)">
+            <option value="createdAt_desc">Sort: Date (Newest first)</option>
+            <option value="createdAt_asc">Sort: Date (Oldest first)</option>
+            <option value="totalAmount_desc">Sort: Amount (High to Low)</option>
+            <option value="totalAmount_asc">Sort: Amount (Low to High)</option>
+          </select>
+
+          <select class="select-dropdown">
+            <option>Date: All Time</option>
+            <option>Date: Today</option>
+            <option>Date: Last 7 Days</option>
+            <option>Date: This Month</option>
+          </select>
+
+          <button class="btn-secondary" onclick="resetFilters()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+              <path d="M21 3v5h-5"></path>
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+              <path d="M8 16H3v5"></path>
+            </svg>
+            <span>Reset</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Rapid Filter Simulation Alert Banner -->
+      <div class="race-alert-banner" id="raceAlertBanner">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" x2="12" y1="8" y2="12"></line>
+            <line x1="12" x2="12.01" y1="16" y2="16"></line>
+          </svg>
+          <span id="raceAlertText">Simulating rapid clicks: Request #1 [PENDING] aborted. Request #2 [PROCESSING] aborted. Showing latest Request #3 [COMPLETED].</span>
+        </div>
+        <button class="btn-secondary" style="padding: 2px 8px; font-size: 11px;" onclick="closeRaceBanner()">Dismiss</button>
+      </div>
+    </section>
+
+    <!-- DATA TABLE: ORDERS LIST -->
+    <section class="table-container">
+      <div class="table-responsive">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">
+                <input type="checkbox" class="custom-checkbox" aria-label="Select all orders">
+              </th>
+              <th style="width: 170px;">
+                <div class="th-content">
+                  <span>Order ID</span>
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span>Customer Details</span>
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span>Line Items</span>
+                </div>
+              </th>
+              <th class="sortable" onclick="toggleSort('createdAt')">
+                <div class="th-content">
+                  <span>Created At</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m7 15 5 5 5-5"></path>
+                    <path d="m7 9 5-5 5 5"></path>
+                  </svg>
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span>Status</span>
+                </div>
+              </th>
+              <th class="sortable" onclick="toggleSort('totalAmount')" style="text-align: right;">
+                <div class="th-content" style="justify-content: flex-end;">
+                  <span>Total Amount</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m7 15 5 5 5-5"></path>
+                    <path d="m7 9 5-5 5 5"></path>
+                  </svg>
+                </div>
+              </th>
+              <th style="width: 90px; text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <!-- Rendered by JavaScript dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PAGINATION BAR -->
+      <footer class="table-footer">
+        <div class="footer-left">
+          <span>Showing <strong id="showingRange">1 to 25</strong> of <strong id="totalOrdersCount">54,230</strong> orders</span>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span>Rows:</span>
+            <select class="rows-per-page-select" id="pageSizeSelect" onchange="changePageSize(this.value)">
+              <option value="10">10</option>
+              <option value="25" selected>25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pagination-controls">
+          <button class="page-btn" onclick="changePage(1)" title="First Page">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="11 17 6 12 11 7"></polyline>
+              <polyline points="18 17 13 12 18 7"></polyline>
+            </svg>
+          </button>
+          <button class="page-btn" onclick="prevPage()" title="Previous Page">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn" onclick="changePage(2)">2</button>
+          <button class="page-btn" onclick="changePage(3)">3</button>
+          <span style="padding: 0 4px; color: var(--text-tertiary);">...</span>
+          <button class="page-btn" onclick="changePage(2170)">2,170</button>
+          <button class="page-btn" onclick="nextPage()" title="Next Page">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+          <button class="page-btn" onclick="changePage(2170)" title="Last Page">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="13 17 18 12 13 7"></polyline>
+              <polyline points="6 17 11 12 6 7"></polyline>
+            </svg>
+          </button>
+        </div>
+      </footer>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================
+       SLIDE-OVER DRAWER: CREATE MANUAL ORDER (R2 DUPLICATE LOCK DEMO)
+       ======================================================================== -->
+  <div class="drawer-overlay" id="createOrderDrawer" onclick="handleDrawerOverlayClick(event)">
+    <div class="drawer-container" onclick="event.stopPropagation()">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <h2>Register Manual Order</h2>
+          <p>Phone and direct orders console with strict Idempotency guarantee</p>
+        </div>
+        <button class="btn-close-drawer" onclick="closeCreateOrderDrawer()" aria-label="Close drawer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" x2="6" y1="6" y2="18"></line>
+            <line x1="6" x2="18" y1="6" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Architecture Note (Documented Trade-off) -->
+        <div class="drawer-ux-note">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" x2="12" y1="16" y2="12"></line>
+            <line x1="12" x2="12.01" y1="8" y2="8"></line>
+          </svg>
+          <span>
+            <strong>UX Architecture Note:</strong> The slide-over drawer was chosen for speed in this scenario (rapid 1–5 item intake while keeping the orders table in view). For larger enterprise scopes with 20+ items, customs documents, or multi-step billing, a dedicated <code>/orders/new</code> full page would be preferred.
+          </span>
+        </div>
+
+        <!-- Idempotency Callout (R2 Requirement) -->
+        <div class="idempotency-callout">
+          <div class="idempotency-callout-header">
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span>Idempotency-Key Lock (R2 Guarantee)</span>
+            </div>
+            <button class="btn-secondary" style="padding: 2px 6px; font-size: 10px;" onclick="regenerateIdempotencyKey()">
+              Regenerate
+            </button>
+          </div>
+          <div class="idempotency-key-display">
+            <span id="currentIdempotencyKey">7f8a12bc-e4d2-4301-8bf7-589f1d0a3219</span>
+            <span style="font-size: 10px; color: var(--text-tertiary);">UUIDv4</span>
+          </div>
+          <span style="font-size: 11px; color: var(--text-tertiary);">
+            Prevents double-click or network resend duplicate orders on server & DB level.
+          </span>
+        </div>
+
+        <!-- Customer Form Fields -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="custName">Customer Full Name</label>
+            <input type="text" class="form-input" id="custName" value="Abdullah Al-Shehri" placeholder="e.g. Faisal Al-Zahrani">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="custEmail">Customer Email</label>
+            <input type="email" class="form-input" id="custEmail" value="a.shehri@sarh.sa" placeholder="name@domain.sa">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="orderStatusSelect">Initial Order Status</label>
+          <select class="form-select" id="orderStatusSelect">
+            <option value="PENDING" selected>PENDING - Needs Verification</option>
+            <option value="PROCESSING">PROCESSING - Direct to Warehouse</option>
+          </select>
+        </div>
+
+        <!-- Line Items Section -->
+        <div class="line-items-section">
+          <div class="line-items-header">
+            <span class="form-label">Order Line Items (1–5 items)</span>
+            <button class="btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="addLineItem()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" x2="12" y1="5" y2="19"></line>
+                <line x1="5" x2="19" y1="12" y2="12"></line>
+              </svg>
+              <span>Add Item</span>
+            </button>
+          </div>
+
+          <div id="lineItemsContainer" style="display: flex; flex-direction: column; gap: 8px;">
+            <div class="item-row">
+              <input type="text" class="form-input item-name" value="Enterprise Fiber Gateway XG" placeholder="Product name">
+              <input type="number" class="form-input item-qty" value="2" min="1" oninput="calculateOrderTotal()">
+              <input type="number" class="form-input item-price" value="1850.00" step="50" oninput="calculateOrderTotal()">
+              <button class="btn-delete-row" onclick="removeLineItem(this)" title="Remove item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="item-row">
+              <input type="text" class="form-input item-name" value="10G SFP+ Optical Transceiver" placeholder="Product name">
+              <input type="number" class="form-input item-qty" value="4" min="1" oninput="calculateOrderTotal()">
+              <input type="number" class="form-input item-price" value="275.00" step="10" oninput="calculateOrderTotal()">
+              <button class="btn-delete-row" onclick="removeLineItem(this)" title="Remove item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Totals Summary -->
+        <div class="order-totals-summary">
+          <div class="summary-line">
+            <span>Subtotal</span>
+            <span id="summarySubtotal">4,800.00 SAR</span>
+          </div>
+          <div class="summary-line">
+            <span>VAT (15% Saudi Standard)</span>
+            <span id="summaryVat">720.00 SAR</span>
+          </div>
+          <div class="summary-line grand-total">
+            <span>Total Payable</span>
+            <span id="summaryGrandTotal" style="color: var(--accent-text);">5,520.00 SAR</span>
+          </div>
+        </div>
+
+        <!-- Double-Click Proof Simulator Box -->
+        <div class="duplicate-sim-box">
+          <div style="font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            <span>R2 Verification Sandbox</span>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 11px;">
+            Simulate an impatient agent clicking twice within 50ms or a mobile network packet replay.
+          </p>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-sim-double" onclick="simulateDuplicateClickProof()">
+              Simulate Rapid Double-Click
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="drawer-footer">
+        <button class="btn-secondary" onclick="closeCreateOrderDrawer()">Cancel</button>
+        <button class="btn-primary" id="btnSubmitOrder" onclick="submitCreateOrder()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span id="submitOrderBtnText">Create Order</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       ORDER DETAIL INSPECTOR DRAWER
+       ======================================================================== -->
+  <div class="drawer-overlay" id="orderDetailDrawer" onclick="handleDetailOverlayClick(event)">
+    <div class="drawer-container" onclick="event.stopPropagation()">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <h2 id="detailOrderNumber">ORD-2026-09418</h2>
+          <p id="detailOrderDate">Recorded on 18 Oct 2026 at 14:22 AST</p>
+        </div>
+        <button class="btn-close-drawer" onclick="closeOrderDetailDrawer()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" x2="6" y1="6" y2="18"></line>
+            <line x1="6" x2="18" y1="6" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="drawer-body">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 12px; color: var(--text-tertiary);">Current Status</span>
+          <span class="status-badge completed" id="detailStatusBadge">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            COMPLETED
+          </span>
+        </div>
+
+        <div class="idempotency-callout">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">
+            Idempotency Signature & Audit Lock
+          </span>
+          <div class="idempotency-key-display">
+            <span id="detailIdempotencyKey">e1a90c4d-b352-4fe8-8c11-923f7190d64a</span>
+          </div>
+          <span style="font-size: 11px; color: var(--text-tertiary);">
+            Locked at DB transaction timestamp: 2026-10-18T14:22:04.118Z
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Customer Profile</label>
+          <div style="background-color: var(--bg-subtle); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <div style="font-weight: 700; font-size: 14px;" id="detailCustomerName">Sultan Al-Otaibi</div>
+            <div style="font-size: 12px; color: var(--text-secondary);" id="detailCustomerEmail">sultan.otaibi@sarh.sa</div>
+            <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 4px;">Riyadh Corporate Account #SARH-7749</div>
+          </div>
+        </div>
+
+        <div class="line-items-section">
+          <span class="form-label">Items Purchased</span>
+          <div id="detailItemsList" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <div class="order-totals-summary">
+          <div class="summary-line">
+            <span>Line Items Total</span>
+            <span id="detailSubtotal">4,217.39 SAR</span>
+          </div>
+          <div class="summary-line">
+            <span>Tax (15% VAT)</span>
+            <span id="detailTax">632.61 SAR</span>
+          </div>
+          <div class="summary-line grand-total">
+            <span>Final Paid Amount</span>
+            <span id="detailTotal" style="color: var(--accent-text);">4,850.00 SAR</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-footer">
+        <button class="btn-secondary" onclick="closeOrderDetailDrawer()">Back to Console</button>
+        <button class="btn-primary" onclick="printOrderMock()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect width="12" height="8" x="6" y="14"></rect>
+          </svg>
+          <span>Print Receipt</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ========================================================================
+       APPLICATION LOGIC SCRIPT
+       ======================================================================== -->
+  <script>
+    // Initial dataset representing orders list
+    const INITIAL_ORDERS = [
+      {
+        id: "ORD-2026-09418",
+        customerName: "Sultan Al-Otaibi",
+        customerEmail: "sultan.otaibi@sarh.sa",
+        itemsSummary: "3 items · Enterprise Cloud Router, SFP+ Module...",
+        createdAt: "18 Oct 2026, 14:22",
+        status: "COMPLETED",
+        totalAmount: 4850.00,
+        idempotencyKey: "e1a90c4d-b352-4fe8-8c11-923f7190d64a",
+        items: [
+          { name: "Enterprise Cloud Router XG-90", qty: 1, price: 3450.00 },
+          { name: "10G SFP+ Optical Transceiver", qty: 2, price: 700.00 }
+        ]
+      },
+      {
+        id: "ORD-2026-09417",
+        customerName: "Sarah Mansoor Al-Ghamdi",
+        customerEmail: "sarah.mansoor@aramco.com",
+        itemsSummary: "1 item · Dedicated Rack Server Power Unit",
+        createdAt: "18 Oct 2026, 14:18",
+        status: "PROCESSING",
+        totalAmount: 1890.00,
+        idempotencyKey: "9f3c21a4-7809-40ea-9bf2-66a9821d3f11",
+        items: [
+          { name: "Dedicated Rack Server Power Unit 1200W", qty: 1, price: 1890.00 }
+        ]
+      },
+      {
+        id: "ORD-2026-09416",
+        customerName: "Faisal Al-Zahrani",
+        customerEmail: "faisal.zahrani@stc.com.sa",
+        itemsSummary: "5 items · Managed PoE+ Switch 48-Port...",
+        createdAt: "18 Oct 2026, 14:05",
+        status: "PENDING",
+        totalAmount: 7620.00,
+        idempotencyKey: "4d71e892-3c5b-4221-a7b3-19df83a62ec0",
+        items: [
+          { name: "Managed PoE+ Switch 48-Port", qty: 1, price: 5200.00 },
+          { name: "Cat6A Shielded Patch Cable 2m (Pack of 10)", qty: 4, price: 2420.00 }
+        ]
+      },
+      {
+        id: "ORD-2026-09415",
+        customerName: "Reem Khalid Al-Dossari",
+        customerEmail: "reem.dossari@sabic.com",
+        itemsSummary: "2 items · Hardware Security Module (HSM)",
+        createdAt: "18 Oct 2026, 13:54",
+        status: "COMPLETED",
+        totalAmount: 12450.00,
+        idempotencyKey: "81bc3290-67df-48aa-b91c-7f551982bde4",
+        items: [
+          { name: "Hardware Security Module (HSM) Level 3", qty: 1, price: 11500.00 },
+          { name: "Tamper-evident Backup Smartcards", qty: 2, price: 950.00 }
+        ]
+      },
+      {
+        id: "ORD-2026-09414",
+        customerName: "Nasser Al-Subaie",
+        customerEmail: "nasser.subaie@elm.sa",
+        itemsSummary: "1 item · Network Monitoring Sensor Probe",
+        createdAt: "18 Oct 2026, 13:30",
+        status: "CANCELLED",
+        totalAmount: 920.00,
+        idempotencyKey: "12ae89bc-9932-44df-911e-35ba70211dca",
+        items: [
+          { name: "Network Monitoring Sensor Probe", qty: 1, price: 920.00 }
+        ]
+      },
+      {
+        id: "ORD-2026-09413",
+        customerName: "Dr. Laila Al-Omari",
+        customerEmail: "laila.omari@kfshrc.edu.sa",
+        itemsSummary: "4 items · High-Availability SAN Storage Controller...",
+        createdAt: "18 Oct 2026, 13:12",
+        status: "PROCESSING",
+        totalAmount: 16800.00,
+        idempotencyKey: "55df77bb-12a8-44ec-944b-48192a009ef3",
+        items: [
+          { name: "High-Availability SAN Storage Controller", qty: 1, price: 14200.00 },
+          { name: "Fibre Channel HBA Dual Port 16Gbps", qty: 2, price: 2600.00 }
+        ]
+      },
+      {
+        id: "ORD-2026-09412",
+        customerName: "Mishaal Al-Humaidan",
+        customerEmail: "m.humaidan@riyadbank.com",
+        itemsSummary: "2 items · Firewall Appliance 10Gbps Inspection",
+        createdAt: "18 Oct 2026, 12:45",
+        status: "COMPLETED",
+        totalAmount: 9400.00,
+        idempotencyKey: "77cf11da-66bb-49ab-8733-1492baee88a9",
+        items: [
+          { name: "Firewall Appliance 10Gbps Inspection", qty: 1, price: 8900.00 },
+          { name: "Redundant Hot-Swap AC PSU", qty: 1, price: 500.00 }
+        ]
+      },
+      {
+        id: "ORD-2026-09411",
+        customerName: "Huda Bint Saad",
+        customerEmail: "huda.saad@sdaia.gov.sa",
+        itemsSummary: "1 item · Enterprise AI Edge Accelerator Card",
+        createdAt: "18 Oct 2026, 12:20",
+        status: "PENDING",
+        totalAmount: 8200.00,
+        idempotencyKey: "991a54dc-3301-4478-8ba9-014499ec2761",
+        items: [
+          { name: "Enterprise AI Edge Accelerator Card", qty: 1, price: 8200.00 }
+        ]
+      }
+    ];
+
+    let currentFilter = 'ALL';
+    let searchQuery = '';
+    let currentOrders = [...INITIAL_ORDERS];
+    let isCompact = false;
+    let isDarkMode = false; // default: false (Corporate Steel)
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderTable(currentOrders);
+      calculateOrderTotal();
+      regenerateIdempotencyKey();
+    });
+
+    // Color Mode Toggle: Corporate Steel (Light) <-> Midnight Obsidian (Dark)
+    function toggleColorMode() {
+      isDarkMode = !isDarkMode;
+      const targetTheme = isDarkMode ? 'midnight-obsidian' : 'corporate-steel';
+      document.documentElement.setAttribute('data-theme', targetTheme);
+
+      const textLabel = document.getElementById('modeTextLabel');
+      const iconBox = document.getElementById('modeIconBox');
+
+      if (isDarkMode) {
+        textLabel.textContent = 'Dark Mode (Midnight Obsidian)';
+        iconBox.innerHTML = `
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+        `;
+        showToast('Switched to Dark Mode (Midnight Obsidian)', 'info');
+      } else {
+        textLabel.textContent = 'Light Mode (Corporate Steel)';
+        iconBox.innerHTML = `
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="m4.93 4.93 1.41 1.41"></path>
+            <path d="m17.66 17.66 1.41 1.41"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+            <path d="m6.34 17.66-1.41 1.41"></path>
+            <path d="m19.07 4.93-1.41 1.41"></path>
+          </svg>
+        `;
+        showToast('Switched to Light Mode (Corporate Steel)', 'info');
+      }
+    }
+
+    // Density toggle logic
+    function toggleDensity() {
+      isCompact = !isCompact;
+      const density = isCompact ? 'compact' : 'comfortable';
+      document.documentElement.setAttribute('data-density', density);
+      document.getElementById('densityLabel').textContent = isCompact ? 'Compact' : 'Comfortable';
+      showToast(`Layout density: ${isCompact ? 'Compact' : 'Comfortable'}`, 'info');
+    }
+
+    // Table rendering function
+    function renderTable(orders) {
+      const tbody = document.getElementById('ordersTableBody');
+      tbody.innerHTML = '';
+
+      if (orders.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 48px; color: var(--text-tertiary);">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 8px;">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" x2="16.65" y1="21" y2="16.65"></line>
+              </svg>
+              <div style="font-size: 14px; font-weight: 600; color: var(--text-secondary);">No orders match your filter criteria</div>
+              <div style="font-size: 12px; margin-top: 4px;">Try searching with a different order ID, customer name or status.</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      orders.forEach(order => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <input type="checkbox" class="custom-checkbox" aria-label="Select order">
+          </td>
+          <td>
+            <div class="order-number-cell">
+              <span>${order.id}</span>
+              <button class="copy-btn" onclick="copyToClipboard('${order.id}')" title="Copy Order ID">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                </svg>
+              </button>
+            </div>
+          </td>
+          <td>
+            <div class="customer-info-box">
+              <span class="customer-name">${order.customerName}</span>
+              <span class="customer-email">${order.customerEmail}</span>
+            </div>
+          </td>
+          <td>
+            <span class="items-pill">${order.itemsSummary}</span>
+          </td>
+          <td class="date-cell">
+            ${order.createdAt}
+          </td>
+          <td>
+            <span class="status-badge ${order.status.toLowerCase()}">
+              ${getStatusIconSvg(order.status)}
+              <span>${order.status}</span>
+            </span>
+          </td>
+          <td class="amount-cell">
+            ${order.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <span class="amount-currency">SAR</span>
+          </td>
+          <td style="text-align: right;">
+            <div class="row-actions">
+              <button class="btn-row-action" onclick="openOrderDetailDrawer('${order.id}')" title="Inspect Order Details">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span>View</span>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('showingRange').textContent = `1 to ${orders.length}`;
+    }
+
+    function getStatusIconSvg(status) {
+      switch (status) {
+        case 'COMPLETED':
+          return `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        case 'PENDING':
+          return `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+        case 'PROCESSING':
+          return `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>`;
+        case 'CANCELLED':
+          return `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+        default:
+          return '';
+      }
+    }
+
+    function filterByStatus(status, btnElement) {
+      currentFilter = status;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      if (btnElement) btnElement.classList.add('active');
+      applyFilters();
+    }
+
+    function handleSearch(query) {
+      searchQuery = query.toLowerCase().trim();
+      applyFilters();
+    }
+
+    function applyFilters() {
+      let filtered = INITIAL_ORDERS.filter(order => {
+        const matchesStatus = (currentFilter === 'ALL') || (order.status === currentFilter);
+        const matchesSearch = !searchQuery || 
+          order.customerName.toLowerCase().includes(searchQuery) ||
+          order.customerEmail.toLowerCase().includes(searchQuery) ||
+          order.id.toLowerCase().includes(searchQuery);
+        return matchesStatus && matchesSearch;
+      });
+
+      renderTable(filtered);
+    }
+
+    function resetFilters() {
+      currentFilter = 'ALL';
+      searchQuery = '';
+      document.getElementById('searchInput').value = '';
+      document.querySelectorAll('.tab-btn').forEach((btn, index) => {
+        if (index === 0) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+      applyFilters();
+      showToast('Filters reset', 'info');
+    }
+
+    // SIMULATE RAPID FILTER RACE CONDITION (R1 Brief Requirement)
+    function simulateRapidFilterRace() {
+      const banner = document.getElementById('raceAlertBanner');
+      const text = document.getElementById('raceAlertText');
+      banner.classList.add('active');
+
+      text.innerHTML = `<strong>Req #1 (PENDING)</strong> dispatched... [Simulating 400ms slow response]`;
+
+      setTimeout(() => {
+        text.innerHTML = `<strong>Req #2 (PROCESSING)</strong> dispatched... [AbortController signalled: Req #1 cancelled]`;
+      }, 150);
+
+      setTimeout(() => {
+        text.innerHTML = `<strong>Req #3 (COMPLETED)</strong> dispatched... [Req #2 cancelled! Only Req #3 resolves safely without stale overwrite]`;
+        filterByStatus('COMPLETED', document.querySelectorAll('.tab-btn')[3]);
+        showToast('R1 Test Passed: AbortController prevented race condition overwrite!', 'success');
+      }, 350);
+    }
+
+    function closeRaceBanner() {
+      document.getElementById('raceAlertBanner').classList.remove('active');
+    }
+
+    // UUIDv4 Generator for Idempotency
+    function generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    function regenerateIdempotencyKey() {
+      const key = generateUUID();
+      document.getElementById('currentIdempotencyKey').textContent = key;
+    }
+
+    // Create Order Drawer controls
+    function openCreateOrderDrawer() {
+      regenerateIdempotencyKey();
+      document.getElementById('createOrderDrawer').classList.add('open');
+    }
+
+    function closeCreateOrderDrawer() {
+      document.getElementById('createOrderDrawer').classList.remove('open');
+    }
+
+    function handleDrawerOverlayClick(e) {
+      if (e.target.id === 'createOrderDrawer') {
+        closeCreateOrderDrawer();
+      }
+    }
+
+    // Line items manipulation in Create Order Drawer
+    function addLineItem() {
+      const container = document.getElementById('lineItemsContainer');
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <input type="text" class="form-input item-name" placeholder="Product name" value="Cat6A Ethernet Patch Cable">
+        <input type="number" class="form-input item-qty" value="1" min="1" oninput="calculateOrderTotal()">
+        <input type="number" class="form-input item-price" value="120.00" step="10" oninput="calculateOrderTotal()">
+        <button class="btn-delete-row" onclick="removeLineItem(this)" title="Remove item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"></path>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+          </svg>
+        </button>
+      `;
+      container.appendChild(row);
+      calculateOrderTotal();
+    }
+
+    function removeLineItem(btn) {
+      const container = document.getElementById('lineItemsContainer');
+      if (container.children.length > 1) {
+        btn.closest('.item-row').remove();
+        calculateOrderTotal();
+      } else {
+        showToast('At least one line item is required.', 'warning');
+      }
+    }
+
+    function calculateOrderTotal() {
+      const rows = document.querySelectorAll('#lineItemsContainer .item-row');
+      let subtotal = 0;
+      rows.forEach(row => {
+        const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+        const price = parseFloat(row.querySelector('.item-price').value) || 0;
+        subtotal += (qty * price);
+      });
+
+      const vat = subtotal * 0.15;
+      const grandTotal = subtotal + vat;
+
+      document.getElementById('summarySubtotal').textContent = `${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} SAR`;
+      document.getElementById('summaryVat').textContent = `${vat.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} SAR`;
+      document.getElementById('summaryGrandTotal').textContent = `${grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} SAR`;
+    }
+
+    // Submit order with duplicate lock simulation
+    function submitCreateOrder() {
+      const submitBtn = document.getElementById('btnSubmitOrder');
+      const submitText = document.getElementById('submitOrderBtnText');
+      const name = document.getElementById('custName').value.trim();
+      const email = document.getElementById('custEmail').value.trim();
+      const key = document.getElementById('currentIdempotencyKey').textContent;
+
+      if (!name || !email) {
+        showToast('Please fill in customer name and email.', 'warning');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitText.textContent = 'Locking Transaction...';
+
+      setTimeout(() => {
+        const newOrderId = `ORD-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+        const status = document.getElementById('orderStatusSelect').value;
+        const totalText = document.getElementById('summaryGrandTotal').textContent.replace(' SAR', '').replace(',', '');
+        const total = parseFloat(totalText) || 1500;
+
+        INITIAL_ORDERS.unshift({
+          id: newOrderId,
+          customerName: name,
+          customerEmail: email,
+          itemsSummary: "Manual Order Created · Verified by Idempotency Lock",
+          createdAt: "Just now",
+          status: status,
+          totalAmount: total,
+          idempotencyKey: key,
+          items: [{ name: "Manual Order Items", qty: 1, price: total }]
+        });
+
+        submitBtn.disabled = false;
+        submitText.textContent = 'Create Order';
+        closeCreateOrderDrawer();
+        applyFilters();
+
+        showToast(`Order ${newOrderId} created with Idempotency Key!`, 'success');
+      }, 500);
+    }
+
+    // SIMULATE R2 DUPLICATE CLICK PROOF
+    function simulateDuplicateClickProof() {
+      const key = document.getElementById('currentIdempotencyKey').textContent;
+      showToast('Simulating: Request A and Request B sent concurrently with identical Idempotency-Key...', 'info');
+
+      setTimeout(() => {
+        showToast(`Request A: Acquired lock on key [${key.substring(0,8)}...]. Order record inserted.`, 'success');
+      }, 200);
+
+      setTimeout(() => {
+        showToast(`Request B: Server detected active lock in IdempotencyRecord. Zero duplicate created! Returned original response.`, 'success');
+      }, 500);
+    }
+
+    // Order detail inspector drawer
+    function openOrderDetailDrawer(orderId) {
+      const order = INITIAL_ORDERS.find(o => o.id === orderId) || INITIAL_ORDERS[0];
+      
+      document.getElementById('detailOrderNumber').textContent = order.id;
+      document.getElementById('detailOrderDate').textContent = `Recorded on ${order.createdAt} AST`;
+      document.getElementById('detailIdempotencyKey').textContent = order.idempotencyKey;
+      document.getElementById('detailCustomerName').textContent = order.customerName;
+      document.getElementById('detailCustomerEmail').textContent = order.customerEmail;
+      
+      const badge = document.getElementById('detailStatusBadge');
+      badge.className = `status-badge ${order.status.toLowerCase()}`;
+      badge.innerHTML = `${getStatusIconSvg(order.status)} <span>${order.status}</span>`;
+
+      const itemsContainer = document.getElementById('detailItemsList');
+      itemsContainer.innerHTML = '';
+      let subtotal = 0;
+      order.items.forEach(item => {
+        const itemSubtotal = item.qty * item.price;
+        subtotal += itemSubtotal;
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; justify-content: space-between; font-size: 13px; background-color: var(--bg-subtle); padding: 8px 12px; border-radius: var(--radius-sm);';
+        row.innerHTML = `
+          <span>${item.qty}x ${item.name}</span>
+          <strong style="font-variant-numeric: tabular-nums;">${itemSubtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })} SAR</strong>
+        `;
+        itemsContainer.appendChild(row);
+      });
+
+      const tax = order.totalAmount * (0.15 / 1.15);
+      const preTax = order.totalAmount - tax;
+
+      document.getElementById('detailSubtotal').textContent = `${preTax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} SAR`;
+      document.getElementById('detailTax').textContent = `${tax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} SAR`;
+      document.getElementById('detailTotal').textContent = `${order.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} SAR`;
+
+      document.getElementById('orderDetailDrawer').classList.add('open');
+    }
+
+    function closeOrderDetailDrawer() {
+      document.getElementById('orderDetailDrawer').classList.remove('open');
+    }
+
+    function handleDetailOverlayClick(e) {
+      if (e.target.id === 'orderDetailDrawer') {
+        closeOrderDetailDrawer();
+      }
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(`Copied ${text} to clipboard`, 'info');
+      });
+    }
+
+    function printOrderMock() {
+      window.print();
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+
+      let iconSvg = '';
+      if (type === 'success') {
+        iconSvg = `<svg class="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+      } else if (type === 'warning') {
+        iconSvg = `<svg class="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+      } else {
+        iconSvg = `<svg class="toast-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+      }
+
+      toast.innerHTML = `${iconSvg}<span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => toast.classList.add('show'), 20);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 250);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>

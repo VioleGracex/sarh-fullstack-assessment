@@ -149,8 +149,22 @@ router.post("/orders", requireIdempotency, async (req: Request, res: Response) =
     const calculatedTotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
 
     const createdOrder = await prisma.$transaction(async (tx) => {
-      const count = await tx.order.count();
-      const orderNumber = `ORD-${String(count + 1).padStart(6, "0")}`;
+      const highestOrder = await tx.order.findFirst({
+        orderBy: { orderNumber: "desc" },
+        select: { orderNumber: true }
+      });
+      let nextSeq = 1;
+      if (highestOrder?.orderNumber) {
+        const match = highestOrder.orderNumber.match(/\d+/);
+        if (match) {
+          nextSeq = parseInt(match[0], 10) + 1;
+        }
+      }
+      let orderNumber = `ORD-${String(nextSeq).padStart(6, "0")}`;
+      while (await tx.order.findUnique({ where: { orderNumber } })) {
+        nextSeq++;
+        orderNumber = `ORD-${String(nextSeq).padStart(6, "0")}`;
+      }
 
       const order = await tx.order.create({
         data: {
@@ -192,9 +206,8 @@ router.post("/orders", requireIdempotency, async (req: Request, res: Response) =
   } catch (error: any) {
     console.error("Error creating order:", error);
     if (idempotencyKey) {
-      await prisma.idempotencyRecord.updateMany({
-        where: { key: idempotencyKey },
-        data: { status: "FAILED" }
+      await prisma.idempotencyRecord.deleteMany({
+        where: { key: idempotencyKey }
       });
     }
     return res.status(500).json({ error: "Failed to create order" });
