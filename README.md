@@ -139,3 +139,9 @@ If this console were being deployed into a live enterprise operations environmen
 4. **Immutable Audit Logging & Regulatory Compliance:**  
    - Implement an append-only audit log tracking every agent mutation (status changes, soft-deletes, restorations) with user IDs and timestamps to comply with accounting standards and e-invoicing audit regulations (e.g. ZATCA).
 
+5. **Collaborative Record Leasing & Operator Presence (Inspired by Revit's Element Borrowing & Worksharing):**  
+   - When an agent opens an order slide-over to edit details or log phone intake notes, the server grants a temporary 60-second distributed lease (kept alive via WebSocket heartbeat).  
+   - In the shared orders console, an active presence badge appears on the table row: *"🔒 Being handled by Noura A."*  
+   - Other operators can view the order in read-only mode but are prevented from making conflicting mutations, eliminating "last-write-wins" race conditions in fast-paced call centers. When the operator closes the drawer or saves changes, the lease is immediately relinquished.
+
+
