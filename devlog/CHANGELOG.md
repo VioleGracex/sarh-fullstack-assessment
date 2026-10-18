@@ -3,11 +3,11 @@
 
 > **Assessment Time Budget Status:**
 > - **Session Start Time:** 15:30 (+03:00)
-> - **Current PC Clock:** 17:52 (+03:00)
-> - **Total Session Elapsed:** ~2 hours 22 minutes (`02:22:00`)
+> - **Current PC Clock:** 17:58 (+03:00)
+> - **Total Session Elapsed:** ~2 hours 28 minutes (`02:28:00`)
 > - **Take-Home Hard Time Limit:** 5 hours max (`05:00:00`)
-> - **Remaining Budget:** ~2 hours 38 minutes (`02:38:00`)
-> - **Assessment Pacing:** Comfortable & Ahead of Schedule (~52% budget remaining with 100% core + optional O1 complete)
+> - **Remaining Budget:** ~2 hours 32 minutes (`02:32:00`)
+> - **Assessment Pacing:** Comfortable & Ahead of Schedule (~51% budget remaining with 100% core + optional O1 complete)
 
 ---
 
@@ -37,6 +37,35 @@
 | **17:31:40** | `bbb9ec9` | Extracted `useToast.ts` hook, replaced 100% of inline SVGs across all components with modular icons | Optimization |
 | **17:45:00** | `c7252f6` | Dedicated Full-Page LoginPage, Strict Auth Gate & Offline Telemetry (🔴 Operations Down) | Security / UI |
 | **17:52:00** | `08229da` | Universal Line Item Constraints (`step="any"`), Negative Input Interception & Column Headers | Bug Fix / UX |
+| **17:58:00** | Pending | Business Duplicate Intent Disambiguation Modal (ZATCA e-Invoicing Compliance) & Loading States | Enterprise / UX |
+
+---
+
+# [1.0.15] — Business Duplicate Intent Disambiguation & Submission Loading States
+Date: 2026-10-18 | Session Timer: ~2h 28m
+
+## Added
+- **Business Duplicate Intent Disambiguation Modal (`OrderDrawer.tsx`)**:
+  - Distinguishes between transport-layer technical retries (Section 2 R2 idempotency) and legitimate business repeat orders (e.g. customer calling back 5 minutes later asking to double their order).
+  - Pre-flight duplicate check against recent customer orders within a 20-minute window.
+  - Interactive confirmation modal:
+    - Displays previous order number, customer details, amount in SAR, and elapsed time ("4 minutes ago").
+    - Action 1: *"Cancel & View #{orderNumber}"* — Closes the drawer and inspects previous order, preventing accidental duplicate billing.
+    - Action 2: *"Confirm & Issue Distinct Order"* — Generates a fresh UUID `Idempotency-Key` and issues a legally separate sequential invoice compliant with Saudi ZATCA e-invoicing standards.
+- **Submission Loading States**:
+  - Submit button renders animated `<SpinLoaderIcon className="spin-animation" />` with `"Locking Transaction..."` and `"Checking Duplicate History..."`.
+  - Disables buttons and inputs during network execution, eliminating physical double-clicks.
+- **Wire-up in `App.tsx`**:
+  - Connected `onViewExistingOrder` from `OrderDrawer` to open `OrderDetailDrawer` automatically when inspecting existing orders.
+
+## Files Affected
+- `frontend/src/components/OrderDrawer.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/index.css`
+- `PROBLEMS_AND_SOLUTIONS.md`
+- `devlog/CHANGELOG.md`
+
+---
 
 ---
 

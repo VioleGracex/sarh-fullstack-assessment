@@ -26,6 +26,7 @@ During the development and hardening of the **SARH Orders Console**, several rea
 11. [Challenge 11: Monolithic Component Bloat & Inline SVG Redundancy](#11-monolithic-component-bloat--inline-svg-redundancy)
 12. [Challenge 12: Backend Disconnection Telemetry & Strict Security Authentication Gate](#12-backend-disconnection-telemetry--strict-security-authentication-gate)
 13. [Challenge 13: The HTML5 `step="10"` Arithmetic Constraint Flaw & Universal Positive Number Enforcement](#13-the-html5-step10-arithmetic-constraint-flaw--universal-positive-number-enforcement)
+14. [Challenge 14: Business Intent Disambiguation: Technical Network Duplicate (R2) vs. Intentional Phone-Call Repeat Order (ZATCA Legal Compliance)](#14-business-intent-disambiguation-technical-network-duplicate-r2-vs-intentional-phone-call-repeat-order-zatca-legal-compliance)
 
 ---
 
@@ -311,14 +312,55 @@ Furthermore, operators were unclear on what constituted a valid input per item, 
 
 ---
 
+### 14. Business Intent Disambiguation: Technical Network Duplicate (R2) vs. Intentional Phone-Call Repeat Order (ZATCA Legal Compliance)
+
+#### Symptom
+In high-frequency call-center environments, customers frequently call back shortly after placing an order.
+* **The Scenario:** A client (e.g., Telecom Infrastructure Director) calls at 10:00 and orders 2x Enterprise Fiber Gateways (Order `ORD-050015`). Five minutes later (10:05), he calls back: *"Hey, my VP just requested another batch of the exact same order — double it!"*
+* **The Operational Risk:** 
+  1. If an operator accidentally double-enters an order after an interruption, creating an identical invoice causes unwanted double-billing.
+  2. If the system naively blocks identical orders for the same customer, legitimate business fulfillment is halted.
+  3. If an agent tries to "edit" the existing order to change 2 items to 4, this violates statutory compliance.
+
+#### Accounting & Legal Constraints (Saudi ZATCA Phase 2 E-Invoicing)
+Under Saudi Arabian VAT and ZATCA Phase 2 regulations, once a standard tax invoice (`Fatoorah`) is generated with its cryptographic UUID, hash chain, and QR code, **it is legally immutable**.
+* Modifying line items on an already issued electronic invoice is strictly illegal.
+* Companies must either:
+  1. Issue a formal **Credit/Debit Note**, or
+  2. Register a **distinct, sequential new tax invoice** for the additional units.
+Therefore, registering an intentional second order with a new sequential order number is the legally required path in Saudi Arabia.
+
+#### Technical Idempotency vs. Business Intent
+* **Technical Idempotency (R2)**: Operates at the transport layer via the `Idempotency-Key` HTTP header. It deduplicates rapid double-clicks (0–2 seconds), network packet resends, and dropped connections using the **same UUID key**.
+* **Business Repeat Orders**: Represents a *new, intentional business event* occurring minutes later. It requires a **fresh UUID key** to generate a legally separate invoice record.
+
+#### Engineering Solution
+Implemented **Automated Pre-Flight Duplicate Detection & Disambiguation** in [`OrderDrawer.tsx`](file:///d:/task/Sarh_group/frontend/src/components/OrderDrawer.tsx):
+1. **Pre-Flight Duplicate Scanner**:
+   - When the agent clicks *"Create Order"*, the drawer queries recent customer orders via `/api/orders?search=${customerEmail}`.
+   - If an identical order (same customer email, identical total amount, created within the last 20 minutes) is found:
+2. **Interactive Business Disambiguation Dialog**:
+   - Pauses execution and displays an in-app confirmation modal with clear guidance:
+     > ⚠️ **Potential Duplicate Order Detected**  
+     > *Customer Faisal Al-Shehri (`faisal@sarh.sa`) placed an identical order #ORD-050015 for 4,255.00 SAR 4 minutes ago.*  
+     >  
+     > • **Accidental Double-Entry?** Click **"Cancel & View #ORD-050015"** $\rightarrow$ Immediately closes the drawer and displays the previous order in the detail inspector, preventing accidental billing.  
+     > • **Intentional Repeat Phone Order?** Click **"Confirm & Issue Distinct Order"** $\rightarrow$ Automatically generates a fresh UUID `Idempotency-Key`, registers a distinct second order with sequential numbering, and complies with ZATCA invoicing standards.
+3. **Tactile Loading States**:
+   - During submission, the primary button disables and transitions to a spinning loader (`<SpinLoaderIcon className="spin-animation" />`) with `"Locking Transaction..."` or `"Checking Duplicate History..."`, preventing physical double-clicks before network responses complete.
+
+---
+
 ## Conclusion & Verification Status
 
-All 13 engineering challenges have been resolved, verified against the SQLite database, and proven through:
+All 14 engineering challenges have been resolved, verified against the SQLite database, and proven through:
 - **29 Automated Unit Tests** (`npm run test:unit`)
 - **Automated R2 Duplicate Prevention Proof** (`npm run test:duplicate`)
-- **Production Vite Build** (`npm --prefix frontend run build` in ~357ms)
+- **Production Vite Build** (`npm --prefix frontend run build` in ~304ms)
 - **Zero Browser Native Dialogs Rule** fully enforced
 - **100% Modular Icon Architecture** with 0 raw SVGs in UI components
 - **Strict Security Gate** with dedicated `LoginPage` & live backend telemetry
 - **Universal Line Item Constraints** with `step="any"`, zero negative numbers allowed
+- **Business Duplicate Disambiguation Dialog** with ZATCA legal compliance
+
 

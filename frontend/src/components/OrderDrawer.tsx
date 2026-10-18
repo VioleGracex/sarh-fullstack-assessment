@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from "react";
 import type { OrderStatus } from "../types/order";
-import { CloseIcon, InfoIcon, LockIcon, PlusIcon, TrashIcon, CheckIcon } from "./icons";
+import {
+  CloseIcon,
+  InfoIcon,
+  LockIcon,
+  PlusIcon,
+  TrashIcon,
+  CheckIcon,
+  SpinLoaderIcon,
+  WarningIcon
+} from "./icons";
 
 interface OrderDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onOrderCreated: (orderNumber: string) => void;
+  onViewExistingOrder?: (order: any) => void;
 }
 
 interface FormItem {
@@ -32,7 +42,8 @@ function generateUUID(): string {
 export const OrderDrawer: React.FC<OrderDrawerProps> = ({
   isOpen,
   onClose,
-  onOrderCreated
+  onOrderCreated,
+  onViewExistingOrder
 }) => {
   const [customerName, setCustomerName] = useState("Abdullah Al-Shehri");
   const [customerEmail, setCustomerEmail] = useState("a.shehri@sarh.sa");
@@ -40,7 +51,19 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
   const [items, setItems] = useState<FormItem[]>(DEFAULT_ITEMS);
   const [idempotencyKey, setIdempotencyKey] = useState<string>(() => generateUUID());
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [isCheckingDuplicate, setIsCheckingDuplicate] = useState<boolean>(false);
+  const [duplicatePromptOrder, setDuplicatePromptOrder] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const formatTimeAgo = (dateStr: string) => {
+    const elapsedMs = Date.now() - new Date(dateStr).getTime();
+    const minutes = Math.floor(elapsedMs / (1000 * 60));
+    if (minutes < 1) return "just now (less than 1 minute ago)";
+    if (minutes === 1) return "1 minute ago";
+    if (minutes < 60) return `${minutes} minutes ago`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  };
 
   const regenerateKey = () => {
     setIdempotencyKey(generateUUID());
@@ -84,6 +107,10 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    await executeSubmission(false);
+  };
+
+  const executeSubmission = async (isConfirmedIntentionalRepeat: boolean) => {
     setError(null);
 
     if (!customerName.trim() || customerName.trim().length < 2) {
@@ -118,6 +145,39 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
       }
     }
 
+    // Business Intent Check: Detect recent duplicate order for this customer within 20 mins
+    if (!isConfirmedIntentionalRepeat) {
+      setIsCheckingDuplicate(true);
+      try {
+        const searchRes = await fetch(`/api/orders?search=${encodeURIComponent(customerEmail.trim())}&pageSize=5`);
+        if (searchRes.ok) {
+          const json = await searchRes.json();
+          const recentOrders: any[] = json.data || [];
+          const matched = recentOrders.find((ord) => {
+            const sameEmail = ord.customerEmail.toLowerCase() === customerEmail.trim().toLowerCase();
+            const sameTotal = Math.abs(ord.totalAmount - grandTotal) < 1;
+            const elapsedMin = (Date.now() - new Date(ord.createdAt).getTime()) / (1000 * 60);
+            return sameEmail && sameTotal && elapsedMin < 20;
+          });
+          if (matched) {
+            setDuplicatePromptOrder(matched);
+            setIsCheckingDuplicate(false);
+            return;
+          }
+        }
+      } catch (checkErr) {
+        console.warn("Duplicate pre-check failed:", checkErr);
+      } finally {
+        setIsCheckingDuplicate(false);
+      }
+    }
+
+    // Fresh idempotency key for intentional repeat orders to ensure legally distinct invoice
+    const finalKey = isConfirmedIntentionalRepeat ? generateUUID() : idempotencyKey;
+    if (isConfirmedIntentionalRepeat) {
+      setIdempotencyKey(finalKey);
+    }
+
     setSubmitting(true);
 
     try {
@@ -125,7 +185,7 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Idempotency-Key": idempotencyKey
+          "Idempotency-Key": finalKey
         },
         body: JSON.stringify({
           customerName: customerName.trim(),
@@ -446,15 +506,100 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
           </div>
 
           <div className="drawer-footer" style={{ margin: "0 -24px -24px -24px" }}>
-            <button type="button" className="btn-secondary" onClick={onClose} disabled={submitting}>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={onClose}
+              disabled={submitting || isCheckingDuplicate}
+            >
               Cancel
             </button>
-            <button type="submit" className="btn-primary" disabled={submitting}>
-              <CheckIcon size={14} />
-              <span>{submitting ? "Locking Transaction..." : "Create Order"}</span>
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={submitting || isCheckingDuplicate}
+            >
+              {submitting ? (
+                <>
+                  <SpinLoaderIcon size={14} className="spin-animation" />
+                  <span>Locking Transaction...</span>
+                </>
+              ) : isCheckingDuplicate ? (
+                <>
+                  <SpinLoaderIcon size={14} className="spin-animation" />
+                  <span>Checking Duplicate History...</span>
+                </>
+              ) : (
+                <>
+                  <CheckIcon size={14} />
+                  <span>Create Order</span>
+                </>
+              )}
             </button>
           </div>
         </form>
+
+        {/* Potential Duplicate Order Warning Modal (Business Disambiguation Dialog) */}
+        {duplicatePromptOrder && (
+          <div className="duplicate-warning-overlay" role="dialog" aria-modal="true">
+            <div className="duplicate-warning-card">
+              <div className="duplicate-warning-header">
+                <WarningIcon size={22} style={{ color: "#f59e0b", flexShrink: 0 }} />
+                <h3>Potential Duplicate Order Detected</h3>
+              </div>
+
+              <div style={{ fontSize: "13px", color: "var(--text-primary)", lineHeight: 1.5 }}>
+                Customer <strong>{duplicatePromptOrder.customerName}</strong> (
+                <code>{duplicatePromptOrder.customerEmail}</code>) placed an identical order{" "}
+                <strong>#{duplicatePromptOrder.orderNumber}</strong> for{" "}
+                <strong>{duplicatePromptOrder.totalAmount?.toLocaleString()} SAR</strong>{" "}
+                {formatTimeAgo(duplicatePromptOrder.createdAt)}.
+              </div>
+
+              <div className="duplicate-guidance-box">
+                <strong style={{ color: "var(--text-primary)" }}>Business & Accounting Guidance:</strong>
+                <ul style={{ margin: "6px 0 0 0", paddingLeft: "18px" }}>
+                  <li style={{ marginBottom: "4px" }}>
+                    <strong>Intentional Repeat Order:</strong> If the customer called back asking to double their order or place a separate identical order, click{" "}
+                    <strong>"Confirm & Issue Distinct Order"</strong>. Under commercial & ZATCA e-invoicing regulations, this creates a distinct sequential electronic invoice.
+                  </li>
+                  <li>
+                    <strong>Accidental Double-Entry:</strong> If this was submitted accidentally or by mistake, click{" "}
+                    <strong>"View Existing Order"</strong> to examine the existing order and prevent unwanted duplicate billing.
+                  </li>
+                </ul>
+              </div>
+
+              <div className="duplicate-warning-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    const ord = duplicatePromptOrder;
+                    setDuplicatePromptOrder(null);
+                    onClose();
+                    if (onViewExistingOrder) {
+                      onViewExistingOrder(ord);
+                    }
+                  }}
+                >
+                  Cancel & View #{duplicatePromptOrder.orderNumber}
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  style={{ backgroundColor: "#d97706", borderColor: "#b45309" }}
+                  onClick={() => {
+                    setDuplicatePromptOrder(null);
+                    executeSubmission(true);
+                  }}
+                >
+                  Confirm & Issue Distinct Order
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

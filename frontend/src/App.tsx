@@ -556,6 +556,7 @@ export function App() {
           showToast(`Order ${orderNum} created with verified Idempotency Key!`, "success");
           refresh();
         }}
+        onViewExistingOrder={(order) => setSelectedOrder(order)}
       />
 
       <OrderDetailDrawer
