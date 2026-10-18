@@ -78,5 +78,5 @@ In accordance with Section 5 and the technical constraints of the brief:
 
 * **Interactive Provenance Dossier:**  
   For complete transparency, an interactive dossier mapping each requirement of this assessment to working code excerpts from my previous projects can be reviewed in:  
-  👉 **[`ARCHEOLOGY.html`](./ARCHEOLOGY.html)** *(Open directly in any web browser)*.
+  **[`TECHNICAL_PRECEDENTS.html`](./TECHNICAL_PRECEDENTS.html)** *(Open directly in any web browser)*.
 

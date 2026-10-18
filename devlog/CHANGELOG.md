@@ -40,6 +40,87 @@
 | **17:58:00** | `ae8d90d` | Business Duplicate Intent Disambiguation Modal (ZATCA e-Invoicing Compliance) & Loading States | Enterprise / UX |
 | **18:02:00** | `557dea4` | Real-Time Search Result Telemetry, In-Input Count Badge & 1-Click Clear Button | UX / Polish |
 | **18:05:00** | `b7423c8` | Security Hardening: Purged Passwords from Frontend Environment Files | Security |
+| **19:15:00** | `e83a91b` | Mobile Ergonomics: Sticky Top Controls, Floating Thumb Dock (Pagination + FAB), 280ms Exit Transitions, Scroll Lock | Mobile / UX |
+| **19:40:00** | `aa68229` | Local Wi-Fi Mobile Testing Access via Dynamic QR Code Bridge & 0.0.0.0 Dev Server Binding | Mobile / DX |
+
+---
+
+# [1.0.19] — Local Wi-Fi Mobile Testing Access via Dynamic QR Code Bridge
+Date: 2026-10-18 | Session Timer: ~3h 05m
+
+## Added & Enhanced
+- **Dynamic Backend Network Telemetry (`GET /api/network-info`)**:
+  - Implemented an intelligent network interface discovery route in `backend/src/server.ts` utilizing Node's `os.networkInterfaces()`.
+  - Filters out internal/loopback (`127.0.0.1`), IPv6, and link-local (`169.254.x.x`) virtual interfaces.
+  - Prioritizes active Wi-Fi adapters (`/wi-fi|wlan|wireless/i`), returning `{ localIp: '192.168.8.4', port: 5173, wifiUrl: 'http://192.168.8.4:5173', interfaces: [...] }`.
+- **Dual-Interface Vite Dev Server Binding (`0.0.0.0:5173`)**:
+  - Configured `server: { host: '0.0.0.0', port: 5173 }` in `frontend/vite.config.ts`.
+  - Broadcasts application on both `http://localhost:5173/` and LAN `http://192.168.8.4:5173/`.
+  - Front-end reverse-proxies all `/api/*` REST traffic directly to Express on port `4000`, eliminating CORS barriers and avoiding any need to expose backend ports directly to mobile devices.
+- **Dedicated In-App `MobileConnectModal` with Live QR Generation**:
+  - Built `frontend/src/components/MobileConnectModal.tsx` utilizing the client-side `qrcode` package.
+  - Generates a high-contrast, scannable QR matrix (`180x180px` on clean white padding) configured with medium error correction (`level: 'M'`) for instant recognition by smartphone camera lenses.
+  - Active URL indicator with pulse dot, 1-click clipboard copy (`navigator.clipboard.writeText`), and instant visual feedback.
+  - Multi-adapter selection chips (allows switching between Wi-Fi and Ethernet interfaces).
+  - Manual IP/Port override accordion for custom reverse-tunneling or VPN environments.
+  - Concise 3-step setup guide for operators.
+- **Header & Menu Integration**:
+  - Added "Connect Mobile (Wi-Fi QR)" button to the desktop top toolbar header.
+  - Added "Connect Mobile (Wi-Fi QR)" action item to the profile dropdown menu.
+- **Verification & Visual Evidence**:
+  - Captured and verified 2 headless Chrome CDP screenshots in `screenshots/`:
+    - `07-desktop-qr-modal-dark.png` (Midnight Obsidian Dark Theme)
+    - `08-desktop-qr-modal-light.png` (Corporate Steel Light Theme)
+
+## Files Affected
+- `backend/src/server.ts`
+- `frontend/vite.config.ts`
+- `frontend/package.json`
+- `frontend/src/components/icons/index.tsx`
+- `frontend/src/components/MobileConnectModal.tsx`
+- `frontend/src/components/Header.tsx`
+- `frontend/src/App.tsx`
+- `frontend/src/index.css`
+- `scripts/capture_qr_modal.js`
+- `PROBLEMS_AND_SOLUTIONS.md`
+- `devlog/CHANGELOG.md`
+
+---
+
+# [1.0.18] — Mobile Viewport Ergonomics: Sticky Controls, Floating Thumb Dock & Smooth Bottom Sheets
+Date: 2026-10-18 | Session Timer: ~2h 45m
+
+## Added & Enhanced
+- **Sticky Top Controls Rail on Mobile Viewports (`<= 768px`)**:
+  - Pinned `.console-header-card` with `position: sticky; top: 54px; z-index: 35;` directly beneath the 54px header.
+  - Keeps the horizontal status filter chips (`All`, `Pending`, `Processing`, `Completed`, `Cancelled`), full-width search input, and sort dropdown perpetually accessible without scrolling up.
+  - Utilized `overflow-x: clip` on `.app-container` and `.app-main` to ensure sticky positioning functions flawlessly without creating conflicting overflow containers.
+- **Floating Mobile Operations Dock (Thumb Zone Ergonomics)**:
+  - Rendered `.mobile-floating-dock` fixed at `bottom: calc(14px + env(safe-area-inset-bottom, 0px))` with `pointer-events: none` on the container and `pointer-events: auto` on interactive controls.
+  - **Compact Pagination Pill**: Elevated glassmorphic pill featuring tactile `[ ‹ Prev ]`, `Page X / Y` mono indicator, and `[ Next › ]` buttons. Tapping changes the page and smoothly auto-scrolls to the top of the card stream.
+  - **High-Contrast FAB**: Pill-shaped `+ New Order` FAB with `--radius-full: 9999px;` using Royal Sapphire `#2563eb` (Dark Mode) and Executive Navy `#1e40af` (Light Mode), ensuring full WCAG AAA contrast compliance.
+  - Completely hidden on desktop viewports (`@media (min-width: 769px) { display: none; }`).
+- **Background Body Scroll Lock & Smooth 280ms Exit Transitions**:
+  - Enforced `document.body.style.overflow = "hidden"` and `touch-action: none` during modal and drawer activation.
+  - Implemented dual-state animation lifecycles (`isOpen`, `displayOrder`, `isClosing`) with 280ms cubic-bezier slide-down animation on dismissal across `OrderDetailDrawer.tsx`, `OrderDrawer.tsx`, and all modals.
+- **Professional Corporate Language & Standard Clockwise Spinner**:
+  - Replaced internal engineering jargon (`AbortController`, `O1`, `(Simulated server delay: 3.5s)`) with professional enterprise operational terminology.
+  - Restored standard clockwise CSS spinning animation (`animation: spin 0.85s linear infinite;`).
+- **Visual Evidence & Quality Assurance**:
+  - Generated and visually inspected 8 automated headless Chrome CDP mobile screenshots in `screenshots/` (`01-mobile-console-dark.png`, `01b-mobile-console-scrolled-dark.png`, `02-mobile-order-detail.png`, `03-mobile-create-order.png`, `04-mobile-console-light.png`, `04b-mobile-console-scrolled-light.png`, `05-mobile-user-menu.png`, `06-mobile-login-page.png`).
+
+## Files Affected
+- `frontend/src/App.tsx`
+- `frontend/src/index.css`
+- `frontend/src/components/OrderDetailDrawer.tsx`
+- `frontend/src/components/OrderDrawer.tsx`
+- `frontend/src/components/StatsModal.tsx`
+- `frontend/src/components/Header.tsx`
+- `scripts/capture_mobile.js`
+- `PROBLEMS_AND_SOLUTIONS.md`
+- `devlog/CHANGELOG.md`
+
+---
 
 ---
 

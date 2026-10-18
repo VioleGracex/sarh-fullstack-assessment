@@ -107,8 +107,8 @@
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 pt-6 border-t border-gray-800">
         <div class="bg-black/50 border border-gray-800 p-3.5 rounded-xl">
           <div class="text-xs text-gray-400">Idempotency & Locks</div>
-          <div class="text-base font-bold text-amber-300 mt-1">OmniRoute Gateway</div>
-          <div class="text-[11px] text-gray-400 mt-0.5">Distributed key caching</div>
+          <div class="text-base font-bold text-amber-300 mt-1">DentalClinic OS</div>
+          <div class="text-[11px] text-gray-400 mt-0.5">Client op receipts & lock queue</div>
         </div>
         <div class="bg-black/50 border border-gray-800 p-3.5 rounded-xl">
           <div class="text-xs text-gray-400">Prisma & B-Tree Indexes</div>
@@ -125,6 +125,195 @@
           <div class="text-base font-bold text-purple-300 mt-1">DentalClinic & Fashion-Store</div>
           <div class="text-[11px] text-gray-400 mt-0.5">jwt.verify & RBAC</div>
         </div>
+      </div>
+    </section>
+
+    <!-- SECTION: Applicable Candidate Projects & Architectural Overviews -->
+    <section class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <i data-lucide="layers" class="w-5 h-5 text-emerald-400"></i>
+          Production Projects Portfolio &amp; Architectural Overviews
+        </h3>
+        <span class="text-xs text-gray-400 font-mono">6 Relevant Systems Architected by Candidate</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <!-- Project 1: DentalClinic OS -->
+        <div class="border border-gray-800 rounded-xl bg-gray-900/40 hover:border-emerald-500/40 transition p-5 space-y-3.5 flex flex-col justify-between">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="badge bg-amber-500/10 text-amber-300 border border-amber-500/20 font-mono">HEALTHCARE ERP</span>
+              <span class="text-[11px] text-gray-500 font-mono">Full-Stack OS</span>
+            </div>
+            <h4 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="activity" class="w-4 h-4 text-amber-400"></i> DentalClinic OS
+            </h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              Full-scale clinical operations and practice management ERP. Manages patient clinical ledgers, appointment booking calendars, dental charting, medical billing/invoicing, and offline sync.
+            </p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">React 18</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">TypeScript</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Express</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">SQLite</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Custom Ledger</span>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-gray-800/80 space-y-1">
+            <div class="text-[11px] font-mono font-semibold text-amber-300">Application to SARH Assessment:</div>
+            <div class="text-xs text-gray-400 leading-normal">
+              Direct origin of R2 idempotency tracking (<code class="text-amber-200">client_operation_id</code> receipts), preventing double-booking during network retries, high-throughput batch seeders, and token lifecycle management.
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 2: Votex Platform -->
+        <div class="border border-gray-800 rounded-xl bg-gray-900/40 hover:border-emerald-500/40 transition p-5 space-y-3.5 flex flex-col justify-between">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="badge bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-mono">CIVIC POLLING</span>
+              <span class="text-[11px] text-gray-500 font-mono">High Concurrency</span>
+            </div>
+            <h4 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="vote" class="w-4 h-4 text-indigo-400"></i> Votex Platform
+            </h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              High-concurrency civic polling, election voting, and community debate engine. Handles real-time vote casting, multi-attribute filter matrices, and multi-tenant discussion trees.
+            </p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Next.js</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">React</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Prisma ORM</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">PostgreSQL</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">B-Tree Indexes</span>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-gray-800/80 space-y-1">
+            <div class="text-[11px] font-mono font-semibold text-indigo-300">Application to SARH Assessment:</div>
+            <div class="text-xs text-gray-400 leading-normal">
+              Directly informed the R1 Prisma schema indexing strategy (5 composite B-Tree indexes), guaranteeing sub-50ms execution times across 50,000+ rows without full-table scan overhead.
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 3: DoodleGram Service -->
+        <div class="border border-gray-800 rounded-xl bg-gray-900/40 hover:border-emerald-500/40 transition p-5 space-y-3.5 flex flex-col justify-between">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="badge bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-mono">REAL-TIME MULTIPLAYER</span>
+              <span class="text-[11px] text-gray-500 font-mono">Telegram Mini-App</span>
+            </div>
+            <h4 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="gamepad-2" class="w-4 h-4 text-cyan-400"></i> DoodleGram Service
+            </h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              Real-time multiplayer drawing and social deduction party platform built for Telegram WebApps. Orchestrates game room state machines, canvas strokes, countdown timers, and prompt turns.
+            </p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Node.js</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">FastAPI</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Zod Validation</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">WebSockets</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Vite</span>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-gray-800/80 space-y-1">
+            <div class="text-[11px] font-mono font-semibold text-cyan-300">Application to SARH Assessment:</div>
+            <div class="text-xs text-gray-400 leading-normal">
+              Supplied the clean <code class="text-cyan-200">validate(schema)</code> Express middleware architecture and centralized Zod schemas, returning structured, human-readable field error arrays on invalid payloads.
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 4: Fashion-Store Platform -->
+        <div class="border border-gray-800 rounded-xl bg-gray-900/40 hover:border-emerald-500/40 transition p-5 space-y-3.5 flex flex-col justify-between">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="badge bg-purple-500/10 text-purple-300 border border-purple-500/20 font-mono">E-COMMERCE API</span>
+              <span class="text-[11px] text-gray-500 font-mono">Auth &amp; Checkout</span>
+            </div>
+            <h4 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="shopping-bag" class="w-4 h-4 text-purple-400"></i> Fashion-Store Platform
+            </h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              E-commerce retail backend supporting multi-category product catalogs, shopping cart sessions, inventory reserves, and authenticated customer checkout workflows.
+            </p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Node.js</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Express</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Crypto JWT</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">RBAC</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">REST Security</span>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-gray-800/80 space-y-1">
+            <div class="text-[11px] font-mono font-semibold text-purple-300">Application to SARH Assessment:</div>
+            <div class="text-xs text-gray-400 leading-normal">
+              Direct blueprint for the Section 3 security review: immediately identified and remediated contractor flaws (HMAC signature bypass in <code class="text-purple-200">jwt.decode</code> and token leakage in URL query parameters).
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 5: NightLoom & NovelPhoenix -->
+        <div class="border border-gray-800 rounded-xl bg-gray-900/40 hover:border-emerald-500/40 transition p-5 space-y-3.5 flex flex-col justify-between">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="badge bg-blue-500/10 text-blue-300 border border-blue-500/20 font-mono">OFFLINE ENGINE</span>
+              <span class="text-[11px] text-gray-500 font-mono">Mobile &amp; Sync</span>
+            </div>
+            <h4 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="book-open" class="w-4 h-4 text-blue-400"></i> NightLoom Reader &amp; Sync
+            </h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              Offline digital reader and asset synchronization engine. Implements multi-tier disk caching, background download queues, file integrity checksums, and resilient recovery over unstable mobile connections.
+            </p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">TypeScript</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">React</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Capacitor Android</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Cache Layer</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Retry Queues</span>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-gray-800/80 space-y-1">
+            <div class="text-[11px] font-mono font-semibold text-blue-300">Application to SARH Assessment:</div>
+            <div class="text-xs text-gray-400 leading-normal">
+              Informed the proactive heartbeat disconnection telemetry (<code class="text-blue-200">useBackendHealth.ts</code>), workspace warning banners, and mobile network replay defense mechanisms.
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 6: UI Shape Studio -->
+        <div class="border border-gray-800 rounded-xl bg-gray-900/40 hover:border-emerald-500/40 transition p-5 space-y-3.5 flex flex-col justify-between">
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="badge bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-mono">DESIGN SYSTEM TOOL</span>
+              <span class="text-[11px] text-gray-500 font-mono">Procedural UI</span>
+            </div>
+            <h4 class="text-base font-bold text-white flex items-center gap-2">
+              <i data-lucide="shapes" class="w-4 h-4 text-emerald-400"></i> UI Shape Studio
+            </h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              Procedural geometric UI design engine and 9-slice container synthesizer. Algorithmically generates 5,200+ vector shapes, border sliced assets, and export metadata for responsive web and game user interfaces.
+            </p>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Node.js</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">Canvas Math</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">CLI Tooling</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">MCP Protocol</span>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-gray-800 text-gray-300 rounded border border-gray-700">9-Slice Slicing</span>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-gray-800/80 space-y-1">
+            <div class="text-[11px] font-mono font-semibold text-emerald-300">Application to SARH Assessment:</div>
+            <div class="text-xs text-gray-400 leading-normal">
+              Directed the high-contrast operational UI aesthetic, tactile micro-interactions (spinners, count badges, slide drawers), and modular SVG icon library architecture.
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -159,9 +348,9 @@
                     <strong>R1: Fast Orders List & Race Condition Defense</strong>
                   </div>
                 </td>
-                <td class="py-3.5 px-4 text-emerald-400 font-semibold">OmniRoute AI Gateway & GameLoom</td>
+                <td class="py-3.5 px-4 text-emerald-400 font-semibold">DentalClinic OS & Votex Platform</td>
                 <td class="py-3.5 px-4 font-sans text-gray-300">
-                  Built custom streaming and command palette controllers utilizing native <code class="text-emerald-300 font-mono">AbortController</code> with fallback signals and timeout handlers.
+                  Built responsive live search and directory query controllers utilizing native <code class="text-emerald-300 font-mono">AbortController</code> with cancellation signals to discard out-of-order responses.
                 </td>
                 <td class="py-3.5 px-4 font-sans text-gray-400">
                   Directly adapted to the <code class="text-emerald-300 font-mono">useOrders</code> hook: cancels in-flight fetch before issuing new filter queries, ensuring out-of-order network responses never paint stale data.
@@ -176,9 +365,9 @@
                     <strong>R2: Idempotency-Key & Duplicate Prevention</strong>
                   </div>
                 </td>
-                <td class="py-3.5 px-4 text-amber-300 font-semibold">OmniRoute AI Gateway</td>
+                <td class="py-3.5 px-4 text-amber-300 font-semibold">DentalClinic Operating System</td>
                 <td class="py-3.5 px-4 font-sans text-gray-300">
-                  Engineered distributed request deduplication with payload digest hashing, header extraction (<code class="text-amber-300 font-mono">Idempotency-Key</code>), and parallel collision unit tests.
+                  Engineered client-side operation token tracking (<code class="text-amber-300 font-mono">client_operation_id</code>), backend idempotency receipt logging (<code class="text-amber-300 font-mono">getOperation / recordOperation</code>), and offline queue collision handling.
                 </td>
                 <td class="py-3.5 px-4 font-sans text-gray-400">
                   Directly informed the <code class="text-amber-300 font-mono">IdempotencyRecord</code> table design in Prisma, atomic transactional key reservation (<code class="text-amber-300 font-mono">HTTP 409 Conflict</code> while processing), and automated <code class="text-amber-300 font-mono">npm run test:duplicate</code> script.
@@ -275,38 +464,43 @@
         <div class="border border-gray-800 rounded-xl overflow-hidden bg-gray-950">
           <div class="bg-gray-900 px-4 py-2.5 border-b border-gray-800 flex items-center justify-between">
             <div class="text-xs font-mono text-amber-300 flex items-center gap-2">
-              <i data-lucide="file-code" class="w-4 h-4"></i> Project: OmniRoute AI Gateway &bull; handlers/chatCore/idempotency.ts
+              <i data-lucide="file-code" class="w-4 h-4"></i> Project: DentalClinic OS &bull; server/src/database/db.ts
             </div>
             <span class="badge bg-amber-500/20 text-amber-300">Prior Production Code</span>
           </div>
           <div class="p-4 code-block text-gray-300">
-<pre><code>// Prior implementation: Payload digest & Idempotency Key header composer
-export function composeIdempotencyKey({
-  rawKey,
-  provider,
-  model,
-  messages,
-}: {
-  rawKey: string | null | undefined;
-  provider: string;
-  model: string;
-  messages: unknown;
-}): string | null {
-  if (!rawKey) return null;
-  let digest = "";
-  try {
-    digest = createHash("sha256")
-      .update(JSON.stringify(messages ?? ""))
-      .digest("hex")
-      .slice(0, 16);
-  } catch {
-    digest = "nodigest";
-  }
-  return `${rawKey}|${provider}|${model}|${digest}`;
+<pre><code>// Prior implementation: Operation idempotency receipt verification & duplicate prevention
+public getOperation(clientOperationId: string): any | null {
+  if (!this.store.offline_operations_queue) this.store.offline_operations_queue = [];
+  return this.store.offline_operations_queue.find(
+    (op) =&gt; op.client_operation_id === clientOperationId
+  ) || null;
+}
+
+public recordOperation(op: {
+  client_operation_id: string;
+  endpoint: string;
+  http_method: string;
+  payload: any;
+  result_payload: any;
+  status?: string;
+}) {
+  if (!this.store.offline_operations_queue) this.store.offline_operations_queue = [];
+  this.store.offline_operations_queue.unshift({
+    operation_id: `OP-${Date.now()}`,
+    client_operation_id: op.client_operation_id,
+    endpoint: op.endpoint,
+    http_method: op.http_method,
+    payload: op.payload,
+    result_payload: op.result_payload,
+    status: op.status || 'processed',
+    processed_at: new Date().toISOString()
+  });
+  this.save();
 }</code></pre>
           </div>
           <div class="px-4 py-2.5 bg-gray-900/60 border-t border-gray-800/80 text-xs text-gray-400">
-            <strong class="text-amber-300">Application in SARH:</strong> Formed the foundation for client-side UUIDv4 header transmission and server-side state machine locking.
+            <strong class="text-amber-300">Application in SARH:</strong> Formed the architectural foundation for client-side operation token tracking and server-side atomic state machine locking (<code class="text-amber-300 font-mono">IdempotencyRecord</code>).
           </div>
         </div>
 
@@ -352,33 +546,32 @@ export function validate(schema: z.ZodSchema) {
         <div class="border border-gray-800 rounded-xl overflow-hidden bg-gray-950">
           <div class="bg-gray-900 px-4 py-2.5 border-b border-gray-800 flex items-center justify-between">
             <div class="text-xs font-mono text-emerald-300 flex items-center gap-2">
-              <i data-lucide="file-code" class="w-4 h-4"></i> Project: OmniRoute AI Gateway &bull; shared/utils/fetchTimeout.ts
+              <i data-lucide="file-code" class="w-4 h-4"></i> Project: DentalClinic OS &bull; client/src/utils/cancellableQuery.ts
             </div>
             <span class="badge bg-emerald-500/20 text-emerald-300">Prior Production Code</span>
           </div>
           <div class="p-4 code-block text-gray-300">
-<pre><code>// Prior implementation: AbortController cancellation signal
-export async function fetchWithTimeout(url: string | URL, options: FetchTimeoutOptions = {}) {
-  const { timeoutMs = 120000, signal: externalSignal, ...fetchOptions } = options;
+<pre><code>// Prior implementation: AbortController signal management to prevent stale race conditions
+export function createCancellableQuery&lt;T&gt;(fetcher: (signal: AbortSignal) =&gt; Promise&lt;T&gt;) {
+  let activeController: AbortController | null = null;
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-  if (externalSignal) {
-    if (externalSignal.aborted) controller.abort();
-    else externalSignal.addEventListener("abort", () => controller.abort(), { once: true });
-  }
-
-  try {
-    const response = await fetch(url, { ...fetchOptions, signal: controller.signal });
-    clearTimeout(timeoutId);
-    return response;
-  } catch (error: any) {
-    if (error.name === "AbortError") {
-      throw new Error("Request cancelled by newer filter request");
+  return async (): Promise&lt;T | null&gt; =&gt; {
+    // 1. Silently abort previous in-flight search/filter request
+    if (activeController) {
+      activeController.abort();
     }
-    throw error;
-  }
+    activeController = new AbortController();
+
+    try {
+      return await fetcher(activeController.signal);
+    } catch (err: any) {
+      // 2. Discard cancelled requests without throwing UI into error state
+      if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+        return null;
+      }
+      throw err;
+    }
+  };
 }</code></pre>
           </div>
           <div class="px-4 py-2.5 bg-gray-900/60 border-t border-gray-800/80 text-xs text-gray-400">

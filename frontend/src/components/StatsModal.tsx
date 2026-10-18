@@ -14,16 +14,21 @@ interface StatsData {
 }
 
 export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
+  const isForceLoading = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("loading") === "true";
   const [data, setData] = useState<StatsData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(isForceLoading);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [secondsElapsed, setSecondsElapsed] = useState(0);
+  const [secondsElapsed, setSecondsElapsed] = useState(isForceLoading ? 2 : 0);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const timerRef = useRef<any>(null);
 
   const fetchStats = useCallback(async () => {
+    if (isForceLoading) {
+      setLoading(true);
+      return;
+    }
     // Cancel any previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -73,13 +78,27 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
     };
   }, [isOpen, retryCount, fetchStats]);
 
+  // Lock background body scroll while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const prevOverflow = document.body.style.overflow;
+      const prevTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        document.body.style.touchAction = prevTouchAction;
+      };
+    }
+  }, [isOpen]);
+
   const handleCancel = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
     setLoading(false);
     clearInterval(timerRef.current);
-    setError("Request was cancelled by user.");
+    setError("Request was cancelled.");
   };
 
   const handleRetry = () => {
@@ -130,10 +149,10 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
         >
           <div>
             <h2 style={{ fontSize: "16px", fontWeight: 700, color: "var(--text-primary)" }}>
-              Slow Stats Analytics (O1)
+              Order Analytics & Statistics
             </h2>
             <p style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "2px" }}>
-              Live server aggregation across 50,000+ orders
+              Live aggregation and volume metrics across all orders
             </p>
           </div>
           <button
@@ -150,31 +169,21 @@ export const StatsModal: React.FC<StatsModalProps> = ({ isOpen, onClose }) => {
         <div style={{ padding: "20px" }}>
           {loading && (
             <div style={{ textAlign: "center", padding: "28px 16px" }}>
-              <div
-                style={{
-                  width: "32px",
-                  height: "32px",
-                  border: "3px solid var(--accent-primary)",
-                  borderTopColor: "transparent",
-                  borderRadius: "50%",
-                  margin: "0 auto 12px auto",
-                  animation: "spin 0.8s linear infinite"
-                }}
-              />
+              <div className="spinner-clockwise" />
               <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
-                Computing analytics across system records...
+                Computing system analytics...
               </p>
               <p style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "4px" }}>
-                Elapsed: {secondsElapsed}s (Simulated server delay: 3.5s)
+                Aggregating records ({secondsElapsed}s)
               </p>
 
               <button
                 type="button"
                 className="btn-secondary"
                 onClick={handleCancel}
-                style={{ marginTop: "16px", fontSize: "11px", color: "#ef4444", borderColor: "#fca5a5" }}
+                style={{ marginTop: "16px", fontSize: "12px", color: "#ef4444", borderColor: "rgba(239, 68, 68, 0.4)" }}
               >
-                Cancel Request (AbortController)
+                Cancel Request
               </button>
             </div>
           )}

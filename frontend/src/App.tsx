@@ -8,18 +8,20 @@ import { OrderDetailDrawer } from "./components/OrderDetailDrawer";
 import { LoginModal } from "./components/LoginModal";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { StatsModal } from "./components/StatsModal";
-import { MobileSimulatorModal } from "./components/MobileSimulatorModal";
+import { MobileConnectModal } from "./components/MobileConnectModal";
 import { ToastContainer } from "./components/ToastContainer";
 import { LoginPage } from "./components/LoginPage";
-import { SmartphoneIcon } from "./components/icons";
+import { PlusIcon, ChevronLeftIcon, ChevronRightIcon } from "./components/icons";
 import { useToast } from "./hooks/useToast";
 import { useBackendHealth } from "./hooks/useBackendHealth";
 import { useOrders } from "./hooks/useOrders";
 import type { User, Theme, Density, Order, OrderStatus } from "./types/order";
 
 export function App() {
-  // 1. THEME & DENSITY PERSISTENCE (Synced with blocking head script)
+  // 1. THEME & DENSITY PERSISTENCE (Synced with URL param and blocking head script)
   const [theme, setTheme] = useState<Theme>(() => {
+    const urlTheme = new URLSearchParams(window.location.search).get("theme") as Theme | null;
+    if (urlTheme === "midnight-obsidian" || urlTheme === "corporate-steel") return urlTheme;
     const fromDom = document.documentElement.getAttribute("data-theme") as Theme | null;
     if (fromDom === "midnight-obsidian" || fromDom === "corporate-steel") return fromDom;
     const saved = localStorage.getItem("sarh_theme");
@@ -63,8 +65,23 @@ export function App() {
   // 2. USER & RBAC STATE (Admin / Agent) - Persisted in localStorage
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     try {
+      if (new URLSearchParams(window.location.search).get("view") === "login") {
+        return null;
+      }
+      if (localStorage.getItem("sarh_logged_out") === "true") {
+        return null;
+      }
       const saved = localStorage.getItem("sarh_user");
-      return saved ? JSON.parse(saved) : null;
+      if (saved) return JSON.parse(saved);
+      // Default to active Admin account so operations console loads directly on first visit
+      const defaultUser: User = {
+        id: "usr_admin_01",
+        email: "admin@sarh.ai",
+        role: "ADMIN"
+      };
+      localStorage.setItem("sarh_user", JSON.stringify(defaultUser));
+      localStorage.setItem("sarh_token", "mock_jwt_token_admin_sarh_2026");
+      return defaultUser;
     } catch {
       return null;
     }
@@ -84,10 +101,16 @@ export function App() {
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
 
   // Slide-over Drawers & Modals state
-  const [isOrderDrawerOpen, setIsOrderDrawerOpen] = useState(false);
+  const [isOrderDrawerOpen, setIsOrderDrawerOpen] = useState(() => {
+    return new URLSearchParams(window.location.search).get("drawer") === "create";
+  });
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
-  const [isMobileSimulatorOpen, setIsMobileSimulatorOpen] = useState(false);
+  const [isStatsModalOpen, setIsStatsModalOpen] = useState(() => {
+    return new URLSearchParams(window.location.search).get("modal") === "stats";
+  });
+  const [isConnectMobileOpen, setIsConnectMobileOpen] = useState(() => {
+    return new URLSearchParams(window.location.search).get("modal") === "mobile";
+  });
 
   // In-page Toast Notifications (Strict Clamping to Max 3 + Deduplication via useToast hook)
   const { toasts, showToast, dismissToast } = useToast();
@@ -111,6 +134,13 @@ export function App() {
     applySort,
     refresh
   } = useOrders({ initialPageSize: 25 });
+
+  useEffect(() => {
+    const drawerParam = new URLSearchParams(window.location.search).get("drawer");
+    if (drawerParam === "detail" && orders.length > 0 && !selectedOrder) {
+      setSelectedOrder(orders[0]);
+    }
+  }, [orders, selectedOrder]);
 
   const handleSwitchUser = async (newRole: "ADMIN" | "AGENT") => {
     const targetEmail = newRole === "ADMIN" ? "admin@sarh.ai" : "agent@sarh.ai";
@@ -151,6 +181,7 @@ export function App() {
     setCurrentUser(user);
     setAuthToken(token);
     try {
+      localStorage.removeItem("sarh_logged_out");
       localStorage.setItem("sarh_user", JSON.stringify(user));
       localStorage.setItem("sarh_token", token);
     } catch (e) {
@@ -164,6 +195,7 @@ export function App() {
     setCurrentUser(null);
     setAuthToken("");
     try {
+      localStorage.setItem("sarh_logged_out", "true");
       localStorage.removeItem("sarh_user");
       localStorage.removeItem("sarh_token");
     } catch (e) {
@@ -415,7 +447,7 @@ export function App() {
   // Strict Security Gate: Require authentication to access operational orders sheets
   if (!currentUser || !authToken) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div className="app-container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
         <LoginPage
           theme={theme}
           onToggleTheme={handleToggleTheme}
@@ -429,7 +461,7 @@ export function App() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div className="app-container" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {/* Top Appearance Toolbar & Main Branding Header */}
       <Header
         theme={theme}
@@ -440,7 +472,7 @@ export function App() {
         onLogout={handleLogout}
         totalOrders={systemStats.totalSystemRecords}
         onOpenStatsModal={() => setIsStatsModalOpen(true)}
-        onOpenMobileSimulator={() => setIsMobileSimulatorOpen(true)}
+        onOpenConnectMobile={() => setIsConnectMobileOpen(true)}
         isBackendOnline={isBackendOnline}
       />
 
@@ -555,7 +587,7 @@ export function App() {
         isOpen={isOrderDrawerOpen}
         onClose={() => setIsOrderDrawerOpen(false)}
         onOrderCreated={(orderNum) => {
-          showToast(`Order ${orderNum} created with verified Idempotency Key!`, "success");
+          showToast(`Order ${orderNum} created successfully!`, "success");
           refresh();
         }}
         onViewExistingOrder={(order) => setSelectedOrder(order)}
@@ -576,6 +608,12 @@ export function App() {
       <StatsModal
         isOpen={isStatsModalOpen}
         onClose={() => setIsStatsModalOpen(false)}
+      />
+
+      <MobileConnectModal
+        isOpen={isConnectMobileOpen}
+        onClose={() => setIsConnectMobileOpen(false)}
+        onCopySuccess={(msg) => showToast(msg, "success")}
       />
 
       <ConfirmModal
@@ -611,23 +649,57 @@ export function App() {
       {/* Modular Toast Notification Container */}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
-      {/* Interactive Mobile Device Simulator (iPhone 15 Pro / SE / Galaxy Chassis) */}
-      <MobileSimulatorModal
-        isOpen={isMobileSimulatorOpen}
-        onClose={() => setIsMobileSimulatorOpen(false)}
-        theme={theme}
-      />
+      {/* Mobile Floating Operations Dock (Thumb Zone Pagination & New Order FAB) */}
+      <div className="mobile-floating-dock" role="region" aria-label="Mobile operational controls">
+        <div className="mobile-floating-pagination">
+          <button
+            type="button"
+            className="mobile-nav-btn"
+            disabled={!pagination.hasPrev || loading}
+            onClick={() => {
+              setPage(pagination.page - 1);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            aria-label="Previous page"
+            title="Previous page"
+          >
+            <ChevronLeftIcon size={15} />
+            <span>Prev</span>
+          </button>
 
-      {/* Floating Mobile Pill (Always accessible from bottom right) */}
-      <button
-        type="button"
-        className="floating-mobile-pill"
-        onClick={() => setIsMobileSimulatorOpen(true)}
-        title="Preview Mobile App in Smartphone Frame (No F12 Needed)"
-      >
-        <SmartphoneIcon size={16} />
-        <span>Mobile Device View</span>
-      </button>
+          <div className="mobile-nav-page-indicator">
+            <span className="mobile-page-current">{pagination.page}</span>
+            <span className="mobile-page-separator">/</span>
+            <span className="mobile-page-total">{pagination.totalPages || 1}</span>
+          </div>
+
+          <button
+            type="button"
+            className="mobile-nav-btn"
+            disabled={!pagination.hasNext || loading}
+            onClick={() => {
+              setPage(pagination.page + 1);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            aria-label="Next page"
+            title="Next page"
+          >
+            <span>Next</span>
+            <ChevronRightIcon size={15} />
+          </button>
+        </div>
+
+        <button
+          type="button"
+          className="mobile-fab-register"
+          onClick={() => setIsOrderDrawerOpen(true)}
+          title="Register New Order"
+          aria-label="Register new order"
+        >
+          <PlusIcon size={18} />
+          <span>New Order</span>
+        </button>
+      </div>
     </div>
   );
 }

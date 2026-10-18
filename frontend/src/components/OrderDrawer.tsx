@@ -54,6 +54,40 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
   const [isCheckingDuplicate, setIsCheckingDuplicate] = useState<boolean>(false);
   const [duplicatePromptOrder, setDuplicatePromptOrder] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
+
+  // Background body scroll lock while drawer is open
+  useEffect(() => {
+    if (isOpen) {
+      const prevOverflow = document.body.style.overflow;
+      const prevTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        document.body.style.touchAction = prevTouchAction;
+      };
+    }
+  }, [isOpen]);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+      setIsClosing(false);
+    }, 280);
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
 
   const formatTimeAgo = (dateStr: string) => {
     const elapsedMs = Date.now() - new Date(dateStr).getTime();
@@ -213,8 +247,8 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
 
   return (
     <div
-      className={`drawer-overlay ${isOpen ? "open" : ""}`}
-      onClick={onClose}
+      className={`drawer-overlay ${isOpen && !isClosing ? "open" : ""}`}
+      onClick={handleClose}
       aria-hidden={!isOpen}
     >
       <div
@@ -226,12 +260,12 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
         <div className="drawer-header">
           <div className="drawer-title">
             <h2>Register Manual Order</h2>
-            <p>Phone and direct orders console with strict Idempotency guarantee</p>
+            <p>Phone and direct customer order registration</p>
           </div>
           <button
             type="button"
             className="btn-close-drawer"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close drawer"
           >
             <CloseIcon size={18} />
@@ -252,7 +286,7 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
             <div className="idempotency-callout-header">
               <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                 <LockIcon size={14} />
-                <span>Idempotency-Key Lock (R2 Guarantee)</span>
+                <span>Duplicate Order Protection Key</span>
               </div>
               <button
                 type="button"
@@ -268,7 +302,7 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
               <span style={{ fontSize: "10px", color: "var(--text-tertiary)" }}>UUIDv4</span>
             </div>
             <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
-              Prevents double-click or network resend duplicate orders on server & DB level.
+              Prevents duplicate orders from accidental double-clicks or mobile network retries.
             </span>
           </div>
 
@@ -509,7 +543,7 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
             <button
               type="button"
               className="btn-secondary"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={submitting || isCheckingDuplicate}
             >
               Cancel

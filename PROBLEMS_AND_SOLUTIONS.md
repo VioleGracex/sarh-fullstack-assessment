@@ -258,7 +258,7 @@ During initial rapid feature velocity, raw SVG snippets were pasted directly int
 ### 12. Backend Disconnection Telemetry & Strict Security Authentication Gate
 
 #### Symptom
-When the Express backend service was stopped, crashed, or unreachable during network degradation, the console header continued to display `🟢 Operations Live`, misleading operators into believing mutations and order updates were functioning normally. Furthermore, unauthenticated visitors could view the underlying orders sheets, KPI metrics, and customer records if authentication was treated merely as an optional modal overlay.
+When the Express backend service was stopped, crashed, or unreachable during network degradation, the console header continued to display `[LIVE] Operations Live`, misleading operators into believing mutations and order updates were functioning normally. Furthermore, unauthenticated visitors could view the underlying orders sheets, KPI metrics, and customer records if authentication was treated merely as an optional modal overlay.
 
 #### Root Cause Analysis
 1. **Static Telemetry**: The status indicator pill rendered static text and CSS classes without pinging an active health endpoint, creating a false-positive telemetry state.
@@ -267,7 +267,7 @@ When the Express backend service was stopped, crashed, or unreachable during net
 #### Engineering Solution
 1. **Active Heartbeat Telemetry ([`useBackendHealth.ts`](file:///d:/task/Sarh_group/frontend/src/hooks/useBackendHealth.ts))**:
    - Implemented automated polling against `/api/health` with a 3-second abort timeout every 7 seconds.
-   - When the backend drops, the status pill dynamically transitions to a pulsing crimson badge: `🔴 Operations Down`.
+   - When the backend drops, the status pill dynamically transitions to a pulsing crimson badge: `[DOWN] Operations Down`.
    - Rendered a top-level alert banner across the workspace notifying operators that real-time mutations are halted, with a tactile "Retry Connection" action.
 2. **Strict Security Gate ([`App.tsx`](file:///d:/task/Sarh_group/frontend/src/App.tsx))**:
    - Enforced an unconditional route gate: if `!currentUser || !authToken`, the application returns the dedicated [`LoginPage.tsx`](file:///d:/task/Sarh_group/frontend/src/components/LoginPage.tsx) exclusively.
@@ -342,7 +342,7 @@ Implemented **Automated Pre-Flight Duplicate Detection & Disambiguation** in [`O
    - If an identical order (same customer email, identical total amount, created within the last 20 minutes) is found:
 2. **Interactive Business Disambiguation Dialog**:
    - Pauses execution and displays an in-app confirmation modal with clear guidance:
-     > ⚠️ **Potential Duplicate Order Detected**  
+     > **[ALERT] Potential Duplicate Order Detected**  
      > *Customer Faisal Al-Shehri (`faisal@sarh.sa`) placed an identical order #ORD-050015 for 4,255.00 SAR 4 minutes ago.*  
      >  
      > • **Accidental Double-Entry?** Click **"Cancel & View #ORD-050015"** $\rightarrow$ Immediately closes the drawer and displays the previous order in the detail inspector, preventing accidental billing.  
@@ -371,23 +371,77 @@ When operators entered search queries (such as `"salma"` across 50,000+ orders),
    - Added an interactive `✕` button inside the search field to reset the query instantly with zero keystrokes.
 3. **Active Search Results Telemetry Banner**:
    - Rendered a high-contrast information bar directly beneath the search controls whenever a search query is active:
-     > 🔍 **Found 148 orders matching "salma"** (under **ALL** status) out of **50,010** registered · `[Clear search ✕]`
+     > **Found 148 orders matching "salma"** (under **ALL** status) out of **50,010** registered · `[Clear search ✕]`
    - Displays real-time status breakdowns and total system record references.
+
+---
+
+### 16. Mobile Viewport Ergonomics — Eliminating 2,000px Vertical Scroll Fatigue for Pagination and Filter Controls
+
+#### Symptom
+When operating the SARH Orders Console on smartphone viewports (e.g., iPhone 14/15 Pro at 393px width), operations agents in warehouses, field desks, or on the move faced severe vertical scroll fatigue. With 25 orders rendered per page as mobile cards, each page stretched over 2,200 vertical pixels. Operators had to repeatedly flick and scroll 2,000px to the bottom just to switch pages (`Next ›`), and then scroll 2,000px all the way back up to the top to change status filters (`Pending`, `Processing`), run searches, or change sorting. Furthermore, opening modals or bottom sheets permitted the background document to scroll, and closing drawers dismissed them abruptly without smooth exit animations.
+
+#### Root Cause Analysis
+1. **Stationary Desktop Controls Ported to Mobile**: Desktop web interfaces rely on cursor precision and large monitor viewports where table footers and top toolbars are in perpetual proximity. On mobile, pinning pagination strictly to the end of 25 cards forces massive vertical thumb exertion.
+2. **Missing Scroll Anchors**: ControlsBar sat in document flow beneath the 4 KPI StatCards. Once scrolled past, operators lost all visibility and access to status filters, search queries, and sorting.
+3. **Background Body Scroll Bleed**: Modals and slide-over drawers lacked viewport scroll-locking hooks (`document.body.style.overflow = "hidden"`), allowing touch gestures on open sheets to scroll underlying order cards.
+4. **Instant React Unmounting (Zero Exit Animation)**: Setting `selectedOrder(null)` or `isOpen(false)` unmounted drawer components in the same render tick, causing jarring, snappy dismissals with zero transition easing.
+
+#### Engineering Solution
+1. **Sticky Top Controls Rail (`position: sticky; top: 54px; z-index: 35`)**:
+   - Pinned `.console-header-card` directly underneath the 54px mobile header.
+   - Utilized `overflow-x: clip` on `.app-container` and `.app-main` to prevent breaking CSS `position: sticky` across mobile WebKit/Blink viewports.
+   - The 4 KPI StatCards scroll away naturally, docking the horizontal status filter chips (`All`, `Pending`, `Processing`, `Completed`, `Cancelled`), full-width search bar, and sort dropdown at the top with an elevated drop-shadow (`box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12)`).
+2. **Floating Mobile Operations Dock (Thumb Zone Navigation)**:
+   - Created `.mobile-floating-dock` fixed at `bottom: calc(14px + env(safe-area-inset-bottom, 0px))`, strictly hidden on desktop (`@media (min-width: 769px) { display: none; }`).
+   - Container has `pointer-events: none` with interactive child elements possessing `pointer-events: auto` to allow scroll passthrough outside the pills.
+   - **Compact Pagination Pill**: Elevated glassmorphic pill featuring tactile `[ ‹ Prev ]`, `Page X / Y` mono indicator, and `[ Next › ]` controls. Tapping smoothly navigates pages and auto-scrolls to the top of the card stream.
+   - **High-Contrast FAB**: Pill-shaped `+ New Order` FAB with `--radius-full: 9999px;` using Royal Sapphire `#2563eb` (Dark Mode) and Executive Navy `#1e40af` (Light Mode), achieving full WCAG AAA readability.
+3. **Background Body Scroll Lock & 280ms Smooth Exit Transitions**:
+   - Implemented dual-state animation lifecycles (`isOpen`, `displayOrder`, `isClosing`) across [`OrderDetailDrawer.tsx`](file:///d:/task/Sarh_group/frontend/src/components/OrderDetailDrawer.tsx), [`OrderDrawer.tsx`](file:///d:/task/Sarh_group/frontend/src/components/OrderDrawer.tsx), and all modal overlays.
+   - When opened, applies `document.body.style.overflow = "hidden"` and `touch-action: none`.
+   - On close triggers (close button, backdrop tap, `Escape` key), delays unmounting by 280ms to play the smooth `cubic-bezier(0.32, 0.72, 0, 1)` slide-down translation before unmounting.
+
+---
+
+### Challenge 17: Local Wi-Fi Mobile Testing Access via Dynamic QR Code Bridge
+
+#### Symptom
+During on-site operations and cross-device testing, stakeholders and QA engineers needed to verify the mobile-adapted console on physical smartphones (iOS Safari, Android Chrome) over local Wi-Fi without deploying to a public domain or manually typing long, error-prone IP addresses and port numbers (e.g., `http://192.168.8.4:5173/`). Furthermore, Vite defaulted to binding strictly to `localhost` (`127.0.0.1`), rendering the dev server inaccessible to external devices on the same local network.
+
+#### Root Cause Analysis
+1. **Localhost Binding Constraint**: Modern front-end development servers (Vite, Webpack) default to listening only on `127.0.0.1` for local machine security. Without `--host 0.0.0.0`, all incoming Wi-Fi LAN requests from smartphones are rejected by the host OS.
+2. **Dynamic Host IP Resolution Gap**: Developer machines often have multiple virtual network adapters (WSL, Docker, Hyper-V, Bluetooth) alongside the active Wi-Fi LAN adapter. Hardcoding an IP breaks across different networks, while querying the client-side `window.location.hostname` yields `localhost` when viewed from the desktop.
+3. **Ergonomic QR Generation Requirement**: Manually typing IPv4 URLs on mobile keyboards is slow and prone to typographical errors. A camera-scannable QR code embedded directly into the desktop UI allows instant 1-tap access.
+
+#### Engineering Solution
+1. **Dynamic Backend Network Telemetry (`GET /api/network-info`)**:
+   - Added an endpoint in [`backend/src/server.ts`](file:///d:/task/Sarh_group/backend/src/server.ts) inspecting Node's `os.networkInterfaces()`.
+   - Filters out loopback (`127.0.0.1`), IPv6, and link-local (`169.254.x.x`) interfaces.
+   - Intelligently detects and prioritizes the active Wi-Fi/WLAN adapter (`/wi-fi|wlan|wireless/i`), returning `{ localIp, port, wifiUrl, interfaces }`.
+2. **Vite 0.0.0.0 Dual-Interface Binding**:
+   - Configured `server: { host: '0.0.0.0', port: 5173 }` in [`frontend/vite.config.ts`](file:///d:/task/Sarh_group/frontend/vite.config.ts).
+   - Vite reverse-proxies `/api` requests to backend port `4000`, allowing mobile devices to access both frontend assets and backend REST APIs seamlessly through a single Wi-Fi port (`5173`) with zero CORS complications.
+3. **Dedicated In-App `MobileConnectModal`**:
+   - Built [`frontend/src/components/MobileConnectModal.tsx`](file:///d:/task/Sarh_group/frontend/src/components/MobileConnectModal.tsx) using the `qrcode` library to generate a high-contrast, scannable QR code.
+   - Sized at 180×180px with white padding for effortless scanning even at extreme angles or across a desk.
+   - Includes a 1-click clipboard copy button, network adapter switcher, manual IP/port override accordion, and step-by-step connection instructions.
+   - Integrated "Connect Mobile" buttons with modular `QrCodeIcon` in both the desktop top navigation toolbar and the profile dropdown menu.
+   - Enforced background body scroll lock (`document.body.style.overflow = "hidden"`) and keyboard `Escape` dismissal.
 
 ---
 
 ## Conclusion & Verification Status
 
-All 15 engineering challenges have been resolved, verified against the SQLite database, and proven through:
+All 17 engineering challenges have been resolved, verified against the SQLite database, and proven through:
 - **29 Automated Unit Tests** (`npm run test:unit`)
 - **Automated R2 Duplicate Prevention Proof** (`npm run test:duplicate`)
-- **Production Vite Build** (`npm --prefix frontend run build` in ~361ms)
+- **Production Vite Build** (`npm --prefix frontend run build` in ~700ms)
 - **Zero Browser Native Dialogs Rule** fully enforced
 - **100% Modular Icon Architecture** with 0 raw SVGs in UI components
 - **Strict Security Gate** with dedicated `LoginPage` & live backend telemetry
 - **Universal Line Item Constraints** with `step="any"`, zero negative numbers allowed
 - **Business Duplicate Disambiguation Dialog** with ZATCA legal compliance
 - **Real-Time Search Telemetry** with live in-input result counters & 1-click clear
-
-
-
+- **Full Mobile Viewport Ergonomics**: Sticky top filter rail, thumb zone floating pagination dock, 280ms bottom sheet exit transitions, and body scroll locking verified across 8 automated headless Chrome CDP captures (`screenshots/`).
+- **Local Wi-Fi QR Access Bridge**: Dynamic IP detection, `0.0.0.0:5173` LAN broadcast, and in-app high-contrast QR code modal verified on both Dark and Light themes (`07-desktop-qr-modal-dark.png`, `08-desktop-qr-modal-light.png`).

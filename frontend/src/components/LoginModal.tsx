@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { User } from "../types/order";
 import { BrandLogoIcon } from "./icons";
 
@@ -15,12 +15,26 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onLoginSuccess,
   currentUser
 }) => {
-  if (!isOpen) return null;
-
   const [email, setEmail] = useState(currentUser?.email || "admin@sarh.ai");
   const [password, setPassword] = useState("admin123");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Lock background body scroll while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const prevOverflow = document.body.style.overflow;
+      const prevTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        document.body.style.touchAction = prevTouchAction;
+      };
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
 
   const handleQuickFill = (role: "ADMIN" | "AGENT") => {
     if (role === "ADMIN") {

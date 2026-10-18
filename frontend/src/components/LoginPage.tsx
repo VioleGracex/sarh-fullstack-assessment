@@ -65,6 +65,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
   return (
     <div
+      className="login-wrapper"
       style={{
         minHeight: "100vh",
         display: "flex",
@@ -75,16 +76,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       }}
     >
       {/* Top Navbar */}
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "16px 28px",
-          borderBottom: "1px solid var(--border-subtle)",
-          backgroundColor: "var(--bg-surface)"
-        }}
-      >
+      <header className="login-header">
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <div
             style={{
@@ -96,23 +88,25 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               borderRadius: "var(--radius-md)",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center"
+              justifyContent: "center",
+              flexShrink: 0
             }}
           >
             <BrandLogoIcon size={18} />
           </div>
           <div>
             <div style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
-              <span>SARH Business Solutions</span>
-              <span style={{ fontSize: "12px", color: "var(--text-tertiary)", fontWeight: 500 }}>صرح لحلول الأعمال</span>
+              <span>SARH</span>
+              <span className="login-brand-full"> Business Solutions</span>
+              <span className="login-brand-ar" style={{ fontSize: "12px", color: "var(--text-tertiary)", fontWeight: 500 }}>صرح لحلول الأعمال</span>
             </div>
-            <div style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
+            <div className="login-brand-sub" style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
               Orders Operations Console · Production System
             </div>
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           {/* Operations Live / Down Pill */}
           <div
             className={`status-indicator-pill ${!isBackendOnline ? "offline" : ""}`}
@@ -121,7 +115,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             title={isBackendOnline ? "Backend operational (http://localhost:4000)" : "Backend service offline or unreachable"}
           >
             <span className={`dot-pulse ${!isBackendOnline ? "offline" : ""}`}></span>
-            <span>{isBackendOnline ? "Operations Live" : "Operations Down"}</span>
+            <span className="login-status-text">{isBackendOnline ? "Operations Live" : "Operations Down"}</span>
           </div>
 
           {/* Theme Toggle Button */}
@@ -130,12 +124,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             className="mode-toggle-btn"
             onClick={onToggleTheme}
             aria-label="Toggle theme appearance"
-            style={{ padding: "4px 10px" }}
+            style={{ padding: "6px 10px" }}
           >
             <span className="mode-icon-box">
               {isDark ? <MoonIcon size={14} /> : <SunIcon size={14} />}
             </span>
-            <span>{isDark ? "Dark Mode" : "Light Mode"}</span>
+            <span className="login-theme-text">{isDark ? "Dark Mode" : "Light Mode"}</span>
           </button>
         </div>
       </header>
@@ -147,27 +141,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "32px 16px"
+          padding: "24px 16px"
         }}
       >
-        <div
-          style={{
-            maxWidth: "460px",
-            width: "100%",
-            backgroundColor: "var(--bg-surface)",
-            border: "1px solid var(--border-subtle)",
-            borderRadius: "var(--radius-xl)",
-            padding: "36px 32px",
-            boxShadow: "var(--shadow-lg)"
-          }}
-        >
+        <div className="login-card">
           {/* Brand Icon & Welcome */}
-          <div style={{ textAlign: "center", marginBottom: "26px" }}>
+          <div style={{ textAlign: "center", marginBottom: "22px" }}>
             <div
               style={{
-                width: "52px",
-                height: "52px",
-                margin: "0 auto 14px auto",
+                width: "48px",
+                height: "48px",
+                margin: "0 auto 12px auto",
                 backgroundColor: "var(--accent-subtle)",
                 color: "var(--accent-primary)",
                 border: "1px solid var(--border-subtle)",
@@ -177,13 +161,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 justifyContent: "center"
               }}
             >
-              <BrandLogoIcon size={28} />
+              <BrandLogoIcon size={26} />
             </div>
 
-            <h1 style={{ fontSize: "20px", fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+            <h1 style={{ fontSize: "19px", fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
               Sign In to Operations Console
             </h1>
-            <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "6px" }}>
+            <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "4px" }}>
               Enter your credentials to access the operational orders console
             </p>
           </div>
@@ -192,7 +176,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           {!isBackendOnline && (
             <div
               style={{
-                padding: "12px 14px",
+                padding: "10px 12px",
                 backgroundColor: "var(--badge-cancelled-bg)",
                 border: "1px solid var(--badge-cancelled-border)",
                 borderRadius: "var(--radius-md)",
@@ -201,11 +185,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                gap: "10px",
-                marginBottom: "20px"
+                gap: "8px",
+                marginBottom: "16px"
               }}
             >
-              <span>Backend API is currently offline. Please ensure the server is running on port 4000.</span>
+              <span>Backend API offline on port 4000.</span>
               {onCheckHealth && (
                 <button
                   type="button"
@@ -220,7 +204,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           )}
 
           {/* Quick-Select Role Presets */}
-          <div style={{ marginBottom: "22px" }}>
+          <div style={{ marginBottom: "20px" }}>
             <div
               style={{
                 fontSize: "11px",
@@ -233,55 +217,33 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             >
               Quick-Select Credentials:
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <div className="login-credentials-grid">
               <button
                 type="button"
+                className={`login-credential-btn ${email === "admin@sarh.ai" ? "active" : ""}`}
                 onClick={() => handleQuickFill("ADMIN")}
-                style={{
-                  backgroundColor: email === "admin@sarh.ai" ? "var(--accent-subtle)" : "var(--bg-subtle)",
-                  border: email === "admin@sarh.ai" ? "1px solid var(--accent-primary)" : "1px solid var(--border-subtle)",
-                  color: email === "admin@sarh.ai" ? "var(--accent-text)" : "var(--text-secondary)",
-                  padding: "10px 12px",
-                  borderRadius: "var(--radius-md)",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  textAlign: "left",
-                  transition: "all var(--transition-fast)"
-                }}
               >
                 <div style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
                   <span>Admin Account</span>
                 </div>
-                <div style={{ fontSize: "11px", opacity: 0.8, marginTop: "2px" }}>
+                <div style={{ fontSize: "11px", opacity: 0.85, marginTop: "2px" }}>
                   admin@sarh.ai
                 </div>
-                <div style={{ fontSize: "10px", color: "var(--text-tertiary)", marginTop: "3px" }}>
+                <div className="login-cred-sub" style={{ fontSize: "10px", color: "var(--text-tertiary)", marginTop: "2px" }}>
                   Full Delete & Export RBAC
                 </div>
               </button>
 
               <button
                 type="button"
+                className={`login-credential-btn ${email === "agent@sarh.ai" ? "active" : ""}`}
                 onClick={() => handleQuickFill("AGENT")}
-                style={{
-                  backgroundColor: email === "agent@sarh.ai" ? "var(--accent-subtle)" : "var(--bg-subtle)",
-                  border: email === "agent@sarh.ai" ? "1px solid var(--accent-primary)" : "1px solid var(--border-subtle)",
-                  color: email === "agent@sarh.ai" ? "var(--accent-text)" : "var(--text-secondary)",
-                  padding: "10px 12px",
-                  borderRadius: "var(--radius-md)",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  textAlign: "left",
-                  transition: "all var(--transition-fast)"
-                }}
               >
                 <div style={{ fontWeight: 700 }}>Agent Account</div>
-                <div style={{ fontSize: "11px", opacity: 0.8, marginTop: "2px" }}>
+                <div style={{ fontSize: "11px", opacity: 0.85, marginTop: "2px" }}>
                   agent@sarh.ai
                 </div>
-                <div style={{ fontSize: "10px", color: "var(--text-tertiary)", marginTop: "3px" }}>
+                <div className="login-cred-sub" style={{ fontSize: "10px", color: "var(--text-tertiary)", marginTop: "2px" }}>
                   Intake & Search Only
                 </div>
               </button>

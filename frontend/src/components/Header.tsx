@@ -8,7 +8,7 @@ import {
   CaretDownIcon,
   LogoutIcon,
   StatsAnalyticsIcon,
-  SmartphoneIcon
+  QrCodeIcon
 } from "./icons/index.tsx";
 
 interface HeaderProps {
@@ -20,7 +20,7 @@ interface HeaderProps {
   onLogout: () => void;
   totalOrders?: number;
   onOpenStatsModal?: () => void;
-  onOpenMobileSimulator?: () => void;
+  onOpenConnectMobile?: () => void;
   isBackendOnline?: boolean;
 }
 
@@ -32,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenLoginModal,
   onLogout,
   onOpenStatsModal,
-  onOpenMobileSimulator,
+  onOpenConnectMobile,
   isBackendOnline = true
 }) => {
   const isDark = theme === "midnight-obsidian";
@@ -60,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      {/* Top Appearance Toolbar */}
+      {/* Top Appearance Toolbar (Desktop Only) */}
       <header className="theme-toolbar">
         <div className="toolbar-left" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <button
@@ -77,41 +77,39 @@ export const Header: React.FC<HeaderProps> = ({
               {isDark ? "Dark Mode" : "Light Mode"}
             </span>
           </button>
-
-          {onOpenMobileSimulator && (
-            <button
-              type="button"
-              className="btn-toolbar"
-              onClick={onOpenMobileSimulator}
-              title="Open Interactive Smartphone Simulator (iPhone 15 Pro / SE / Galaxy)"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "3px 10px",
-                fontSize: "11px",
-                fontWeight: 600,
-                borderRadius: "var(--radius-sm)",
-                background: "var(--bg-subtle)",
-                border: "1px solid var(--border-subtle)",
-                color: "var(--text-secondary)",
-                cursor: "pointer",
-                transition: "all var(--transition-fast)"
-              }}
-            >
-              <SmartphoneIcon size={13} />
-              <span>Mobile Phone Mockup (393px)</span>
-            </button>
-          )}
         </div>
 
         <div className="toolbar-right" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {onOpenConnectMobile && (
+            <button
+              type="button"
+              className="btn-toolbar"
+              onClick={onOpenConnectMobile}
+              title="Scan QR Code to access live console on your smartphone over local Wi-Fi"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "3px 10px",
+                fontSize: "11px",
+                borderRadius: "var(--radius-sm)",
+                backgroundColor: "var(--accent-subtle)",
+                color: "var(--accent-text)",
+                borderColor: "var(--border-subtle)",
+                fontWeight: 600
+              }}
+            >
+              <QrCodeIcon size={13} />
+              <span>Connect Mobile (Wi-Fi QR)</span>
+            </button>
+          )}
+
           {onOpenStatsModal && (
             <button
               type="button"
               className="btn-toolbar"
               onClick={onOpenStatsModal}
-              title="Open Deep Analytics (O1 Slow Stats API)"
+              title="System Analytics & Reports"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -122,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({
               }}
             >
               <StatsAnalyticsIcon size={13} />
-              <span>Slow Stats API (O1)</span>
+              <span>System Analytics</span>
             </button>
           )}
           <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
@@ -140,7 +138,9 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div className="brand-text">
             <h1>
-              <span>SARH Business Solutions</span>
+              <span>SARH</span>
+              <span className="brand-full-name"> Business Solutions</span>
+              <span className="role-micro-chip">{currentUser?.role || "AGENT"}</span>
               <span className="arabic-title">صرح لحلول الأعمال</span>
             </h1>
             <div className="brand-subtitle">Orders Operations Console · Production System</div>
@@ -151,15 +151,27 @@ export const Header: React.FC<HeaderProps> = ({
             title={isBackendOnline ? "Backend operational (http://localhost:4000)" : "Backend service offline or unreachable"}
           >
             <span className={`dot-pulse ${!isBackendOnline ? "offline" : ""}`}></span>
-            <span>{isBackendOnline ? "Operations Live" : "Operations Down"}</span>
+            <span className="status-indicator-text">{isBackendOnline ? "Operations Live" : "Operations Down"}</span>
           </div>
         </div>
 
         <div className="header-right">
+          {/* Mobile Theme Toggle Button */}
+          <button
+            type="button"
+            className="mobile-theme-toggle-btn"
+            onClick={onToggleTheme}
+            aria-label="Toggle theme appearance"
+            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {isDark ? <MoonIcon size={16} /> : <SunIcon size={16} />}
+          </button>
+
           {currentUser ? (
             <>
-              {/* Role Switcher */}
+              {/* Role Switcher (Desktop) */}
               <div
+                className="desktop-role-switcher"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -288,7 +300,21 @@ export const Header: React.FC<HeaderProps> = ({
                         }}
                       >
                         <StatsAnalyticsIcon size={14} />
-                        <span>Slow Stats API (O1)</span>
+                        <span>System Analytics</span>
+                      </button>
+                    )}
+
+                    {onOpenConnectMobile && (
+                      <button
+                        type="button"
+                        className="dropdown-item-btn"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          onOpenConnectMobile();
+                        }}
+                      >
+                        <QrCodeIcon size={14} />
+                        <span>Connect Mobile (Wi-Fi QR)</span>
                       </button>
                     )}
 

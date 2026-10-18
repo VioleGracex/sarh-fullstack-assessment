@@ -39,6 +39,19 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, loading, onCancel]);
 
+  useEffect(() => {
+    if (isOpen) {
+      const prevOverflow = document.body.style.overflow;
+      const prevTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        document.body.style.touchAction = prevTouchAction;
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (

@@ -337,17 +337,19 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                 <td colSpan={8} style={{ textAlign: "center", padding: "64px 24px", color: "var(--text-tertiary)" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
                     <div
+                      className="spinner-clockwise"
                       style={{
                         width: "28px",
                         height: "28px",
-                        border: "3px solid var(--accent-primary)",
-                        borderTopColor: "transparent",
+                        border: "3px solid var(--border-subtle)",
+                        borderTopColor: "var(--accent-primary)",
                         borderRadius: "50%",
-                        animation: "spin 0.8s linear infinite"
+                        animation: "spin 0.85s linear infinite",
+                        margin: 0
                       }}
                     />
                     <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-secondary)" }}>
-                      Querying indexed database records...
+                      Loading orders...
                     </div>
                   </div>
                 </td>
@@ -459,6 +461,120 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Orders Stream (Shown on mobile devices <= 768px instead of 9-col table) */}
+      <div className="mobile-orders-cards">
+        {loading && orders.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "48px 16px", color: "var(--text-tertiary)" }}>
+            <div
+              className="spinner-clockwise"
+              style={{
+                width: "28px",
+                height: "28px",
+                border: "3px solid var(--border-subtle)",
+                borderTopColor: "var(--accent-primary)",
+                borderRadius: "50%",
+                animation: "spin 0.85s linear infinite",
+                margin: "0 auto 12px auto"
+              }}
+            />
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-secondary)" }}>
+              Loading orders...
+            </div>
+          </div>
+        ) : orders.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "48px 16px", color: "var(--text-tertiary)" }}>
+            No orders match current filters.
+          </div>
+        ) : (
+          orders.map((order) => {
+            const isSelected = selectedOrderIds.includes(order.id);
+            const itemsSummary =
+              order.items && order.items.length > 0
+                ? order.items.map((i) => `${i.quantity}x ${i.productName}`).join(", ")
+                : "No items";
+
+            return (
+              <div
+                key={order.id}
+                className={`mobile-order-card ${isSelected ? "selected-card" : ""}`}
+                onClick={() => onViewOrder(order)}
+              >
+                <div className="m-card-header">
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <input
+                      type="checkbox"
+                      className="custom-checkbox"
+                      aria-label={`Select order ${order.orderNumber}`}
+                      checked={isSelected}
+                      onChange={() => onToggleSelectOrder(order.id)}
+                    />
+                    <span className="m-card-id">{order.orderNumber}</span>
+                    <button
+                      type="button"
+                      className="copy-btn"
+                      onClick={() => onCopyText(order.orderNumber)}
+                      title="Copy Order ID"
+                    >
+                      <CopyIcon size={12} />
+                    </button>
+                  </div>
+                  <span className={`status-badge ${order.status.toLowerCase()}`}>
+                    {getStatusIconSvg(order.status)}
+                    <span>{order.status}</span>
+                  </span>
+                </div>
+
+                <div className="m-card-customer">
+                  <span className="m-customer-name">{order.customerName}</span>
+                  <span className="m-customer-info">{itemsSummary}</span>
+                </div>
+
+                <div className="m-card-footer">
+                  <span className="m-card-date">{formatDate(order.createdAt)}</span>
+                  <span className="m-card-amount">
+                    {order.totalAmount.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}{" "}
+                    <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-tertiary)" }}>
+                      SAR
+                    </span>
+                  </span>
+                </div>
+
+                {currentUser?.role === "ADMIN" && (
+                  <div
+                    className="m-card-actions"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      borderTop: "1px solid var(--border-subtle)",
+                      paddingTop: "8px",
+                      marginTop: "2px",
+                      display: "flex",
+                      justifyContent: "flex-end"
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="btn-row-action delete"
+                      onClick={() => onDeleteOrder(order.id, order.orderNumber)}
+                      title="Admin Delete Order"
+                      style={{ padding: "4px 10px", fontSize: "11px" }}
+                    >
+                      <TrashIcon size={12} />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* Pagination Footer */}
