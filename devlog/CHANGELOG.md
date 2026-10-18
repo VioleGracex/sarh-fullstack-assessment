@@ -10,6 +10,14 @@
 
 ---
 
+# [1.4.2] — Header Telemetry Cleanup (Removed Redundant Order Count)
+Date: 2026-10-18 | Time Elapsed: ~1h 24m (Cumulative)
+
+## Changed
+- `frontend/src/components/Header.tsx`: Removed redundant count from the top `Operations Live` badge pill to eliminate duplication with the primary "TOTAL ORDERS" KPI summary card immediately below it.
+
+---
+
 # [1.4.1] — Animated Count-Up on Refresh & State Change
 Date: 2026-10-18 | Time Elapsed: ~1h 20m (Cumulative)
 
