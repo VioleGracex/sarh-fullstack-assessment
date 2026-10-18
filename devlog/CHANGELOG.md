@@ -3,11 +3,11 @@
 
 > **Assessment Time Budget Status:**
 > - **Session Start Time:** 15:30 (+03:00)
-> - **Current PC Clock:** 18:02 (+03:00)
-> - **Total Session Elapsed:** ~2 hours 32 minutes (`02:32:00`)
+> - **Current PC Clock:** 18:05 (+03:00)
+> - **Total Session Elapsed:** ~2 hours 35 minutes (`02:35:00`)
 > - **Take-Home Hard Time Limit:** 5 hours max (`05:00:00`)
-> - **Remaining Budget:** ~2 hours 28 minutes (`02:28:00`)
-> - **Assessment Pacing:** Comfortable & Ahead of Schedule (~49% budget remaining with 100% core + optional O1 complete)
+> - **Remaining Budget:** ~2 hours 25 minutes (`02:25:00`)
+> - **Assessment Pacing:** Comfortable & Ahead of Schedule (~48% budget remaining with 100% core + optional O1 complete)
 
 ---
 
@@ -39,6 +39,25 @@
 | **17:52:00** | `08229da` | Universal Line Item Constraints (`step="any"`), Negative Input Interception & Column Headers | Bug Fix / UX |
 | **17:58:00** | `ae8d90d` | Business Duplicate Intent Disambiguation Modal (ZATCA e-Invoicing Compliance) & Loading States | Enterprise / UX |
 | **18:02:00** | `557dea4` | Real-Time Search Result Telemetry, In-Input Count Badge & 1-Click Clear Button | UX / Polish |
+| **18:05:00** | Pending | Security Hardening: Purged Passwords from Frontend Environment Files | Security |
+
+---
+
+# [1.0.17] — Security Hardening: Purged Passwords from Frontend Environment Files
+Date: 2026-10-18 | Session Timer: ~2h 35m
+
+## Security Fix
+- **Purged Client-Side Password Exposure in `frontend/.env` & `frontend/.env.example`**:
+  - Removed `VITE_ADMIN_PASSWORD` and `VITE_AGENT_PASSWORD`.
+  - Added strict security guidance in `frontend/.env.example`: Secrets, private keys, and passwords must never be stored in frontend `.env` files because Vite embeds `VITE_*` variables into compiled client bundles accessible via browser DevTools.
+  - Confirmed authentication authority is strictly encapsulated on the Express backend (`backend/.env` with bcrypt verification on `POST /api/auth/login`).
+
+## Files Affected
+- `frontend/.env`
+- `frontend/.env.example`
+- `devlog/CHANGELOG.md`
+
+---
 
 ---
 
